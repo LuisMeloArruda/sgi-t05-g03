@@ -1,2 +1,11 @@
 1
-**/1/**
+**/1
+
+# Python
+.venv
+
+# Nix
+flake.nix
+flake.lock
+.envrc
+.direnv/
