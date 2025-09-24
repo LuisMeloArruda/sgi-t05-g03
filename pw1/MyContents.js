@@ -3,6 +3,7 @@ import { MyAxis } from './MyAxis.js';
 import { MyBox } from './objects/MyBox.js'
 import { MyWalls } from './objects/MyWalls.js';
 import { MyTable } from './objects/MyTable.js';
+import { MyOldCandle } from './objects/MyOldCandle.js';
 
 /**
  *  This class contains the contents of out application
@@ -24,12 +25,16 @@ class MyContents  {
         this.box = new MyBox(1.0, this.boxDisplacement)
 
         // walls related attributes
-        this.wallsDisplacement = new THREE.Vector3(0, 4, 0)
+        this.wallsDisplacement = new THREE.Vector3(0, 0, 0)
         this.walls = new MyWalls(15, 8, this.wallsDisplacement)
 
         // table related attributes
-        this.tableDisplacement = new THREE.Vector3(0, 1, 0)
+        this.tableDisplacement = new THREE.Vector3(0, 0, 0)
         this.table = new MyTable(1.0, this.tableDisplacement)
+
+        // old candle related attributes
+        this.oldCandleDisplacement = new THREE.Vector3(1, 2, 1)
+        this.oldCandle = new MyOldCandle(0.5, this.oldCandleDisplacement)
 
         // plane related attributes
         this.diffusePlaneColor = "#ffffff"
@@ -70,6 +75,9 @@ class MyContents  {
 
         // add table
         this.app.scene.add( this.table)
+
+        // add candle
+        this.app.scene.add(this.oldCandle)
         
         // Create a Plane Mesh with basic material
         let plane = new THREE.PlaneGeometry( 15, 15 );

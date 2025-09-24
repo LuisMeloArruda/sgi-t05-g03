@@ -19,11 +19,11 @@ class MyTable extends THREE.Object3D {
         }
 
         const legWidth = this.size / 4
-        const legHeigh = this.size * 2
+        const legHeight = this.size * 2
         const tableWidth = this.size * 4
         const tableHeight = this.size / 4
 
-        const leg = new THREE.CylinderGeometry(legWidth, legWidth, legHeigh)
+        const leg = new THREE.CylinderGeometry(legWidth, legWidth, legHeight)
         const tableTop = new THREE.BoxGeometry(tableWidth, tableHeight, tableWidth)
 
         const leg1 = new THREE.Mesh(leg, this.material)
@@ -48,10 +48,11 @@ class MyTable extends THREE.Object3D {
         leg4.position.z -= offset
         leg4.position.x -= offset
 
-        tableTopMesh.position.y += legHeigh / 2
+        tableTopMesh.position.y += legHeight / 2 - tableHeight / 2
 
         this.add(leg1, leg2, leg3, leg4, tableTopMesh)
         this.position.copy(this.displacement)
+        this.position.y += legHeight / 2
     }
 }
 

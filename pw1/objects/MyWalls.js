@@ -42,6 +42,7 @@ class MyWalls extends THREE.Object3D {
         
         this.add(leftWall, rightWall, frontWall, backWall)
         this.position.copy(this.displacement)
+        this.position.y += this.height / 2
     }
 }
 
