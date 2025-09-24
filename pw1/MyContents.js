@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { MyAxis } from './MyAxis.js';
 import { MyBox } from './objects/MyBox.js'
+import { MyWalls } from './objects/MyWalls.js';
+import { MyTable } from './objects/MyTable.js';
 
 /**
  *  This class contains the contents of out application
@@ -18,11 +20,19 @@ class MyContents  {
         // box related attributes
         this.boxEnabled = true
         this.lastBoxEnabled = null
-        this.boxDisplacement = new THREE.Vector3(0,2,0)
+        this.boxDisplacement = new THREE.Vector3(0, 2, 0)
         this.box = new MyBox(1.0, this.boxDisplacement)
 
+        // walls related attributes
+        this.wallsDisplacement = new THREE.Vector3(0, 4, 0)
+        this.walls = new MyWalls(15, 8, this.wallsDisplacement)
+
+        // table related attributes
+        this.tableDisplacement = new THREE.Vector3(0, 1, 0)
+        this.table = new MyTable(1.0, this.tableDisplacement)
+
         // plane related attributes
-        this.diffusePlaneColor = "#84492a"
+        this.diffusePlaneColor = "#ffffff"
         this.specularPlaneColor = "#777777"
         this.planeShininess = 30
         this.planeMaterial = new THREE.MeshPhongMaterial({ color: this.diffusePlaneColor, 
@@ -55,12 +65,14 @@ class MyContents  {
         const ambientLight = new THREE.AmbientLight( 0x555555 );
         this.app.scene.add( ambientLight );
 
-        // add a box
-        this.app.scene.add( this.box.mesh)
+        // add walls
+        this.app.scene.add( this.walls)
+
+        // add table
+        this.app.scene.add( this.table)
         
         // Create a Plane Mesh with basic material
-        
-        let plane = new THREE.PlaneGeometry( 10, 10 );
+        let plane = new THREE.PlaneGeometry( 15, 15 );
         this.planeMesh = new THREE.Mesh( plane, this.planeMaterial );
         this.planeMesh.rotation.x = -Math.PI / 2;
         this.planeMesh.position.y = -0;
@@ -96,31 +108,31 @@ class MyContents  {
      * rebuilds the box mesh if required
      * this method is called from the gui interface
      */
-    rebuildBox() {
-        // remove box Mesh if exists
-        if (this.box.mesh !== undefined && this.box.mesh !== null) {  
-            this.app.scene.remove(this.box.mesh)
-        }
-        this.box = new MyBox(1.0, this.boxDisplacement)
-        this.lastBoxEnabled = null
-    }
+    // rebuildBox() {
+    //     // remove box Mesh if exists
+    //     if (this.box.mesh !== undefined && this.box.mesh !== null) {  
+    //         this.app.scene.remove(this.box.mesh)
+    //     }
+    //     this.box = new MyBox(1.0, this.boxDisplacement)
+    //     this.lastBoxEnabled = null
+    // }
     
     /**
      * updates the box mesh if required
      * this method is called from the render method of the app
      * updates are trigered by boxEnabled property changes
      */
-    updateBoxIfRequired() {
-        if (this.boxEnabled !== this.lastBoxEnabled) {
-            this.lastBoxEnabled = this.boxEnabled
-            if (this.boxEnabled) {
-                this.app.scene.add(this.box.mesh)
-            }
-            else {
-                this.app.scene.remove(this.box.mesh)
-            }
-        }
-    }
+    // updateBoxIfRequired() {
+    //     if (this.boxEnabled !== this.lastBoxEnabled) {
+    //         this.lastBoxEnabled = this.boxEnabled
+    //         if (this.boxEnabled) {
+    //             this.app.scene.add(this.box.mesh)
+    //         }
+    //         else {
+    //             this.app.scene.remove(this.box.mesh)
+    //         }
+    //     }
+    // }
 
     /**
      * updates the contents
@@ -128,8 +140,8 @@ class MyContents  {
      * 
      */
     update() {
-        this.updateBoxIfRequired()
-        this.box.updatePosition(this.boxDisplacement)
+        // this.updateBoxIfRequired()
+        // this.box.updatePosition(this.boxDisplacement)
     }
 
 }
