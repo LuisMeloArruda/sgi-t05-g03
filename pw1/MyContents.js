@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { MyAxis } from './MyAxis.js';
+import { MyBox } from './objects/MyBox.js'
 
 /**
  *  This class contains the contents of out application
@@ -15,34 +16,17 @@ class MyContents  {
         this.axis = null
 
         // box related attributes
-        this.boxMesh = null
-        this.boxMeshSize = 1.0
         this.boxEnabled = true
         this.lastBoxEnabled = null
         this.boxDisplacement = new THREE.Vector3(0,2,0)
+        this.box = new MyBox(1.0, this.boxDisplacement)
 
         // plane related attributes
-        this.diffusePlaneColor = "#00ffff"
+        this.diffusePlaneColor = "#84492a"
         this.specularPlaneColor = "#777777"
         this.planeShininess = 30
         this.planeMaterial = new THREE.MeshPhongMaterial({ color: this.diffusePlaneColor, 
             specular: this.specularPlaneColor, emissive: "#000000", shininess: this.planeShininess })
-    }
-
-    /**
-     * builds the box mesh with material assigned
-     */
-    buildBox() {    
-        let boxMaterial = new THREE.MeshPhongMaterial({ color: "#ffff77", 
-        specular: "#000000", emissive: "#000000", shininess: 90 })
-
-        // Create a Cube Mesh with basic material
-        let box = new THREE.BoxGeometry(  this.boxMeshSize,  this.boxMeshSize,  this.boxMeshSize );
-        this.boxMesh = new THREE.Mesh( box, boxMaterial );
-        this.boxMesh.position.y = this.boxDisplacement.y;
-        this.boxMesh.rotateX(-Math.PI / 3)
-        this.boxMesh.rotateX(-Math.PI / 3)
-        this.boxMesh.scale.set(3,2,1)
     }
 
     /**
@@ -71,7 +55,8 @@ class MyContents  {
         const ambientLight = new THREE.AmbientLight( 0x555555 );
         this.app.scene.add( ambientLight );
 
-        this.buildBox()
+        // add a box
+        this.app.scene.add( this.box.mesh)
         
         // Create a Plane Mesh with basic material
         
@@ -112,11 +97,11 @@ class MyContents  {
      * this method is called from the gui interface
      */
     rebuildBox() {
-        // remove boxMesh if exists
-        if (this.boxMesh !== undefined && this.boxMesh !== null) {  
-            this.app.scene.remove(this.boxMesh)
+        // remove box Mesh if exists
+        if (this.box.mesh !== undefined && this.box.mesh !== null) {  
+            this.app.scene.remove(this.box.mesh)
         }
-        this.buildBox();
+        this.box = new MyBox(1.0, this.boxDisplacement)
         this.lastBoxEnabled = null
     }
     
@@ -129,10 +114,10 @@ class MyContents  {
         if (this.boxEnabled !== this.lastBoxEnabled) {
             this.lastBoxEnabled = this.boxEnabled
             if (this.boxEnabled) {
-                this.app.scene.add(this.boxMesh)
+                this.app.scene.add(this.box.mesh)
             }
             else {
-                this.app.scene.remove(this.boxMesh)
+                this.app.scene.remove(this.box.mesh)
             }
         }
     }
@@ -143,14 +128,8 @@ class MyContents  {
      * 
      */
     update() {
-        // check if box mesh needs to be updated
         this.updateBoxIfRequired()
-
-        // sets the box mesh position based on the displacement vector
-        this.boxMesh.position.x = this.boxDisplacement.x
-        this.boxMesh.position.y = this.boxDisplacement.y
-        this.boxMesh.position.z = this.boxDisplacement.z
-        
+        this.box.updatePosition(this.boxDisplacement)
     }
 
 }

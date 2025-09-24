@@ -32,7 +32,7 @@ class MyGuiInterface  {
         // add a folder to the gui interface for the box
         const boxFolder = this.datgui.addFolder( 'Box' );
         // note that we are using a property from the contents object 
-        boxFolder.add(this.contents, 'boxMeshSize', 0, 10).name("size").onChange( () => { this.contents.rebuildBox() } );
+        boxFolder.add(this.contents.box, 'size', 0, 10).name("size").onChange( () => { this.contents.rebuildBox() } );
         boxFolder.add(this.contents, 'boxEnabled', true).name("enabled");
         boxFolder.add(this.contents.boxDisplacement, 'x', -5, 5)
         boxFolder.add(this.contents.boxDisplacement, 'y', -5, 5)
