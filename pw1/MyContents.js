@@ -122,17 +122,6 @@ class MyContents  {
      * this method is called from the render method of the app
      * updates are trigered by boxEnabled property changes
      */
-    // updateBoxIfRequired() {
-    //     if (this.boxEnabled !== this.lastBoxEnabled) {
-    //         this.lastBoxEnabled = this.boxEnabled
-    //         if (this.boxEnabled) {
-    //             this.app.scene.add(this.box.mesh)
-    //         }
-    //         else {
-    //             this.app.scene.remove(this.box.mesh)
-    //         }
-    //     }
-    // }
 
     /**
      * updates the contents
