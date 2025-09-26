@@ -1,0 +1,58 @@
+import * as THREE from 'three';
+
+// Candle
+class MyOldCandle extends THREE.Object3D {
+    constructor(size = 1.0, displacement = new THREE.Vector3(0, 2, 0), material = null, baseMaterial = null) {
+        super()
+        this.size = size
+        this.displacement = displacement
+        this.material = material
+        this.baseMaterial = baseMaterial
+        this.mesh = null
+        this.build()
+    }
+
+    build() {
+        if (!this.material) {
+            this.material = new THREE.MeshPhongMaterial(
+                {color: "#ffffff", specular: "#000000", emissive: "#000000", shininess: 90}
+            )
+        }
+
+        if (!this.baseMaterial) {
+            this.baseMaterial = new THREE.MeshPhongMaterial(
+                {color: "#5d1d21", specular: "#000000", emissive: "#000000", shininess: 90}
+            )
+        }
+
+        this.blackMaterial = new THREE.MeshPhongMaterial(
+            {color: "#000000", specular: "#000000", emissive: "#000000", shininess: 90}
+        )
+
+        const baseWidth = this.size / 4.5
+        const baseHeight = this.size
+        const candleWidth = this.size / 5
+        const candleHeight = this.size * 1.5
+        const stringWidth = this.size / 48
+        const stringHeight = this.size / 4
+
+        const base = new THREE.CylinderGeometry(baseWidth, baseWidth, baseHeight)
+        const candle = new THREE.CylinderGeometry(candleWidth * (3/4), candleWidth, candleHeight)
+        const string = new THREE.CylinderGeometry(stringWidth, stringWidth, stringHeight)
+
+        const baseMesh = new THREE.Mesh(base, this.baseMaterial)
+        const candleMesh = new THREE.Mesh(candle, this.material)
+        const stringMesh = new THREE.Mesh(string, this.blackMaterial)
+        
+        // Transformations
+        candleMesh.position.y += baseHeight / 2
+
+        stringMesh.position.y += baseHeight / 2 + candleHeight / 2
+
+        this.add(baseMesh, candleMesh, stringMesh)
+        this.position.copy(this.displacement)
+        this.position.y += this.size / 2
+    }    
+}
+
+export {MyOldCandle};
