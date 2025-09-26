@@ -116,14 +116,6 @@ class MyContents  {
      * rebuilds the box mesh if required
      * this method is called from the gui interface
      */
-    // rebuildBox() {
-    //     // remove box Mesh if exists
-    //     if (this.box.mesh !== undefined && this.box.mesh !== null) {  
-    //         this.app.scene.remove(this.box.mesh)
-    //     }
-    //     this.box = new MyBox(1.0, this.boxDisplacement)
-    //     this.lastBoxEnabled = null
-    // }
     
     /**
      * updates the box mesh if required
