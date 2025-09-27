@@ -1,8 +1,13 @@
 import * as THREE from 'three';
 
-// A Square of walls
+/**
+ * @param {number} width - Width of the walls.
+ * @param {number} height - Height of the walls.
+ * @param {THREE.Vector3} displacement - Vector displacement from the initial position.
+ * @param {THREE.Material|null} material - Material of the walls.
+ */
 class MyWalls extends THREE.Object3D {
-    constructor(width = 1.0, height = 1.0, displacement = new THREE.Vector3(0, 2, 0), material = null) {
+    constructor(width = 1.0, height = 1.0, displacement = new THREE.Vector3(0, 0, 0), material = null) {
         super()
         this.width = width
         this.height = height

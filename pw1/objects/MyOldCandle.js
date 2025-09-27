@@ -1,8 +1,13 @@
 import * as THREE from 'three';
 
-// Candle
+/**
+ * @param {number} size - Overall scale of the candle.
+ * @param {THREE.Vector3} displacement - Vector displacement from the initial position.
+ * @param {THREE.Material|null} material - Material of the candle body.
+ * @param {THREE.Material|null} baseMaterial - Material of the candle base.
+ */
 class MyOldCandle extends THREE.Object3D {
-    constructor(size = 1.0, displacement = new THREE.Vector3(0, 2, 0), material = null, baseMaterial = null) {
+    constructor(size = 1.0, displacement = new THREE.Vector3(0, 0, 0), material = null, baseMaterial = null) {
         super()
         this.size = size
         this.displacement = displacement
