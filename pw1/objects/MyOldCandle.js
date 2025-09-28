@@ -7,7 +7,7 @@ import * as THREE from 'three';
  * @param {THREE.Material|null} baseMaterial - Material of the candle base.
  */
 class MyOldCandle extends THREE.Object3D {
-    constructor(size = 1.0, displacement = new THREE.Vector3(0, 0, 0), material = null, baseMaterial = null) {
+    constructor(size = 1.0, displacement = new THREE.Vector3(0, 0, 0), material, baseMaterial) {
         super()
         this.size = size
         this.displacement = displacement
@@ -18,18 +18,6 @@ class MyOldCandle extends THREE.Object3D {
     }
 
     build() {
-        if (!this.material) {
-            this.material = new THREE.MeshPhongMaterial(
-                {color: "#ffffff", specular: "#000000", emissive: "#000000", shininess: 90}
-            )
-        }
-
-        if (!this.baseMaterial) {
-            this.baseMaterial = new THREE.MeshPhongMaterial(
-                {color: "#5d1d21", specular: "#000000", emissive: "#000000", shininess: 90}
-            )
-        }
-
         this.blackMaterial = new THREE.MeshPhongMaterial(
             {color: "#000000", specular: "#000000", emissive: "#000000", shininess: 90}
         )

@@ -29,10 +29,18 @@ class MyGuiInterface  {
      * Initialize the gui interface
      */
     init() {
+        // MyAxis
+        const axisFolder = this.datgui.addFolder('Axis');
+        axisFolder.add(this.contents.axis, 'visible').onChange(v => this.contents.updateMyAxis(v));
+
         const data = {  
             'diffuse color': this.contents.diffusePlaneColor,
             'specular color': this.contents.specularPlaneColor,
         };
+
+        // adds a folder for window
+        const windowFolder = this.datgui.addFolder('Window')
+        windowFolder.add(this.contents.walls.backWallMaterial.map, 'wrapS', 1000, 1001).onChange(v => this.contents.updateBackWindow(v)); 
 
         // adds a folder to the gui interface for the plane
         const planeFolder = this.datgui.addFolder( 'Plane' );
@@ -49,8 +57,8 @@ class MyGuiInterface  {
         cameraFolder.close()
 
         const spotLightData = {
-            'Visible': this.contents.spotlight.visible,
-            'Helper': this.contents.spotlightHelper.visible,
+            'visible': this.contents.spotlight.visible,
+            'helper': this.contents.spotlightHelper.visible,
             'color': this.contents.spotlight.color,
             'intensity': this.contents.spotlight.intensity,
             'distance': this.contents.spotlight.distance,
@@ -63,8 +71,8 @@ class MyGuiInterface  {
 
         // adds a folder to the gui interface for the spotlight
         const spotLightFolder = this.datgui.addFolder('SpotLight')
-        spotLightFolder.add(spotLightData, 'Visible').onChange(v => this.contents.updateSpotLight(v, "Visible"));
-        spotLightFolder.add(spotLightData, 'Helper').onChange(v => this.contents.updateSpotLight(v, "Helper"));
+        spotLightFolder.add(spotLightData, 'visible').onChange(v => this.contents.updateSpotLight(v, "Visible"));
+        spotLightFolder.add(spotLightData, 'helper').onChange(v => this.contents.updateSpotLight(v, "Helper"));
         spotLightFolder.addColor(spotLightData, 'color').onChange(v => this.contents.updateSpotLight(v, "Color"));
         spotLightFolder.add(spotLightData, 'intensity', 0, 50).onChange(v => this.contents.updateSpotLight(v, "Intensity"));
         spotLightFolder.add(spotLightData, 'distance', 0, 200).onChange(v => this.contents.updateSpotLight(v, "Distance"));

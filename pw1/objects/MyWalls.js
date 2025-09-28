@@ -7,21 +7,20 @@ import * as THREE from 'three';
  * @param {THREE.Material|null} material - Material of the walls.
  */
 class MyWalls extends THREE.Object3D {
-    constructor(width = 1.0, height = 1.0, displacement = new THREE.Vector3(0, 0, 0), material = null) {
+    constructor(width = 1.0, height = 1.0, displacement = new THREE.Vector3(0, 0, 0), material, backWallMaterial) {
         super()
         this.width = width
         this.height = height
         this.displacement = displacement
         this.mesh = null
         this.material = material
+        this.backWallMaterial = backWallMaterial
         this.build()
     }
 
     build() {
         if (!this.material) {
-            this.material = new THREE.MeshPhongMaterial(
-                {color: "#ff5900", specular: "#000000", emissive: "#000000", shininess: 90}
-            )
+
         }
 
         const wall = new THREE.PlaneGeometry(this.width, this.height)
@@ -29,7 +28,7 @@ class MyWalls extends THREE.Object3D {
         const leftWall = new THREE.Mesh(wall, this.material)
         const rightWall = new THREE.Mesh(wall, this.material)
         const frontWall = new THREE.Mesh(wall, this.material)
-        const backWall = new THREE.Mesh(wall, this.material)
+        const backWall = new THREE.Mesh(wall, this.backWallMaterial)
 
         // Transformations
         const offset = this.width / 2
