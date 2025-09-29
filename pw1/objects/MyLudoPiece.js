@@ -13,8 +13,8 @@ class MyLudoPiece extends THREE.Object3D {
      * @param {THREE.Material} material The material applied. By default, it is glossy green.
      */
     constructor(
-        height = 1,
-        radius = 0.3,
+        height = 0.5,
+        radius = 0.2,
         material = new THREE.MeshPhongMaterial({
             color: "#40a02b",
             diffuse: "#000000",

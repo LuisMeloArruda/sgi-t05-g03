@@ -44,7 +44,7 @@ class MyContents  {
         this.planeMaterial = new THREE.MeshPhongMaterial({ color: this.diffusePlaneColor,
             specular: this.specularPlaneColor, emissive: "#000000", shininess: this.planeShininess })
 
-        this.ludo_piece = new MyLudoPiece(0.5, 0.2);
+        this.ludo_piece = new MyLudoPiece();
         this.ludo_piece.translateY(2.25);
         this.ludo_piece.translateX(-1);
         this.ludo_piece.translateZ(1);
