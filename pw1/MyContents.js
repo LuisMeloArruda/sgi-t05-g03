@@ -4,6 +4,7 @@ import { MyBox } from './objects/MyBox.js'
 import { MyWalls } from './objects/MyWalls.js';
 import { MyTable } from './objects/MyTable.js';
 import { MyOldCandle } from './objects/MyOldCandle.js';
+import { MyLudoPiece } from './objects/MyLudoPiece.js';
 
 /**
  *  This class contains the contents of out application
@@ -13,7 +14,7 @@ class MyContents  {
     /**
        constructs the object
        @param {MyApp} app The application object
-    */ 
+    */
     constructor(app) {
         this.app = app
         this.axis = null
@@ -40,16 +41,21 @@ class MyContents  {
         this.diffusePlaneColor = "#ffffff"
         this.specularPlaneColor = "#777777"
         this.planeShininess = 30
-        this.planeMaterial = new THREE.MeshPhongMaterial({ color: this.diffusePlaneColor, 
+        this.planeMaterial = new THREE.MeshPhongMaterial({ color: this.diffusePlaneColor,
             specular: this.specularPlaneColor, emissive: "#000000", shininess: this.planeShininess })
+
+        this.ludo_piece = new MyLudoPiece(0.5, 0.2);
+        this.ludo_piece.translateY(2.25);
+        this.ludo_piece.translateX(-1);
+        this.ludo_piece.translateZ(1);
     }
 
     /**
      * initializes the contents
      */
     init() {
-       
-        // create once 
+
+        // create once
         if (this.axis === null) {
             // create and attach the axis to the scene
             this.axis = new MyAxis(this)
@@ -78,18 +84,20 @@ class MyContents  {
 
         // add candle
         this.app.scene.add(this.oldCandle)
-        
+
         // Create a Plane Mesh with basic material
         let plane = new THREE.PlaneGeometry( 15, 15 );
         this.planeMesh = new THREE.Mesh( plane, this.planeMaterial );
         this.planeMesh.rotation.x = -Math.PI / 2;
         this.planeMesh.position.y = -0;
         this.app.scene.add( this.planeMesh );
+
+        this.app.scene.add(this.ludo_piece);
     }
-    
+
     /**
      * updates the diffuse plane color and the material
-     * @param {THREE.Color} value 
+     * @param {THREE.Color} value
      */
     updateDiffusePlaneColor(value) {
         this.diffusePlaneColor = value
@@ -97,7 +105,7 @@ class MyContents  {
     }
     /**
      * updates the specular plane color and the material
-     * @param {THREE.Color} value 
+     * @param {THREE.Color} value
      */
     updateSpecularPlaneColor(value) {
         this.specularPlaneColor = value
@@ -105,18 +113,18 @@ class MyContents  {
     }
     /**
      * updates the plane shininess and the material
-     * @param {number} value 
+     * @param {number} value
      */
     updatePlaneShininess(value) {
         this.planeShininess = value
         this.planeMaterial.shininess = this.planeShininess
     }
-    
+
     /**
      * rebuilds the box mesh if required
      * this method is called from the gui interface
      */
-    
+
     /**
      * updates the box mesh if required
      * this method is called from the render method of the app
@@ -126,7 +134,7 @@ class MyContents  {
     /**
      * updates the contents
      * this method is called from the render method of the app
-     * 
+     *
      */
     update() {
         // this.updateBoxIfRequired()
