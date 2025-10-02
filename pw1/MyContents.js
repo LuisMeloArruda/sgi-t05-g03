@@ -37,8 +37,6 @@ class MyContents  {
         // this.walls.backWallMaterial.map.center.set(0.5, 0.5)
         // this.walls.backWallMaterial.map.rotation = Math.PI
 
-        this.walls.backWallMaterial.map
-
         // table related attributes
         const tableDisplacement = new THREE.Vector3(0, 0, 0)
         const tableTexture = new THREE.TextureLoader().load('textures/table_texture.jpg')
@@ -68,7 +66,7 @@ class MyContents  {
         this.planeTexture.wrapS = THREE.MirroredRepeatWrapping
         this.planeTexture.wrapT = THREE.MirroredRepeatWrapping
 
-        this.planeMaterial = new THREE.MeshPhongMaterial({ color: this.diffusePlaneColor, 
+        this.planeMaterial = new THREE.MeshPhongMaterial({ color: this.diffusePlaneColor,
             specular: this.specularPlaneColor, emissive: "#000000", shininess: this.planeShininess, map:this.planeTexture})
 
         // spotlight light related attributes
@@ -86,7 +84,6 @@ class MyContents  {
         );
         this.spotlight.position.copy(this.spotlightPosition)
         this.spotlight.target.position.copy(this.spotlightTargetPosition)
-        this.spotlight.visible
 
         // spotlight helper
         this.spotlightHelper = new THREE.SpotLightHelper(this.spotlight);
@@ -204,11 +201,11 @@ class MyContents  {
      */
     updateBackWindow(value) {
         if (value == THREE.ClampToEdgeWrapping) {
-            this.walls.backWallMaterial.map.wrapS = THREE.ClampToEdgeWrapping 
-            this.walls.backWallMaterial.map.wrapT = THREE.ClampToEdgeWrapping 
+            this.walls.backWallMaterial.map.wrapS = THREE.ClampToEdgeWrapping
+            this.walls.backWallMaterial.map.wrapT = THREE.ClampToEdgeWrapping
         } else {
-            this.walls.backWallMaterial.map.wrapS = THREE.RepeatWrapping 
-            this.walls.backWallMaterial.map.wrapT = THREE.RepeatWrapping 
+            this.walls.backWallMaterial.map.wrapS = THREE.RepeatWrapping
+            this.walls.backWallMaterial.map.wrapT = THREE.RepeatWrapping
         }
         this.walls.backWallMaterial.map.needsUpdate = true
     }
@@ -220,7 +217,7 @@ class MyContents  {
     updateMyAxis(value) {
         value ? this.axis.visible = true : this.axis.visible = false
     }
-    
+
     /**
      * updates the diffuse plane color and the material
      * @param {THREE.Color} value
