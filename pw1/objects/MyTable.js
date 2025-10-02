@@ -1,8 +1,12 @@
 import * as THREE from 'three';
 
-// A table ;)
+/**
+ * @param {number} size - Overall scale of the table.
+ * @param {THREE.Vector3} displacement - Vector displacement from the initial position.
+ * @param {THREE.Material|null} material - Material of the table.
+ */
 class MyTable extends THREE.Object3D {
-    constructor(size = 1.0, displacement = new THREE.Vector3(0, 2, 0), material = null) {
+    constructor(size = 1.0, displacement = new THREE.Vector3(0, 0, 0), material) {
         super()
         this.size = size
         this.displacement = displacement
@@ -12,12 +16,6 @@ class MyTable extends THREE.Object3D {
     }
 
     build() {
-        if (!this.material) {
-            this.material = new THREE.MeshPhongMaterial(
-                {color: "#ffff77", specular: "#000000", emissive: "#000000", shininess: 90}
-            )
-        }
-
         const legWidth = this.size / 4
         const legHeight = this.size * 2
         const tableWidth = this.size * 4
