@@ -5,7 +5,7 @@ import { MyWalls } from './objects/MyWalls.js';
 import { MyTable } from './objects/MyTable.js';
 import { MyOldCandle } from './objects/MyOldCandle.js';
 import { MyLudoPiece } from './objects/MyLudoPiece.js';
-import { MyDiceWithSupport } from './objects/MyDiceWithSupport.js';
+import { MyDice } from './objects/MyDice.js';
 
 /**
  *  This class contains the contents of out application
@@ -52,10 +52,11 @@ class MyContents  {
         this.ludo_piece.translateZ(1);
 
         // dice related attributes
-        this.dice = new MyDiceWithSupport();
+        this.dice = new MyDice();
         this.dice.translateY(2.15);
         this.dice.translateX(-0.7);
         this.dice.translateZ(0.7);
+        this.dice.rotation.set(Math.PI / 180 * 25, 0, 0);
     }
 
     /**
