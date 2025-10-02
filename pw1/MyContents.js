@@ -5,6 +5,7 @@ import { MyWalls } from './objects/MyWalls.js';
 import { MyTable } from './objects/MyTable.js';
 import { MyOldCandle } from './objects/MyOldCandle.js';
 import { MyLudoPiece } from './objects/MyLudoPiece.js';
+import { MyDice } from './objects/MyDice.js';
 
 /**
  *  This class contains the contents of out application
@@ -44,10 +45,18 @@ class MyContents  {
         this.planeMaterial = new THREE.MeshPhongMaterial({ color: this.diffusePlaneColor,
             specular: this.specularPlaneColor, emissive: "#000000", shininess: this.planeShininess })
 
+        // ludo piece related attributes
         this.ludo_piece = new MyLudoPiece();
         this.ludo_piece.translateY(2.25);
         this.ludo_piece.translateX(-1);
         this.ludo_piece.translateZ(1);
+
+        // dice related attributes
+        this.dice = new MyDice();
+        this.dice.translateY(2.15);
+        this.dice.translateX(-0.7);
+        this.dice.translateZ(0.7);
+        this.dice.rotation.set(Math.PI / 180 * 25, 0, 0);
     }
 
     /**
@@ -92,7 +101,11 @@ class MyContents  {
         this.planeMesh.position.y = -0;
         this.app.scene.add( this.planeMesh );
 
+        // add ludo piece
         this.app.scene.add(this.ludo_piece);
+
+        // add dice
+        this.app.scene.add(this.dice);
     }
 
     /**
