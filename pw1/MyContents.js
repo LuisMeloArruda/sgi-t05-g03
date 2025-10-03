@@ -41,13 +41,20 @@ class MyContents  {
         // table related attributes
         const tableDisplacement = new THREE.Vector3(0, 0, 0)
         const tableTexture = new THREE.TextureLoader().load('textures/table_texture.jpg')
-        const tableMaterial = new THREE.MeshPhongMaterial(
+        const tableTopMaterial = new THREE.MeshPhongMaterial(
             {color: "#999999", specular: "#000000", emissive: "#000000", shininess: 90, map: tableTexture}
         )
-        this.table = new MyTable(1.0, tableDisplacement, tableMaterial)
-        this.table.material.map.wrapS = THREE.MirroredRepeatWrapping
-        this.table.material.map.wrapT = THREE.MirroredRepeatWrapping
-        this.table.material.map.repeat.set(1,1)
+        const tableLegMaterial = new THREE.MeshPhongMaterial(
+            {color: "#999999", specular: "#eeeeee", emissive: "#000000", shininess: 90, map: tableTexture}
+        )
+        this.table = new MyTable(1.0, tableDisplacement, tableTopMaterial, tableLegMaterial)
+        this.table.tableTopMaterial.map.wrapS = THREE.MirroredRepeatWrapping
+        this.table.tableTopMaterial.map.wrapT = THREE.MirroredRepeatWrapping
+        this.table.tableTopMaterial.map.repeat.set(1,1)
+
+        this.table.tableLegMaterial.map.wrapS = THREE.MirroredRepeatWrapping
+        this.table.tableLegMaterial.map.wrapT = THREE.MirroredRepeatWrapping
+        this.table.tableLegMaterial.map.repeat.set(1,1)
 
         // old candle related attributes
         const candleMaterial = new THREE.MeshPhongMaterial(

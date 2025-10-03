@@ -6,11 +6,12 @@ import * as THREE from 'three';
  * @param {THREE.Material|null} material - Material of the table.
  */
 class MyTable extends THREE.Object3D {
-    constructor(size = 1.0, displacement = new THREE.Vector3(0, 0, 0), material) {
+    constructor(size = 1.0, displacement = new THREE.Vector3(0, 0, 0), tableTopMaterial, tableLegMaterial) {
         super()
         this.size = size
         this.displacement = displacement
-        this.material = material
+        this.tableTopMaterial = tableTopMaterial
+        this.tableLegMaterial = tableLegMaterial
         this.mesh = null
         this.build()
     }
@@ -24,12 +25,12 @@ class MyTable extends THREE.Object3D {
         const leg = new THREE.CylinderGeometry(legWidth, legWidth, legHeight)
         const tableTop = new THREE.BoxGeometry(tableWidth, tableHeight, tableWidth)
 
-        const leg1 = new THREE.Mesh(leg, this.material)
-        const leg2 = new THREE.Mesh(leg, this.material)
-        const leg3 = new THREE.Mesh(leg, this.material)
-        const leg4 = new THREE.Mesh(leg, this.material)
+        const leg1 = new THREE.Mesh(leg, this.tableLegMaterial)
+        const leg2 = new THREE.Mesh(leg, this.tableLegMaterial)
+        const leg3 = new THREE.Mesh(leg, this.tableLegMaterial)
+        const leg4 = new THREE.Mesh(leg, this.tableLegMaterial)
 
-        const tableTopMesh = new THREE.Mesh(tableTop, this.material)
+        const tableTopMesh = new THREE.Mesh(tableTop, this.tableTopMaterial)
 
         // Transformations
         const offset = tableWidth / 2 - legWidth
