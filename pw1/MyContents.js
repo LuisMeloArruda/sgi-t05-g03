@@ -23,7 +23,7 @@ class MyContents  {
 
         // Landscape related
         const lsTex = new THREE.TextureLoader().load('textures/landxp.jpg');
-        const lsMat = new THREE.MeshPhongMaterial({map: lsTex,});
+        const lsMat = new THREE.MeshPhongMaterial({map: lsTex});
         const fract = 7;
         const lsGeo = new THREE.PlaneGeometry(190 / fract, 100 / fract);
         this.lsMesh = new THREE.Mesh(lsGeo, lsMat);
@@ -164,6 +164,13 @@ class MyContents  {
         // add spotlight helper
         this.app.scene.add(this.spotlightHelper)
 
+        // add lslight
+        const lsLight = new THREE.DirectionalLight(0xff_ff_ff, 5);
+        lsLight.target = this.lsMesh;
+        lsLight.castShadow = true;
+        lsLight.translateX(25);
+        this.app.scene.add(lsLight);
+                
         // add ls
         this.app.scene.add(this.lsMesh);
 
