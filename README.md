@@ -1,4 +1,4 @@
-# SGI 2024/2025
+# SGI 2025/2026
 
 ## Group T05G03
 
@@ -22,21 +22,16 @@ Run the script in project root:
 
 ## Projects
 
-### [TP1 - ThreeJS Basics](tp1)
+### [PW1 - ThreeJS Basics](pw1)
 
-- (items briefly describing main strong points)
-- Scene
-  - (Brief description of the created scene)
-  - (relative link to the scene)
+A chill room for playing table games with friends.  
+It includes two windows, two pictures, a landscape, a table, a ludo piece, a dice, a candle and a light.  
+Useful for testing the basics of ThreeJS.
 
----
-
-### [TP2 - ...](tp2)
-
-- (items briefly describing main strong points)
+> [Moodle Answers are available in the Wiki.](https://gitlab.up.pt/meic-sgi/sgi-2025-2026/t05/sgi-t05-g03/-/wikis/home#moodle-answers-for-pw1)
 
 ---
 
-### [TP3 - ...](tp3)
+### [PW2 - ...](pw2)
 
 - (items briefly describing main strong points)

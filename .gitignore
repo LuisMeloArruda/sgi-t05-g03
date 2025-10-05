@@ -1,5 +1,8 @@
+# Editors / IDEs
 1
 **/1
+.zed/
+.vscode/
 
 # Python
 .venv
