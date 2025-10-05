@@ -5,6 +5,8 @@ import { MyTable } from './objects/MyTable.js';
 import { MyOldCandle } from './objects/MyOldCandle.js';
 import { MyLudoPiece } from './objects/MyLudoPiece.js';
 import { MyDice } from './objects/MyDice.js';
+import { MyPainting } from './objects/MyPainting.js';
+import { MyWallLight } from './objects/MyWallLight.js';
 
 /**
  *  This class contains the contents of out application
@@ -108,6 +110,26 @@ class MyContents  {
         this.dice.translateX(-0.7);
         this.dice.translateZ(0.7);
         this.dice.rotation.set(Math.PI / 180 * 25, 0, 0);
+        
+        // painting related attributes
+        const left_picture = new THREE.TextureLoader().load('textures/left_painting.jpeg');
+        const left_material = new THREE.MeshPhongMaterial({map: left_picture});
+        this.left_painting = new MyPainting(left_material);
+        this.left_painting.translateX(-3);
+        this.left_painting.translateY(4);
+        this.left_painting.translateZ(-7.49);
+        
+        const right_picture = new THREE.TextureLoader().load('textures/right_painting.jpeg');
+        const right_material = new THREE.MeshPhongMaterial({map: right_picture});
+        this.right_painting = new MyPainting(right_material);
+        this.right_painting.translateX(3);
+        this.right_painting.translateY(4);
+        this.right_painting.translateZ(-7.49);
+        
+        // wall light related attributes
+        this.wall_light = new MyWallLight();
+        this.wall_light.translateZ(7.3);
+        this.wall_light.translateY(4);
     }
 
     /**
@@ -157,6 +179,13 @@ class MyContents  {
 
         // add dice
         this.app.scene.add(this.dice);
+        
+        // add paintings
+        this.app.scene.add(this.left_painting);
+        this.app.scene.add(this.right_painting);
+        
+        // add wall light
+        this.app.scene.add(this.wall_light);
     }
 
     /**
