@@ -21,6 +21,16 @@ class MyContents  {
         this.app = app
         this.axis = null
 
+        // Landscape related
+        const lsTex = new THREE.TextureLoader().load('textures/landxp.jpg');
+        const lsMat = new THREE.MeshPhongMaterial({map: lsTex,});
+        const fract = 7;
+        const lsGeo = new THREE.PlaneGeometry(190 / fract, 100 / fract);
+        this.lsMesh = new THREE.Mesh(lsGeo, lsMat);
+        this.lsMesh.translateX(20);
+        this.lsMesh.translateY(3);
+        this.lsMesh.rotateY(-Math.PI / 2);
+
         // walls related attributes
         const wallMaterial = new THREE.MeshPhongMaterial(
             {color: "#999999", specular: "#000000", emissive: "#000000", shininess: 90}
@@ -153,6 +163,9 @@ class MyContents  {
 
         // add spotlight helper
         this.app.scene.add(this.spotlightHelper)
+
+        // add ls
+        this.app.scene.add(this.lsMesh);
 
         // add walls
         this.app.scene.add(this.walls)
