@@ -19,15 +19,13 @@ class MyWalls extends THREE.Object3D {
     }
 
     build() {
-        if (!this.material) {
-
-        }
 
         const wall = new THREE.PlaneGeometry(this.width, this.height)
+        const donut = new THREE.RingGeometry(0.4, 1, 4, 32, Math.PI / 4);
 
         const leftWall = new THREE.Mesh(wall, this.material)
         const rightWall = new THREE.Mesh(wall, this.material)
-        const frontWall = new THREE.Mesh(wall, this.material)
+        const frontWall = new THREE.Mesh(donut, this.material)
         const backWall = new THREE.Mesh(wall, this.backWallMaterial)
 
         // Transformations
@@ -40,6 +38,7 @@ class MyWalls extends THREE.Object3D {
 
         frontWall.position.x += offset
         frontWall.rotateY(-Math.PI / 2)
+        frontWall.scale.set(this.width*Math.cos(Math.PI/4), this.height*Math.cos(Math.PI/4), 1);
 
         backWall.position.x -= offset
         backWall.rotateY(Math.PI / 2)
