@@ -5,6 +5,8 @@ import { MyTable } from './objects/MyTable.js';
 import { MyOldCandle } from './objects/MyOldCandle.js';
 import { MyLudoPiece } from './objects/MyLudoPiece.js';
 import { MyDice } from './objects/MyDice.js';
+import { MyPainting } from './objects/MyPainting.js';
+import { MyWallLight } from './objects/MyWallLight.js';
 
 /**
  *  This class contains the contents of out application
@@ -18,6 +20,16 @@ class MyContents  {
     constructor(app) {
         this.app = app
         this.axis = null
+
+        // Landscape related
+        const lsTex = new THREE.TextureLoader().load('textures/landxp.jpg');
+        const lsMat = new THREE.MeshPhongMaterial({map: lsTex});
+        const fract = 7;
+        const lsGeo = new THREE.PlaneGeometry(190 / fract, 100 / fract);
+        this.lsMesh = new THREE.Mesh(lsGeo, lsMat);
+        this.lsMesh.translateX(20);
+        this.lsMesh.translateY(3);
+        this.lsMesh.rotateY(-Math.PI / 2);
 
         // walls related attributes
         const wallMaterial = new THREE.MeshPhongMaterial(
@@ -41,13 +53,20 @@ class MyContents  {
         // table related attributes
         const tableDisplacement = new THREE.Vector3(0, 0, 0)
         const tableTexture = new THREE.TextureLoader().load('textures/table_texture.jpg')
-        const tableMaterial = new THREE.MeshPhongMaterial(
+        const tableTopMaterial = new THREE.MeshPhongMaterial(
             {color: "#999999", specular: "#000000", emissive: "#000000", shininess: 90, map: tableTexture}
         )
-        this.table = new MyTable(1.0, tableDisplacement, tableMaterial)
-        this.table.material.map.wrapS = THREE.MirroredRepeatWrapping
-        this.table.material.map.wrapT = THREE.MirroredRepeatWrapping
-        this.table.material.map.repeat.set(1,1)
+        const tableLegMaterial = new THREE.MeshPhongMaterial(
+            {color: "#999999", specular: "#eeeeee", emissive: "#000000", shininess: 90, map: tableTexture}
+        )
+        this.table = new MyTable(1.0, tableDisplacement, tableTopMaterial, tableLegMaterial)
+        this.table.tableTopMaterial.map.wrapS = THREE.MirroredRepeatWrapping
+        this.table.tableTopMaterial.map.wrapT = THREE.MirroredRepeatWrapping
+        this.table.tableTopMaterial.map.repeat.set(1,1)
+
+        this.table.tableLegMaterial.map.wrapS = THREE.MirroredRepeatWrapping
+        this.table.tableLegMaterial.map.wrapT = THREE.MirroredRepeatWrapping
+        this.table.tableLegMaterial.map.repeat.set(1,1)
 
         // old candle related attributes
         const candleMaterial = new THREE.MeshPhongMaterial(
@@ -101,6 +120,26 @@ class MyContents  {
         this.dice.translateX(-0.7);
         this.dice.translateZ(0.7);
         this.dice.rotation.set(Math.PI / 180 * 25, 0, 0);
+        
+        // painting related attributes
+        const left_picture = new THREE.TextureLoader().load('textures/left_painting.jpeg');
+        const left_material = new THREE.MeshPhongMaterial({map: left_picture});
+        this.left_painting = new MyPainting(left_material);
+        this.left_painting.translateX(-3);
+        this.left_painting.translateY(4);
+        this.left_painting.translateZ(-7.49);
+        
+        const right_picture = new THREE.TextureLoader().load('textures/right_painting.jpeg');
+        const right_material = new THREE.MeshPhongMaterial({map: right_picture});
+        this.right_painting = new MyPainting(right_material);
+        this.right_painting.translateX(3);
+        this.right_painting.translateY(4);
+        this.right_painting.translateZ(-7.49);
+        
+        // wall light related attributes
+        this.wall_light = new MyWallLight();
+        this.wall_light.translateZ(7.3);
+        this.wall_light.translateY(4);
     }
 
     /**
@@ -124,6 +163,16 @@ class MyContents  {
 
         // add spotlight helper
         this.app.scene.add(this.spotlightHelper)
+
+        // add lslight
+        const lsLight = new THREE.DirectionalLight(0xff_ff_ff, 5);
+        lsLight.target = this.lsMesh;
+        lsLight.castShadow = true;
+        lsLight.translateX(25);
+        this.app.scene.add(lsLight);
+                
+        // add ls
+        this.app.scene.add(this.lsMesh);
 
         // add walls
         this.app.scene.add(this.walls)
@@ -150,6 +199,13 @@ class MyContents  {
 
         // add dice
         this.app.scene.add(this.dice);
+        
+        // add paintings
+        this.app.scene.add(this.left_painting);
+        this.app.scene.add(this.right_painting);
+        
+        // add wall light
+        this.app.scene.add(this.wall_light);
     }
 
     /**
