@@ -1,11 +1,11 @@
-# SGI 2025/2026 - PW2
+# SGI 2024/2025 - TP1
 
 ## Group: T0xG0y
 
 | Name             | Number    | E-Mail             |
 | ---------------- | --------- | ------------------ |
-| John Doe         | 202201010 | ...                |
-| Jane Doe         | 202201011 | ...                |
+| John Doe         | 201901010 | ...                |
+| Jane Doe         | 201901011 | ...                |
 
 ----
 ## Project information
