@@ -24,6 +24,8 @@ Run the script in project root:
 
 ### [PW1 - ThreeJS Basics](pw1)
 
+![scene](./pw1/screenshots/scene.png)
+
 A chill room for playing table games with friends.  
 It includes two windows, two pictures, a landscape, a table, a ludo piece, a dice, a candle and a light.  
 Useful for testing the basics of ThreeJS.

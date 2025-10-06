@@ -29,4 +29,3 @@ class MyWallLight extends THREE.Object3D {
 }
 
 export { MyWallLight };
-
