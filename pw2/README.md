@@ -1,20 +1,21 @@
-# SGI 2024/2025 - TP1
+# SGI 2025/2026 - PW1
 
-## Group: T0xG0y
+## Group: T05G03
 
-| Name             | Number    | E-Mail             |
-| ---------------- | --------- | ------------------ |
-| John Doe         | 201901010 | ...                |
-| Jane Doe         | 201901011 | ...                |
+| Name                         | Number    | E-Mail            |
+| ---------------------------- | --------- | ----------------- |
+| Guilherme Duarte Silva Matos | 202208755 | up202208755@up.pt |
+| João Vítor da Costa Ferreira | 202208393 | up202208393@up.pt |
+| Luís Miguel Melo Arruda      | 202206970 | up202206970@up.pt |
 
 ----
-## Project information
+## Project information TODO
 
 - (items describing main strong points)
 - Scene
   - (Brief description of the created scene)
   - (relative link to the scene)
 ----
-## Issues/Problems
+## Issues/Problems TODO
 
 - (items describing unimplemented features, bugs, problems, etc.)

@@ -13,6 +13,10 @@ class MyContents  {
     constructor(app) {
         this.app = app
         this.axis = null
+
+        this.planeMaterial = new THREE.MeshPhongMaterial({
+            color: "#0000ff", specular: "#000000", emissive: "#000000", shininess: 90
+        })
     }
 
     /**
@@ -38,6 +42,8 @@ class MyContents  {
         this.planeMesh.position.y = -0;
         this.app.scene.add( this.planeMesh );
     }
+
+    
 
     /**
      * updates the contents
