@@ -113,7 +113,7 @@ class MyApp  {
                 this.controls = new FlyControls(this.activeCamera, this.renderer.domElement)
                 this.controls.autoForward = false
                 this.controls.movementSpeed = 20
-                this.controls.dragToLook = true
+                this.controls.dragToLook = false
                 this.controls.rollSpeed = 1
             }
             // are the controls yet?
