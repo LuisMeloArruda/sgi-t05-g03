@@ -103,10 +103,14 @@ class MyApp  {
         // camera changed?
         if (this.lastCameraName !== this.activeCameraName) {
             if (this.controls) {
-                this.controls = null
-                this.renderer.domElement.removeEventListener('click', this._onCanvasClick)
-                this.contents.submarine.dispose()
+                if (this.controls.dispose) {
+                    this.controls.dispose();
+                }
+                this.controls = null;
+                this.renderer.domElement.removeEventListener('click', this._onCanvasClick);
+                this.contents.submarine.dispose();
             }
+            
 
             this.lastCameraName = this.activeCameraName;
             this.activeCamera = this.cameras[this.activeCameraName]
