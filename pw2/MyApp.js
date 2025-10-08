@@ -81,6 +81,11 @@ class MyApp  {
         let submarineCamera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000)
         submarineCamera.position.set(0,5,10)
         this.cameras['Submarine'] = submarineCamera
+
+        // Create a fixed perspective camera
+        let fixedCamera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000)
+        fixedCamera.position.set(0,10,15)
+        this.cameras['Fixed'] = fixedCamera
     }
 
     /**
@@ -120,27 +125,44 @@ class MyApp  {
             // among other things
             this.onResize()
 
+            switch (this.activeCameraName) {
+                case 'FreeFly':
+                    // Fly controls allow the camera to fly in scene
+                    this.controls = new FlyControls(this.activeCamera, this.renderer.domElement)
+                    this.controls.autoForward = false
+                    this.controls.movementSpeed = 20
+                    this.controls.dragToLook = false
+                    this.controls.rollSpeed = 1
+                    // Mouse lock down
+                    this.renderer.domElement.addEventListener('click', this._onCanvasClick);
+                    break;
+                case 'Submarine':
+                    // Orbit controls allow the camera to orbit around a target.
+                    this.controls = new OrbitControls( this.activeCamera, this.renderer.domElement );
+                    this.controls.enableZoom = true
+                    // for soft camera rotation while in submarine mode
+                    this.contents.submarine.setupListeners()
+                    break;
+                case 'Fixed':
+                    this.controls = new OrbitControls( this.activeCamera, this.renderer.domElement );
+                    this.controls.enableZoom = false
+                    this.controls.enableRotate = false
+                    this.contents.submarine.setupListeners()
+                    break;
+                default:
+                    this.controls.object = this.activeCamera
+            }
+
             if (this.activeCameraName === 'FreeFly') {
-                // Fly controls allow the camera to fly in scene
-                this.controls = new FlyControls(this.activeCamera, this.renderer.domElement)
-                this.controls.autoForward = false
-                this.controls.movementSpeed = 20
-                this.controls.dragToLook = false
-                this.controls.rollSpeed = 1
-                // Mouse lock down
-                this.renderer.domElement.addEventListener('click', this._onCanvasClick);
+
             }
             else if (this.activeCameraName === 'Submarine') {
-                // Orbit controls allow the camera to orbit around a target.
-                this.controls = new OrbitControls( this.activeCamera, this.renderer.domElement );
-                this.controls.enableZoom = true
-                // for soft camera rotation while in submarine mode
-                this.contents.submarine.setupListeners()
+
             }
-            else {
-                this.controls.object = this.activeCamera
-                
+            else if (this.activeCameraName === 'Fixed') {
+
             }
+        
         }
     }
 
