@@ -31,6 +31,9 @@ class MyApp  {
         this.gui = null
         this.axis = null
         this.contents == null
+
+        // Listener for mouse lock down
+        this._onCanvasClick = () => {this.renderer.domElement.requestPointerLock()}
     }
     /**
      * initializes the application
@@ -46,18 +49,12 @@ class MyApp  {
         document.body.appendChild(this.stats.dom)
 
         this.initCameras();
-        this.setActiveCamera('FreeFly')
+        this.setActiveCamera('Submarine')
 
         // Create a renderer with Antialiasing
         this.renderer = new THREE.WebGLRenderer({antialias:true});
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setClearColor("#000000");
-
-        // Mouse lock down
-        const canvas = this.renderer.domElement;
-        canvas.addEventListener('click', () => {
-            canvas.requestPointerLock();
-        });
 
         // Configure renderer size
         this.renderer.setSize( window.innerWidth, window.innerHeight );
@@ -77,8 +74,13 @@ class MyApp  {
 
         // Create a free fly perspective camera Q and E roll. WASD for movement. Mouse to look around
         const freeFly = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000 )
-        freeFly.position.set(0,0,10)
+        freeFly.position.set(0,5,10)
         this.cameras['FreeFly'] = freeFly
+
+        // Create a submarine perspective camera
+        let submarineCamera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000)
+        submarineCamera.position.set(0,5,10)
+        this.cameras['Submarine'] = submarineCamera
     }
 
     /**
@@ -100,6 +102,12 @@ class MyApp  {
 
         // camera changed?
         if (this.lastCameraName !== this.activeCameraName) {
+            if (this.controls) {
+                this.controls = null
+                this.renderer.domElement.removeEventListener('click', this._onCanvasClick)
+                this.contents.submarine.dispose()
+            }
+
             this.lastCameraName = this.activeCameraName;
             this.activeCamera = this.cameras[this.activeCameraName]
             document.getElementById("camera").innerHTML = this.activeCameraName
@@ -115,16 +123,19 @@ class MyApp  {
                 this.controls.movementSpeed = 20
                 this.controls.dragToLook = false
                 this.controls.rollSpeed = 1
+                // Mouse lock down
+                this.renderer.domElement.addEventListener('click', this._onCanvasClick);
             }
-            // are the controls yet?
-            else if (this.controls === null) {
+            else if (this.activeCameraName === 'Submarine') {
                 // Orbit controls allow the camera to orbit around a target.
                 this.controls = new OrbitControls( this.activeCamera, this.renderer.domElement );
-                this.controls.enableZoom = true;
-                this.controls.update();
+                this.controls.enableZoom = true
+                // for soft camera rotation while in submarine mode
+                this.contents.submarine.setupListeners()
             }
             else {
                 this.controls.object = this.activeCamera
+                
             }
         }
     }
@@ -166,11 +177,11 @@ class MyApp  {
             this.contents.update()
         }
 
+        // required if controls.enableDamping or controls.autoRotate are set to true 
         if (this.activeCameraName === 'FreeFly') {
             const delta = this.clock.getDelta()
             this.controls.update(delta);
         }
-        // required if controls.enableDamping or controls.autoRotate are set to true 
         else {
             this.controls.update();
         }
