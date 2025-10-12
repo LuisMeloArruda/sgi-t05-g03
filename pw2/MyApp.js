@@ -6,6 +6,19 @@ import { MyContents } from './MyContents.js';
 import { MyGuiInterface } from './MyGuiInterface.js';
 import Stats from 'three/addons/libs/stats.module.js'
 
+
+/**
+ * Traverse Children of an Object3d and update their wireframe
+ */
+function traverseChildrenWireframe(listOfChildren, isWireframe) {
+    for (let child of listOfChildren) {
+        traverseChildrenWireframe(child.children, isWireframe);
+        if (child.isMesh) {
+            child.material.wireframe = isWireframe;
+        }
+    }
+}
+
 /**
  * This class contains the application object
  */
@@ -24,6 +37,10 @@ class MyApp  {
         this.cameras = []
         this.frustumSize = 20
         this.clock = new THREE.Clock();
+
+        // polygonal mode stuff
+        this.polygonalMode = null
+        this.previousPolygonalMode = null
 
         // other attributes
         this.renderer = null
@@ -47,6 +64,8 @@ class MyApp  {
 
         this.initCameras();
         this.setActiveCamera('FreeFly')
+
+        this.initPolygonalMode();
 
         // Create a renderer with Antialiasing
         this.renderer = new THREE.WebGLRenderer({antialias:true});
@@ -129,6 +148,33 @@ class MyApp  {
         }
     }
 
+    initPolygonalMode() {
+        this.previousPolygonalMode = 'Fill';
+        this.polygonalMode = 'Fill';
+    }
+
+    syncPolygonalMode() {
+        this.previousPolygonalMode = this.polygonalMode;
+    }
+
+    detectPolygonalModeChange() {
+        return this.polygonalMode !== this.previousPolygonalMode;
+    }
+        
+    updatePolygonalMode() {
+        if (this.detectPolygonalModeChange()) {
+            this.syncPolygonalMode();
+            switch (this.polygonalMode) {
+                case 'Fill':
+                    traverseChildrenWireframe(this.scene.children, false);
+                break;
+                case 'Wireframe':
+                    traverseChildrenWireframe(this.scene.children, true);
+                break;
+            }
+        }
+    }
+
     /**
      * the window resize handler
      */
@@ -160,6 +206,8 @@ class MyApp  {
     render () {
         this.stats.begin()
         this.updateCameraIfRequired()
+
+        this.updatePolygonalMode();
 
         // update the animation if contents were provided
         if (this.activeCamera !== undefined && this.activeCamera !== null) {
