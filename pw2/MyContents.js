@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import { MyAxis } from './MyAxis.js';
 import { MySubmarine } from './objects/MySubmarine.js';
+import { MyRock } from './objects/MyRock.js';
+import { MyTerrainSegment } from './objects/MyTerrainSegment.js';
+import { MyCoral } from './objects/MyCoral.js';
+import { MyBubble } from './objects/MyBubble.js';
+import { MyFish } from './objects/MyFish.js';
 
 /**
  *  This class contains the contents of out application
@@ -14,6 +19,66 @@ class MyContents  {
     constructor(app) {
         this.app = app
         this.axis = null
+        
+        this.terrain = new THREE.Group();
+        
+        const segments = new THREE.Group();
+        const segment1 = new MyTerrainSegment();
+        segment1.scale.set(5, 5, 5);
+        const segment2 = new MyTerrainSegment();
+        segment2.scale.set(2, 2, 2);
+        segment2.translateY(1);
+        segment2.translateX(2.5);
+        segments.add(segment1, segment2);
+        
+        const rocks = new THREE.Group();
+        const rock1 = new MyRock();
+        rock1.scale.set(1, 1, 0.5);
+        const rock2 = new MyRock();
+        rock2.scale.set(0.5, 1, 1);
+        rock2.translateX(2);
+        rocks.add(rock1, rock2);
+        rocks.translateX(-1);
+        rocks.translateY(0.5);
+        rocks.translateZ(-1);
+        
+        this.terrain.translateY(0.1);
+        this.terrain.add(segments, rocks);
+        
+        this.corals = new THREE.Group();
+        const coral1 = new MyCoral();
+        coral1.scale.set(0.1, 1, 0.1);
+        const coral2 = new MyCoral();
+        coral2.scale.set(0.1, 1, 0.1);
+        coral2.translateX(0.2);
+        coral2.rotateZ(-Math.PI / 180 * 20);
+        this.corals.add(coral1, coral2);
+        this.corals.translateX(-2);
+        this.corals.translateY(0.5);
+        this.corals.translateZ(2);
+
+        this.bubbles = new THREE.Group();
+        const bubble1 = new MyBubble();
+        bubble1.scale.set(0.1, 0.1, 0.1);
+        const bubble2 = new MyBubble();
+        bubble2.scale.set(0.1, 0.1, 0.1);
+        bubble2.translateX(0.3);
+        bubble2.translateY(0.3);
+        this.bubbles.add(bubble1, bubble2);
+        this.bubbles.translateX(-2);
+        this.bubbles.translateY(1.5);
+        this.bubbles.translateZ(2);
+        
+        this.fishes = new THREE.Group();
+        const fish1 = new MyFish();
+        fish1.scale.set(0.3, 0.3, 0.3);
+        const fish2 = new MyFish();
+        fish2.scale.set(0.3, 0.3, 0.3);
+        fish2.translateX(0.5);
+        fish2.translateY(0.5);
+        fish2.translateZ(0.5);
+        this.fishes.add(fish1, fish2);
+        this.fishes.translateY(1.5);
 
         this.planeMaterial = new THREE.MeshPhongMaterial({
             color: "#0000ff", specular: "#000000", emissive: "#000000", shininess: 90
@@ -53,6 +118,11 @@ class MyContents  {
 
         // add submarine
         this.app.scene.add(this.submarine);
+        
+        this.app.scene.add(this.terrain);
+        this.app.scene.add(this.corals);
+        this.app.scene.add(this.bubbles);
+        this.app.scene.add(this.fishes);
     }
 
     /**
