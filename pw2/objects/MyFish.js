@@ -36,7 +36,7 @@ class MyFish extends THREE.Object3D {
         this.height = height;
         this.depth = depth;
         this.material = material;
-        this.base_vertices = 3;
+        this.base_vertices = 5;
         this.build();
     }
     
@@ -51,9 +51,7 @@ class MyFish extends THREE.Object3D {
         this.add(body);
     }
     
-    build_body() {
-        // BUG: Geometry badly constructed; only 2 lines are visible in wireframe mode.
-        
+    build_body() {        
         let vertices = [
             -this.width / 2, 0, 0,
             this.width / 2, 0, 0
