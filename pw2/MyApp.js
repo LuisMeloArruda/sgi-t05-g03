@@ -166,7 +166,7 @@ class MyApp  {
                     this.controls = new OrbitControls( this.activeCamera, this.renderer.domElement );
                     this.controls.enableZoom = false
                     this.controls.enableRotate = false
-                    this.contents.submarine.setupListeners()
+                    this.contents.submarineGroup.setupListeners()
                     break;
                 default:
                     this.controls.object = this.activeCamera
