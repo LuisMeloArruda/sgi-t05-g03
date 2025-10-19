@@ -4,8 +4,8 @@ import * as THREE from "three";
 class MyCoral extends THREE.Object3D {
 
     constructor(
-        material = new THREE.MeshBasicMaterial({color: 0xea76cb, side: THREE.DoubleSide}),
-        complexity = 10,
+        material = new THREE.MeshPhongMaterial({color: 0xea76cb, side: THREE.DoubleSide}),
+        complexity = 15,
     ) {
         super();
         this.material = material;
@@ -46,16 +46,16 @@ class MyCoral extends THREE.Object3D {
         
         const rules = {
             'R': [
-                {prob: 0.90, rule: 'CC'},
-                {prob: 0.10, rule: 'RR'},
+                {prob: 0.95, rule: 'EC'},
+                {prob: 0.05, rule: 'ER'},
             ],
             'C': [
-                {prob: 0.30, rule: 'CC'},
-                {prob: 0.20, rule: '[+?C][-!C]'},
-                {prob: 0.20, rule: '[+^C][-&C]'},
-                {prob: 0.15, rule: '[?^C][!&C]'},
-                {prob: 0.10, rule: '[++??&C][--!!&C][+?^^C]'},
-                {prob: 0.05, rule: 'E'},
+                {prob: 0.41, rule: 'EC'},
+                {prob: 0.17, rule: '[+?C][-!C]'},
+                {prob: 0.17, rule: '[+^C][-&C]'},
+                {prob: 0.17, rule: '[?^C][!&C]'},
+                {prob: 0.07, rule: '[++??&C][--!!&C][+?^^C]'},
+                {prob: 0.01, rule: 'E'},
             ],
             'E': [
                 {prob: 1, rule: 'E'},
@@ -78,7 +78,6 @@ class MyCoral extends THREE.Object3D {
             coralString = nextStr;
         }
 
-        console.log("Generated string: ", coralString);
         
         const stack = [];
         let turtle = {
