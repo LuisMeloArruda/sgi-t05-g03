@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { MyAxis } from './MyAxis.js';
-import { MySubmarine } from './objects/MySubmarine.js';
+import { MySubmarineControler, MyMidSubmarine, MyBasicSubmarine} from './objects/MySubmarine.js';
 import { MyRock } from './objects/MyRock.js';
 import { MyTerrainSegment } from './objects/MyTerrainSegment.js';
 import { MyCoral } from './objects/MyCoral.js';
@@ -118,7 +118,20 @@ class MyContents  {
         this.submarineMaterial = new THREE.MeshPhongMaterial({
             color: "#ffff00", specular: "#000000", emissive: "#000000", shininess: 90
         })
-        this.submarine = new MySubmarine(1, new THREE.Vector3(0, 0, 0), this.submarineMaterial)
+        this.submarineControler = new MySubmarineControler(new THREE.Vector3(0, 0, 0))
+        this.submarineLOD = new THREE.LOD();
+        this.submarineConfigs = [
+            {
+              position: new THREE.Vector3(0, 0, 0),
+              scale: new THREE.Vector3(1, 1, 1),
+              rotation: new THREE.Euler(0, 0, 0),
+            },
+          ];
+          
+          this.submarineConstructors = [
+            () => new MyMidSubmarine(1, this.submarineMaterial),
+            () => new MyBasicSubmarine(1, this.submarineMaterial),
+          ];
 
     }
 
@@ -147,7 +160,8 @@ class MyContents  {
         this.app.scene.add( this.planeMesh );
 
         // add submarine
-        this.app.scene.add(this.submarine)
+        this.createLODs(this.submarineConfigs, this.submarineConstructors, [0, 20], this.submarineLOD);
+        this.app.scene.add(this.submarineLOD);
         
         // add terrain
         this.createLODs(this.segmentsConfig, this.segmentsConstructors, [0], this.terrainGroup)
@@ -174,7 +188,7 @@ class MyContents  {
      * @param {Array<Object>} configs - Each with position, scale, rotation (Vector3, Vector3, Euler)
      * @param {Array<Function>} constructors - Functions returning mesh per LOD level
      * @param {Array<number>} distances - Distances for each LOD level
-     * @param {THREE.Object3D} targetParent - Object3D to add the LODs to
+     * @param {THREE.Group} targetParent - Group to add the LODs to
      */
     createLODs(configs, constructors, distances, targetParent) {
         for (const cfg of configs) {
@@ -200,10 +214,18 @@ class MyContents  {
         const controls = this.app.controls;
         
         const offset = camera.position.clone().sub(controls.target);
-        controls.target.copy(this.submarine.position);
-        camera.position.copy(this.submarine.position.clone().add(offset));
+        controls.target.copy(this.submarineControler.position);
+        camera.position.copy(this.submarineControler.position.clone().add(offset));
         
         controls.update();
+    }
+
+    /**
+     * synchronization submarine LOD and Controller
+     */
+    syncsSubmarineLOD() {
+        this.submarineLOD.position.copy(this.submarineControler.position);
+        this.submarineLOD.rotation.copy(this.submarineControler.rotation);
     }
 
     /**
@@ -212,7 +234,9 @@ class MyContents  {
      * 
      */
     update() {
-        this.submarine.update();
+        this.submarineControler.update();
+        this.syncsSubmarineLOD()
+
         if (this.app.activeCameraName === 'Submarine') this.updateSubmarineCamera();
     }
 }
