@@ -5,7 +5,7 @@ class MyCoral extends THREE.Object3D {
 
     constructor(
         material = new THREE.MeshBasicMaterial({color: 0xea76cb, side: THREE.DoubleSide}),
-        complexity = 30,
+        complexity = 10,
     ) {
         super();
         this.material = material;
@@ -46,7 +46,7 @@ class MyCoral extends THREE.Object3D {
         
         const rules = {
             'R': [
-                {prob: 0.90, rule: 'RCC'},
+                {prob: 0.90, rule: 'CC'},
                 {prob: 0.10, rule: 'RR'},
             ],
             'C': [
