@@ -4,17 +4,18 @@ import * as THREE from "three";
 class MyCoral extends THREE.Object3D {
 
     constructor(
-        material = new THREE.MeshBasicMaterial({color: 0xea76cb, side: THREE.DoubleSide})
+        material = new THREE.MeshBasicMaterial({color: 0xea76cb, side: THREE.DoubleSide}),
+        complexity = 30,
     ) {
         super();
         this.material = material;
-        this.build();
+        this.build(complexity);
     }
 
-    build() {
+    build(complexity) {
         // TODO
 
-        const mesh = this.createObject();
+        const mesh = this.createObject( complexity);
         
         this.add(mesh);
     }
