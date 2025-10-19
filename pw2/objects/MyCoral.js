@@ -21,7 +21,7 @@ class MyCoral extends THREE.Object3D {
     }
 
     chooseNextRule(options) {
-        const total = options.reduce((acc, opt) => sum + opt.prob, 0);
+        const total = options.reduce((acc, opt) => acc + opt.prob, 0);
 
         let rand = Math.random() * total;
 
