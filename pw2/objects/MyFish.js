@@ -46,15 +46,24 @@ class MyFish extends THREE.Object3D {
     }
     
     build() {
+        // TODO: Remove magic numbers 0.05 and 0.2
         const body = this.build_body();
+        
         const tail = this.build_tail();
-        const upper_fin = this.build_upper_fin();
-        const bottom_left_fin = this.build_bottom_left_fin();
-        const bottom_right_fin = this.build_bottom_right_fin();
         
-        // TODO: Transformations
+        const dorsal_fin = this.build_upper_fin();
         
-        this.add(body, tail, upper_fin);
+        let left_pectoral_fin = this.build_pectoral_fin();
+        left_pectoral_fin.translateZ(this.depth / 2 - 0.05);
+        left_pectoral_fin.translateX(-this.body_width * 0.2);
+        left_pectoral_fin.rotateY(- Math.PI / 180 * 20);
+        
+        let right_pectoral_fin = this.build_pectoral_fin();
+        right_pectoral_fin.translateZ(- this.depth / 2 + 0.05);
+        right_pectoral_fin.translateX(-this.body_width * 0.2);
+        right_pectoral_fin.rotateY(Math.PI / 180 * 20);
+        
+        this.add(body, tail, dorsal_fin, left_pectoral_fin, right_pectoral_fin);
     }
     
     build_body() {        
@@ -130,12 +139,26 @@ class MyFish extends THREE.Object3D {
         return mesh;
     }
     
-    build_bottom_left_fin() {
-        // TODO
-    }
-    
-    build_bottom_right_fin() {
-        // TODO
+    // TODO: Parameterize the pectoral fin
+    build_pectoral_fin() {
+        const vertices = [
+            0, 0, 0,
+            0.2, 0, 0,
+            0.1, -0.1, 0,
+            0, -0.05, 0,
+        ];
+        
+        const indices = [
+            0, 3, 2,
+            1, 0, 2,
+        ];
+        
+        let geometry = new THREE.BufferGeometry();
+        geometry.setIndex( indices );
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ))
+        const mesh = new THREE.Mesh(geometry, this.material);
+        return mesh;
     }
 }
+
 export { MyBasicFish, MyFish };
