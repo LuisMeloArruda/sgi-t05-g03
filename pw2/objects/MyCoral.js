@@ -71,11 +71,15 @@ class MyCoral extends THREE.Object3D {
             for (const char of coralString) {
                 if (rules[char]) {
                     nextStr += this.chooseNextRule(rules[char]);
+                } else {
+                    nextStr += char;
                 }
             }
             coralString = nextStr;
         }
 
+        console.log("Generated string: ", coralString);
+        
         const stack = [];
         let turtle = {
             position: new THREE.Vector3(0,0,0),
