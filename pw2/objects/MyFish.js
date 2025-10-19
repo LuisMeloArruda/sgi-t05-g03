@@ -26,8 +26,8 @@ class MyFish extends THREE.Object3D {
     constructor(
         width = 1,
         head_width = 0.2,
-        height = 0.4,
-        depth = 0.3,
+        height = 0.3,
+        depth = 0.4,
         material = new THREE.MeshBasicMaterial({color: 0x1e66f5, side: THREE.DoubleSide}) // TODO
     ) {
         super()
@@ -60,11 +60,10 @@ class MyFish extends THREE.Object3D {
         const angle_step = Math.PI * 2 / this.base_vertices;
         const base_x = (-this.width / 2) + this.head_width;
         for (let angle = 0; angle < Math.PI * 2; angle += angle_step) {
-            const base_z = Math.cos(angle_step) * this.depth / 2;
-            const base_y = Math.sin(angle_step) * this.height / 2;
+            const base_z = Math.cos(angle + (Math.PI / 2)) * this.depth / 2;
+            const base_y = Math.sin(angle + (Math.PI / 2)) * this.height / 2;
             vertices.push(base_x, base_y, base_z);
         }
-        console.log(vertices)
         
         let indices = [];
         for (let face = 2; face < this.base_vertices + 2; face++) {
@@ -74,7 +73,6 @@ class MyFish extends THREE.Object3D {
             indices.push(face, next_face_vertice, left_end);
             indices.push(right_end, next_face_vertice, face);
         }
-        console.log(indices)
         
         let geometry = new THREE.BufferGeometry();
         geometry.setIndex( indices );
