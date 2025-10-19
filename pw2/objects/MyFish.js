@@ -40,6 +40,8 @@ class MyFish extends THREE.Object3D {
         this.material = material;
         this.base_vertices = 5;
         this.tail_filling = 0.5;
+        this.upper_fin_start = 0.2;
+        this.upper_fin_end = 0.7;
         this.build();
     }
     
@@ -52,7 +54,7 @@ class MyFish extends THREE.Object3D {
         
         // TODO: Transformations
         
-        this.add(body, tail);
+        this.add(body, tail, upper_fin);
     }
     
     build_body() {        
@@ -86,14 +88,14 @@ class MyFish extends THREE.Object3D {
     }
     
     build_tail() {
-        let vertices = [
+        const vertices = [
             this.body_width / 2, 0, 0,
             this.body_width / 2 + this.tail_width * this.tail_filling, 0, 0,
             this.body_width / 2 + this.tail_width, this.height / 2, 0,
             this.body_width / 2 + this.tail_width, -this.height / 2, 0
         ];
         
-        let indices = [
+        const indices = [
             2, 0, 1,
             1, 0, 3,
         ];
@@ -106,7 +108,26 @@ class MyFish extends THREE.Object3D {
     }
     
     build_upper_fin() {
+        const start_x = -this.body_width / 2 + this.head_width;
+        const end_x = this.body_width / 2;
+        const start_y = this.height / 2;
+        const end_y = 0;
         
+        const vertices = [
+            start_x + (end_x - start_x) * this.upper_fin_start, start_y + (end_y - start_y) * this.upper_fin_start, 0,
+            0, this.height / 2, 0,
+            start_x + (end_x - start_x) * this.upper_fin_end, start_y + (end_y - start_y) * this.upper_fin_end, 0
+        ];
+        
+        const indices = [
+            2, 1, 0
+        ];
+        
+        let geometry = new THREE.BufferGeometry();
+        geometry.setIndex( indices );
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ))
+        const mesh = new THREE.Mesh(geometry, this.material);
+        return mesh;
     }
     
     build_bottom_left_fin() {
