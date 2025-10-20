@@ -5,7 +5,7 @@ class MyCoral extends THREE.Object3D {
 
     constructor(
         material = new THREE.MeshPhongMaterial({color: 0xea76cb, side: THREE.DoubleSide}),
-        complexity = 15,
+        complexity = 17,
     ) {
         super();
         this.material = material;
