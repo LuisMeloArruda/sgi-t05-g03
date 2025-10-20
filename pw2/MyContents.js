@@ -56,19 +56,14 @@ class MyContents  {
         // Corals related attributes
         this.coralsGroup = new THREE.Group();
         this.coralsGroup.translateX(-2);
-        this.coralsGroup.translateY(0.5);
+        this.coralsGroup.translateY(0.1);
         this.coralsGroup.translateZ(2);
 
         this.coralsConfig = [
             {
                 position: new THREE.Vector3(0, 0, 0),
-                scale: new THREE.Vector3(0.1, 1, 0.1),
+                scale: new THREE.Vector3(1, 1, 1),
                 rotation: new THREE.Euler(0, 0, 0),
-            },
-            {
-                position: new THREE.Vector3(0.2, 0, 0),
-                scale: new THREE.Vector3(0.1, 1, 0.1),
-                rotation: new THREE.Euler(0, 0, -Math.PI / 180 * 20),
             },
         ]
         this.coralsConstructors = [() => new MyCoral()]
