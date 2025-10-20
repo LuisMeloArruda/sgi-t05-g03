@@ -47,12 +47,8 @@ class MyContents  {
         
         this.corals = new THREE.Group();
         const coral1 = new MyCoral();
-        coral1.scale.set(0.1, 1, 0.1);
-        const coral2 = new MyCoral();
-        coral2.scale.set(0.1, 1, 0.1);
-        coral2.translateX(0.2);
-        coral2.rotateZ(-Math.PI / 180 * 20);
-        this.corals.add(coral1, coral2);
+        // coral1.scale.set(0.1, 1, 0.1);
+        this.corals.add(coral1,);
         this.corals.translateX(-2);
         this.corals.translateY(0.5);
         this.corals.translateZ(2);
