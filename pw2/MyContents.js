@@ -3,7 +3,7 @@ import { MyAxis } from './MyAxis.js';
 import { MySubmarineControler, MyMidSubmarine, MyBasicSubmarine} from './objects/MySubmarine.js';
 import { MyRock } from './objects/MyRock.js';
 import { MyTerrainSegment } from './objects/MyTerrainSegment.js';
-import { MyCoral } from './objects/MyCoral.js';
+import { MyBasicCoral, MyCoral } from './objects/MyCoral.js';
 import { MyBubble } from './objects/MyBubble.js';
 import { MyFish } from './objects/MyFish.js';
 import { MyBasicFish } from './objects/MyFish.js';
@@ -66,7 +66,7 @@ class MyContents  {
                 rotation: new THREE.Euler(0, 0, 0),
             },
         ]
-        this.coralsConstructors = [() => new MyCoral()]
+        this.coralsConstructors = [() => new MyCoral(), () => new MyBasicCoral()]
 
         // Bubbles related attributes
         this.bubblesGroup = new THREE.Group();
@@ -164,7 +164,7 @@ class MyContents  {
         this.app.scene.add(this.terrainGroup);
 
         // add corals
-        this.createLODs(this.coralsConfig, this.coralsConstructors, [0], this.coralsGroup)
+        this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 20], this.coralsGroup)
         this.app.scene.add(this.coralsGroup);
 
         // add bubble

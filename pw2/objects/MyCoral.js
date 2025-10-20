@@ -1,6 +1,24 @@
 import * as THREE from "three";
 
-// TODO: This is only a placeholder
+class MyBasicCoral extends THREE.Object3D {
+
+    constructor(
+        material = new THREE.MeshBasicMaterial({color: 0xea76cb, side: THREE.DoubleSide})
+    ) {
+        super();
+        this.material = material;
+        this.build();
+    }
+
+    build() {
+        const geometry = new THREE.CylinderGeometry();
+        let mesh = new THREE.Mesh(geometry, this.material);
+        mesh.position.y = 0.5;
+        mesh.scale.set(0.1, 1, 0.1)
+        this.add(mesh);
+    }
+}
+
 class MyCoral extends THREE.Object3D {
 
     constructor(
@@ -180,4 +198,4 @@ class MyCoral extends THREE.Object3D {
     }
  }
 
-export { MyCoral };
+export { MyCoral, MyBasicCoral};
