@@ -17,7 +17,7 @@ class MyBasicFish extends THREE.Object3D {
         // TODO
         const geometry = new THREE.SphereGeometry(0.5);
         let mesh = new THREE.Mesh(geometry, this.material);
-        mesh.scale.set(2, 1, 1);
+        mesh.scale.set(1.0, 0.3, 0.3);
         this.add(mesh);
     }
 }

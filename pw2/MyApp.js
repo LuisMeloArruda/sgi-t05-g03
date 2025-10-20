@@ -132,7 +132,7 @@ class MyApp  {
                 }
                 this.controls = null;
                 this.renderer.domElement.removeEventListener('click', this._onCanvasClick);
-                this.contents.submarine.dispose();
+                this.contents.submarineControler.dispose();
             }
             
 
@@ -160,13 +160,13 @@ class MyApp  {
                     this.controls = new OrbitControls( this.activeCamera, this.renderer.domElement );
                     this.controls.enableZoom = true
                     // for soft camera rotation while in submarine mode
-                    this.contents.submarine.setupListeners()
+                    this.contents.submarineControler.setupListeners()
                     break;
                 case 'Fixed':
                     this.controls = new OrbitControls( this.activeCamera, this.renderer.domElement );
                     this.controls.enableZoom = false
                     this.controls.enableRotate = false
-                    this.contents.submarine.setupListeners()
+                    this.contents.submarineGroup.setupListeners()
                     break;
                 default:
                     this.controls.object = this.activeCamera

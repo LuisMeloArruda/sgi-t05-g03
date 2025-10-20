@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { MyAxis } from './MyAxis.js';
-import { MySubmarine } from './objects/MySubmarine.js';
+import { MySubmarineControler, MyMidSubmarine, MyBasicSubmarine} from './objects/MySubmarine.js';
 import { MyRock } from './objects/MyRock.js';
 import { MyTerrainSegment } from './objects/MyTerrainSegment.js';
 import { MyCoral } from './objects/MyCoral.js';
 import { MyBubble } from './objects/MyBubble.js';
 import { MyFish } from './objects/MyFish.js';
+import { MyBasicFish } from './objects/MyFish.js';
 
 /**
  *  This class contains the contents of out application
@@ -20,62 +21,95 @@ class MyContents  {
         this.app = app
         this.axis = null
         
-        this.terrain = new THREE.Group();
-        
-        const segments = new THREE.Group();
-        const segment1 = new MyTerrainSegment();
-        segment1.scale.set(5, 5, 5);
-        const segment2 = new MyTerrainSegment();
-        segment2.scale.set(2, 2, 2);
-        segment2.translateY(1);
-        segment2.translateX(2.5);
-        segments.add(segment1, segment2);
-        
-        const rocks = new THREE.Group();
-        const rock1 = new MyRock();
-        rock1.scale.set(1, 1, 0.5);
-        const rock2 = new MyRock();
-        rock2.scale.set(0.5, 1, 1);
-        rock2.translateX(2);
-        rocks.add(rock1, rock2);
-        rocks.translateX(-1);
-        rocks.translateY(0.5);
-        rocks.translateZ(-1);
-        
-        this.terrain.translateY(0.1);
-        this.terrain.add(segments, rocks);
-        
-        this.corals = new THREE.Group();
-        const coral1 = new MyCoral();
-        // coral1.scale.set(0.1, 1, 0.1);
-        this.corals.add(coral1,);
-        this.corals.translateX(-2);
-        this.corals.translateY(0.5);
-        this.corals.translateZ(2);
+        // Terrain related attributes       
+        this.terrainGroup = new THREE.Group()
+        this.terrainGroup.translateY(0.1)
 
-        this.bubbles = new THREE.Group();
-        const bubble1 = new MyBubble();
-        bubble1.scale.set(0.1, 0.1, 0.1);
-        const bubble2 = new MyBubble();
-        bubble2.scale.set(0.1, 0.1, 0.1);
-        bubble2.translateX(0.3);
-        bubble2.translateY(0.3);
-        this.bubbles.add(bubble1, bubble2);
-        this.bubbles.translateX(-2);
-        this.bubbles.translateY(1.5);
-        this.bubbles.translateZ(2);
-        
-        this.fishes = new THREE.Group();
-        const fish1 = new MyFish();
-        fish1.scale.set(0.3, 0.3, 0.3);
-        const fish2 = new MyFish();
-        fish2.scale.set(0.3, 0.3, 0.3);
-        fish2.translateX(0.5);
-        fish2.translateY(0.5);
-        fish2.translateZ(0.5);
-        this.fishes.add(fish1, fish2);
-        this.fishes.translateY(1.5);
+        this.segmentsConfig = [
+            {
+                position: new THREE.Vector3(0, 0, 0),
+                scale: new THREE.Vector3(5, 5, 5),
+                rotation: new THREE.Euler(0, 0, 0),
+            },
+            {
+                position: new THREE.Vector3(2.5, 1, 0),
+                scale: new THREE.Vector3(2, 2, 2),
+                rotation: new THREE.Euler(0, 0, 0),
+            },
+        ]
+        this.segmentsConstructors = [() => new MyTerrainSegment()]
 
+        this.rocksConfig = [
+            {
+                position: new THREE.Vector3(-1.5, 0.5, -1),
+                scale: new THREE.Vector3(1, 1, 1.5),
+                rotation: new THREE.Euler(0, 0, 0),
+            },
+            {
+                position: new THREE.Vector3(1.5, 1, -2),
+                scale: new THREE.Vector3(1, 2, 1),
+                rotation: new THREE.Euler(0, 0, 0),
+            },
+        ]
+        this.rocksConstructors = [() => new MyRock()]
+
+        // Corals related attributes
+        this.coralsGroup = new THREE.Group();
+        this.coralsGroup.translateX(-2);
+        this.coralsGroup.translateY(0.5);
+        this.coralsGroup.translateZ(2);
+
+        this.coralsConfig = [
+            {
+                position: new THREE.Vector3(0, 0, 0),
+                scale: new THREE.Vector3(0.1, 1, 0.1),
+                rotation: new THREE.Euler(0, 0, 0),
+            },
+            {
+                position: new THREE.Vector3(0.2, 0, 0),
+                scale: new THREE.Vector3(0.1, 1, 0.1),
+                rotation: new THREE.Euler(0, 0, -Math.PI / 180 * 20),
+            },
+        ]
+        this.coralsConstructors = [() => new MyCoral()]
+
+        // Bubbles related attributes
+        this.bubblesGroup = new THREE.Group();
+        this.bubblesGroup.translateX(-2);
+        this.bubblesGroup.translateY(1.5);
+        this.bubblesGroup.translateZ(2);
+        this.bubblesConfigs = [
+            {
+                position: new THREE.Vector3(0, 0, 0),
+                scale: new THREE.Vector3(0.1, 0.1, 0.1),
+                rotation: new THREE.Euler(0, 0, 0),
+            },
+            {
+                position: new THREE.Vector3(0.3, 0.3, 0),
+                scale: new THREE.Vector3(0.1, 0.1, 0.1),
+                rotation: new THREE.Euler(0, 0, 0),
+            }
+        ]
+        this.bubblesConstructors = [() => new MyBubble()]
+        
+        // Fishes related attributes
+        this.fishesGroup = new THREE.Group();
+        this.fishesGroup.translateY(1.5);
+        this.fishesConfigs = [
+            {
+              position: new THREE.Vector3(0, 0, 0),
+              scale: new THREE.Vector3(0.3, 0.3, 0.3),
+              rotation: new THREE.Euler(0, 0, 0),
+            },
+            {
+              position: new THREE.Vector3(0.5, 0.5, 0.5),
+              scale: new THREE.Vector3(0.3, 0.3, 0.3),
+              rotation: new THREE.Euler(0, 0, 0),
+            },
+          ];  
+        this.fishContructors = [() => new MyFish(), () => new MyBasicFish]
+
+        // Plane related attributes
         this.planeMaterial = new THREE.MeshPhongMaterial({
             color: "#0000ff", specular: "#000000", emissive: "#000000", shininess: 90
         })
@@ -84,8 +118,21 @@ class MyContents  {
         this.submarineMaterial = new THREE.MeshPhongMaterial({
             color: "#ffff00", specular: "#000000", emissive: "#000000", shininess: 90
         })
+        this.submarineControler = new MySubmarineControler(new THREE.Vector3(0, 0, 0))
+        this.submarineLOD = new THREE.LOD();
+        this.submarineConfigs = [
+            {
+              position: new THREE.Vector3(0, 0, 0),
+              scale: new THREE.Vector3(1, 1, 1),
+              rotation: new THREE.Euler(0, 0, 0),
+            },
+          ];
+          
+          this.submarineConstructors = [
+            () => new MyMidSubmarine(1, this.submarineMaterial),
+            () => new MyBasicSubmarine(1, this.submarineMaterial),
+          ];
 
-        this.submarine = new MySubmarine(1, new THREE.Vector3(0, 0, 0), this.submarineMaterial);
     }
 
     /**
@@ -113,28 +160,72 @@ class MyContents  {
         this.app.scene.add( this.planeMesh );
 
         // add submarine
-        this.app.scene.add(this.submarine);
+        this.createLODs(this.submarineConfigs, this.submarineConstructors, [0, 20], this.submarineLOD);
+        this.app.scene.add(this.submarineLOD);
         
-        this.app.scene.add(this.terrain);
-        this.app.scene.add(this.corals);
-        this.app.scene.add(this.bubbles);
-        this.app.scene.add(this.fishes);
+        // add terrain
+        this.createLODs(this.segmentsConfig, this.segmentsConstructors, [0], this.terrainGroup)
+        this.createLODs(this.rocksConfig, this.rocksConstructors, [0], this.terrainGroup)
+        this.app.scene.add(this.terrainGroup);
+
+        // add corals
+        this.createLODs(this.coralsConfig, this.coralsConstructors, [0], this.coralsGroup)
+        this.app.scene.add(this.coralsGroup);
+
+        // add bubble
+        this.createLODs(this.bubblesConfigs, this.bubblesConstructors, [0], this.bubblesGroup)
+        this.app.scene.add(this.bubblesGroup);
+
+        // add fishes
+        this.createLODs(this.fishesConfigs, this.fishContructors, [0, 20], this.fishesGroup)
+        this.app.scene.add(this.fishesGroup);
     }
 
+
+    /**
+     * Creates LOD objects from configs and adds them to a group.
+     * 
+     * @param {Array<Object>} configs - Each with position, scale, rotation (Vector3, Vector3, Euler)
+     * @param {Array<Function>} constructors - Functions returning mesh per LOD level
+     * @param {Array<number>} distances - Distances for each LOD level
+     * @param {THREE.Group} targetParent - Group to add the LODs to
+     */
+    createLODs(configs, constructors, distances, targetParent) {
+        for (const cfg of configs) {
+          const lod = new THREE.LOD();
+      
+          for (let i = 0; i < constructors.length; i++) {
+            const obj = constructors[i]();
+            obj.scale.copy(cfg.scale);
+            obj.rotation.copy(cfg.rotation);
+            lod.addLevel(obj, distances[i]);
+          }
+      
+          lod.position.copy(cfg.position);
+          targetParent.add(lod);
+        }
+      }
+      
     /**
      * Updates the camera's position and target to follow the submarine while maintaining a constant offset
      */
     updateSubmarineCamera() {
-        if (this.app.activeCameraName !== 'Submarine') return;
-
         const camera = this.app.activeCamera;
         const controls = this.app.controls;
         
         const offset = camera.position.clone().sub(controls.target);
-        controls.target.copy(this.submarine.position);
-        camera.position.copy(this.submarine.position.clone().add(offset));
+        controls.target.copy(this.submarineControler.position);
+        camera.position.copy(this.submarineControler.position.clone().add(offset));
         
         controls.update();
+    }
+
+    /**
+     * synchronization submarine LOD and Controller
+     */
+    syncsSubmarineLOD() {
+        this.submarineLOD.position.copy(this.submarineControler.position);
+        this.submarineLOD.rotation.copy(this.submarineControler.rotation);
     }
 
     /**
@@ -143,10 +234,11 @@ class MyContents  {
      * 
      */
     update() {
-        this.submarine.update();
-        this.updateSubmarineCamera();
-    }
+        this.submarineControler.update();
+        this.syncsSubmarineLOD()
 
+        if (this.app.activeCameraName === 'Submarine') this.updateSubmarineCamera();
+    }
 }
 
 export { MyContents };
