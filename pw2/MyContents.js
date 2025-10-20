@@ -232,6 +232,14 @@ class MyContents  {
         this.submarineControler.update();
         this.syncsSubmarineLOD()
 
+        for (let child of this.coralsGroup.children) {
+            if (child.type === "LOD") {
+                for (let grand of child.children) {
+                    grand.update();
+                }
+            }
+        }
+
         if (this.app.activeCameraName === 'Submarine') this.updateSubmarineCamera();
     }
 }
