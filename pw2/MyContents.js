@@ -118,14 +118,14 @@ class MyContents  {
         this.submarineConfigs = [
             {
               position: new THREE.Vector3(0, 0, 0),
-              scale: new THREE.Vector3(1, 1, 1),
+              scale: new THREE.Vector3(0.8, 0.8, 0.8),
               rotation: new THREE.Euler(0, 0, 0),
             },
           ];
           
           this.submarineConstructors = [
-            () => new MyMidSubmarine(1, this.submarineMaterial),
             () => new MyBasicSubmarine(1, this.submarineMaterial),
+            () => new MyMidSubmarine(1, this.submarineMaterial),
           ];
 
     }

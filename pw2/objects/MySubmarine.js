@@ -47,11 +47,73 @@ class MySubmarineControler extends THREE.Object3D {
  * Very basic visual-only LOD version of the submarine (low poly)
  */
 class MyBasicSubmarine extends THREE.Object3D {
-  constructor(size = 1.0, material = new THREE.MeshPhongMaterial({ color: 0xcccc00 })) {
+  constructor(size = 1.0, material = new THREE.MeshPhongMaterial({ color: 0xcccc00 , side: THREE.DoubleSide})) {
     super();
-    const body = new THREE.CylinderGeometry(size * 0.4, size * 0.4, size * 2, 12);
-    const bodyMesh = new THREE.Mesh(body, material);
-    this.add(bodyMesh);
+    // body
+    const bodyCapsule = new THREE.CapsuleGeometry(size*0.9, size*2, 16, 16, 16)
+    const bodyCylinder = new THREE.CylinderGeometry(size * 0.6, size, size * 1.4)
+    const bodyBox = new THREE.BoxGeometry(size, size*0.05, size)
+
+    const bodySphereMesh = new THREE.Mesh(bodyCapsule, material)
+    bodySphereMesh.rotateX(Math.PI / 2)
+
+    const bodyCapsuleMesh = new THREE.Mesh(bodyCylinder, material)
+    bodyCapsuleMesh.scale.set(0.5, 0.5, 0.5)
+    bodyCapsuleMesh.position.y = 1
+    bodyCapsuleMesh.position.z = -0.2
+
+    const bodyBoxMesh = new THREE.Mesh(bodyBox, material)
+    bodyBoxMesh.position.y = 1
+    bodyBoxMesh.position.z = -0.1
+    bodyBoxMesh.rotateY(Math.PI)
+
+    // periscope
+    const periscope = new THREE.TorusGeometry(size * 10, size * 0.5, size * 10, size * 10, size * 1.5)
+    const periscopeMaterial = new THREE.MeshPhongMaterial({color: 0x686a69, side: THREE.DoubleSide})
+    const periscopeMesh =  new THREE.Mesh(periscope, periscopeMaterial)
+    periscopeMesh.position.y = 0.7
+    periscopeMesh.position.z = -0.7
+    periscopeMesh.rotateY(-Math.PI / 2)
+    periscopeMesh.scale.set(0.05, 0.1, 0.1)
+
+    // windows
+    const windowGeometry = new THREE.TorusGeometry(size * 15, size * 2, size * 10, size * 32);
+    const windowMaterial = new THREE.MeshPhongMaterial({ color: 0x686a69, side: THREE.DoubleSide });
+
+    const glassGeometry = new THREE.SphereGeometry();
+    const glassMaterial = new THREE.MeshPhongMaterial({ color: 0x89CFF0 });
+
+    const windowGroup = new THREE.Group();
+
+    for (let i = 0; i < 3; i++) {
+      const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
+      const glassMesh = new THREE.Mesh(glassGeometry, glassMaterial);
+
+      glassMesh.scale.set(0.3, 0.3, 0.33);
+      glassMesh.position.set(-0.75, 0.1, -1 + i * 1);
+
+      windowMesh.scale.set(0.02, 0.02, 0.04);
+      windowMesh.position.set(-0.85, 0.1, -1 + i * 1);
+      windowMesh.rotation.y = -Math.PI / 2;
+
+      windowGroup.add(windowMesh);
+      windowGroup.add(glassMesh);
+    }
+    
+    for (let i = 0; i < 3; i++) {
+      const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial)
+      const glassMesh = new THREE.Mesh(glassGeometry, glassMaterial)
+
+      glassMesh.scale.set(0.3, 0.3, 0.33);
+      glassMesh.position.set(0.75, 0.1, -1 + i * 1);
+
+      windowMesh.scale.set(0.02, 0.02, 0.04);
+      windowMesh.position.set(0.85, 0.1, -1 + i * 1);
+      windowMesh.rotation.y = -Math.PI / 2;
+      windowGroup.add(windowMesh, glassMesh)
+    }
+
+    this.add(bodyCapsuleMesh, bodySphereMesh, bodyBoxMesh, periscopeMesh, windowGroup)
   }
 }
 
