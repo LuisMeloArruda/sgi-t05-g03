@@ -7,6 +7,7 @@ import { MyBasicCoral, MyCoral } from './objects/MyCoral.js';
 import { MyBubble } from './objects/MyBubble.js';
 import { MyFish } from './objects/MyFish.js';
 import { MyBasicFish } from './objects/MyFish.js';
+import { KeyframeFishAnimator } from './System/KeyframeFishAnimator.js'
 
 /**
  *  This class contains the contents of out application
@@ -89,20 +90,26 @@ class MyContents  {
         
         // Fishes related attributes
         this.fishesGroup = new THREE.Group();
-        this.fishesGroup.translateY(1.5);
-        this.fishesConfigs = [
-            {
-              position: new THREE.Vector3(0, 0, 0),
-              scale: new THREE.Vector3(0.3, 0.3, 0.3),
-              rotation: new THREE.Euler(0, 0, 0),
-            },
-            {
-              position: new THREE.Vector3(0.5, 0.5, 0.5),
-              scale: new THREE.Vector3(0.3, 0.3, 0.3),
-              rotation: new THREE.Euler(0, 0, 0),
-            },
-          ];  
+        this.fishesConfigs = []
+        this.fishQuantity = 50
+        
+        this.minX = -5, this.maxX = 5;
+        this.minY = 0,  this.maxY = 5;
+        this.minZ = -5, this.maxZ = 5;
+        for (let n = 0; n < this.fishQuantity; n++) {
+            this.fishesConfigs.push({
+                position: new THREE.Vector3(
+                    Math.random() * (this.maxX - this.minX) + this.minX,
+                    Math.random() * (this.maxY - this.minY) + this.minY,
+                    Math.random() * (this.maxZ - this.minZ) + this.minZ
+                  ),
+                scale: new THREE.Vector3(0.3, 0.3, 0.3),
+                rotation: new THREE.Euler(0, Math.PI / 2, 0),
+              })
+        }
+ 
         this.fishContructors = [() => new MyFish(), () => new MyBasicFish]
+        this.fishAnimators = []
 
         // Plane related attributes
         this.planeMaterial = new THREE.MeshPhongMaterial({
@@ -174,6 +181,13 @@ class MyContents  {
         // add fishes
         this.createLODs(this.fishesConfigs, this.fishContructors, [0, 20], this.fishesGroup)
         this.app.scene.add(this.fishesGroup);
+
+        for (const lod of this.fishesGroup.children) {
+            const animator = new KeyframeFishAnimator(lod, 60, 180, 
+                this.minX, this.maxX, this.minY, 
+                this.maxY, this.minZ, this.maxZ)
+            this.fishAnimators.push(animator);
+        }
     }
 
 
@@ -226,13 +240,27 @@ class MyContents  {
     /**
      * updates the contents
      * this method is called from the render method of the app
-     * 
      */
     update() {
-        this.submarineControler.update();
-        this.syncsSubmarineLOD()
 
-        if (this.app.activeCameraName === 'Submarine') this.updateSubmarineCamera();
+        /**
+         * Update all fish animations (positions + lookAt direction)
+         */
+        for (const animator of this.fishAnimators) {
+            animator.update();
+          }
+
+        /**
+         * If the active camera is the submarine
+         * Sync camera position/orientation with submarine
+         * Handle submarine input/movement
+         * Sync movement across all LOD levels
+         */
+        if (this.app.activeCameraName === 'Submarine') {
+            this.updateSubmarineCamera();
+            this.submarineControler.update();
+            this.syncsSubmarineLOD()
+        }
     }
 }
 
