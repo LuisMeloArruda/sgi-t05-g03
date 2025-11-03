@@ -29,6 +29,7 @@ class MyFish extends THREE.Object3D {
         tail_width = 0.1,
         height = 0.3,
         depth = 0.4,
+        subdivisions = 3,
         material = new THREE.MeshBasicMaterial({color: 0x1e66f5, side: THREE.DoubleSide}) // TODO
     ) {
         super()
@@ -37,6 +38,7 @@ class MyFish extends THREE.Object3D {
         this.tail_width = tail_width;
         this.height = height;
         this.depth = depth;
+        this.subdivisions = subdivisions;
         this.material = material;
         this.base_vertices = 5;
         this.tail_filling = 0.5;
@@ -71,21 +73,41 @@ class MyFish extends THREE.Object3D {
             -this.body_width / 2, 0, 0,
             this.body_width / 2, 0, 0
         ];
-        
         const angle_step = Math.PI * 2 / this.base_vertices;
-        const base_x = (-this.body_width / 2) + this.head_width;
-        for (let angle = 0; angle < Math.PI * 2; angle += angle_step) {
-            const base_z = Math.cos(angle + (Math.PI / 2)) * this.depth / 2;
-            const base_y = Math.sin(angle + (Math.PI / 2)) * this.height / 2;
-            vertices.push(base_x, base_y, base_z);
+        const start_x = (-this.body_width / 2) + this.head_width;
+        for (let scale = 1; scale > 0; scale -= (1 / this.subdivisions)) {
+            const base_x = start_x + (this.body_width * (1 - scale));
+            for (let angle = 0; angle < Math.PI * 2; angle += angle_step) { 
+                const base_z = Math.cos(angle + (Math.PI / 2)) * this.depth / 2 * scale;
+                const base_y = Math.sin(angle + (Math.PI / 2)) * this.height / 2 * scale;
+                vertices.push(base_x, base_y, base_z);
+            }
         }
-        
+                
         let indices = [];
         for (let face = 2; face < this.base_vertices + 2; face++) {
             const left_end = 0;
-            const right_end = 1;
             const next_face_vertice = ((face - 2 + 1) % this.base_vertices) + 2;
             indices.push(face, next_face_vertice, left_end);
+        }
+        
+        let start_idx = 2;
+        for (let subdivision = 0; subdivision < this.subdivisions; subdivision++) {
+            for (let face = 0; face < this.base_vertices; face++) {
+                const vertices_already_counted = start_idx + subdivision * this.base_vertices;
+                const this_idx = face + vertices_already_counted;
+                const next_vertice = ((face + 1) % this.base_vertices) + vertices_already_counted;
+                const next_face = this_idx + this.base_vertices;
+                const next_face_and_vertice = ((face + 1) % this.base_vertices) + vertices_already_counted + this.base_vertices;
+                indices.push(this_idx, next_vertice, next_face_and_vertice);
+                indices.push(next_face_and_vertice, next_face, this_idx);
+            }
+        }
+        
+        start_idx = 2 + (this.subdivisions * this.base_vertices);
+        for (let face = start_idx; face < start_idx + this.base_vertices; face++) {
+            const right_end = 1;
+            const next_face_vertice = ((face - start_idx + 1) % this.base_vertices) + start_idx;
             indices.push(right_end, next_face_vertice, face);
         }
         
