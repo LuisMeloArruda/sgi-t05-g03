@@ -76,7 +76,7 @@ class MyFish extends THREE.Object3D {
         const angle_step = Math.PI * 2 / this.base_vertices;
         const start_x = (-this.body_width / 2) + this.head_width;
         for (let scale = 1; scale > 0; scale -= (1 / this.subdivisions)) {
-            const base_x = start_x + (this.body_width * (1 - scale));
+            const base_x = start_x + ((this.body_width - this.head_width) * (1 - scale));
             for (let angle = 0; angle < Math.PI * 2; angle += angle_step) { 
                 const base_z = Math.cos(angle + (Math.PI / 2)) * this.depth / 2 * scale;
                 const base_y = Math.sin(angle + (Math.PI / 2)) * this.height / 2 * scale;
