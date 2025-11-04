@@ -10,7 +10,7 @@ import * as THREE from 'three'
  * @param {number} minY, maxY - Y-axis bounds.
  * @param {number} minZ, maxZ - Z-axis bounds.
  */
-class KeyframeFishAnimator {
+class KeyframeObjectAnimator {
   constructor(object, keyframes = 3, duration = 3,
     minX = -1, maxX = 1,
     minY = 0,  maxY = 1,
@@ -94,4 +94,4 @@ class KeyframeFishAnimator {
   }
 }
 
-export { KeyframeFishAnimator };
+export { KeyframeObjectAnimator };

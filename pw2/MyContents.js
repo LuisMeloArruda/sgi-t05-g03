@@ -7,7 +7,7 @@ import { MyBasicCoral, MyCoral } from './objects/MyCoral.js';
 import { MyBubble } from './objects/MyBubble.js';
 import { MyFish } from './objects/MyFish.js';
 import { MyBasicFish } from './objects/MyFish.js';
-import { KeyframeFishAnimator } from './System/KeyframeFishAnimator.js'
+import { KeyframeObjectAnimator } from './System/KeyframeObjectAnimator.js'
 
 /**
  *  This class contains the contents of out application
@@ -120,7 +120,8 @@ class MyContents  {
         this.submarineMaterial = new THREE.MeshPhongMaterial({
             color: "#ffff00", specular: "#000000", emissive: "#000000", shininess: 90
         })
-        this.submarineControler = new MySubmarineControler(new THREE.Vector3(0, 0, 0))
+        const submarine_position = new THREE.Vector3(2, 1, 0);
+        this.submarineControler = new MySubmarineControler(submarine_position)
         this.submarineLOD = new THREE.LOD();
         this.submarineConfigs = [
             {
@@ -131,8 +132,8 @@ class MyContents  {
           ];
           
           this.submarineConstructors = [
-            () => new MyBasicSubmarine(1, this.submarineMaterial),
-            () => new MyMidSubmarine(1, this.submarineMaterial),
+            () => new MyBasicSubmarine(this.submarineMaterial),
+            () => new MyMidSubmarine(this.submarineMaterial),
           ];
 
     }
@@ -151,8 +152,13 @@ class MyContents  {
 
         // add an ambient light
         const ambientLight = new THREE.AmbientLight( 0x555555 );
-        ambientLight.intensity = 50;
+        ambientLight.intensity = 1;
         this.app.scene.add( ambientLight );
+
+        const pointlight = new THREE.PointLight( 0xffffff )
+        pointlight.intensity = 25
+        pointlight.position.set(0, 3, 0)
+        this.app.scene.add( pointlight )
         
         // Create a Plane Mesh with basic material
         let plane = new THREE.PlaneGeometry( 10, 10 );
@@ -163,7 +169,8 @@ class MyContents  {
 
         // add submarine
         this.createLODs(this.submarineConfigs, this.submarineConstructors, [0, 20], this.submarineLOD);
-        this.app.scene.add(this.submarineLOD);
+        this.submarineControler.add(this.submarineLOD);
+        this.app.scene.add(this.submarineControler);
         
         // add terrain
         this.createLODs(this.segmentsConfig, this.segmentsConstructors, [0], this.terrainGroup)
@@ -183,7 +190,7 @@ class MyContents  {
         this.app.scene.add(this.fishesGroup);
 
         for (const lod of this.fishesGroup.children) {
-            const animator = new KeyframeFishAnimator(lod, 60, 180, 
+            const animator = new KeyframeObjectAnimator(lod, 60, 180, 
                 this.minX, this.maxX, this.minY, 
                 this.maxY, this.minZ, this.maxZ)
             this.fishAnimators.push(animator);
@@ -230,14 +237,6 @@ class MyContents  {
     }
 
     /**
-     * synchronization submarine LOD and Controller
-     */
-    syncsSubmarineLOD() {
-        this.submarineLOD.position.copy(this.submarineControler.position);
-        this.submarineLOD.rotation.copy(this.submarineControler.rotation);
-    }
-
-    /**
      * updates the contents
      * this method is called from the render method of the app
      */
@@ -259,7 +258,6 @@ class MyContents  {
         if (this.app.activeCameraName === 'Submarine') {
             this.updateSubmarineCamera();
             this.submarineControler.update();
-            this.syncsSubmarineLOD()
         }
     }
 }
