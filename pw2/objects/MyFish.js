@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { MyApp } from "../MyApp.js";
 
 // TODO: This is only a placeholder
 class MyBasicFish extends THREE.Object3D {
@@ -20,10 +21,15 @@ class MyBasicFish extends THREE.Object3D {
         mesh.scale.set(1.0, 0.3, 0.3);
         this.add(mesh);
     }
+    
+    update() {
+        // Do nothing.
+    }
 }
 
 class MyFish extends THREE.Object3D {
     constructor(
+        app,
         body_width = 1,
         head_width = 0.2,
         tail_width = 0.1,
@@ -38,6 +44,7 @@ class MyFish extends THREE.Object3D {
         }), // TODO
     ) {
         super();
+        this.app = app;
         this.body_width = body_width;
         this.head_width = head_width;
         this.tail_width = tail_width;
@@ -49,6 +56,8 @@ class MyFish extends THREE.Object3D {
         this.tail_filling = 0.5;
         this.upper_fin_start = 0.2;
         this.upper_fin_end = 0.7;
+        this.anim_duration = 1.5;
+        this.anim_angle = Math.PI / 180 * 45;
         this.build();
     }
 
@@ -89,16 +98,16 @@ class MyFish extends THREE.Object3D {
         // right_pectoral_fin.rotateY(Math.PI / 180 * 20);
 
         // Build skeleton
-        let bones = [];
+        this.bones = [];
         const head = new THREE.Bone();
         head.position.x = -(this.body_width / 2) + this.head_width / 2;
         const body = new THREE.Bone();
         const tail = new THREE.Bone();
         tail.position.x = this.body_width + this.tail_width / 2;
         body.add(head, tail);
-        bones.push(body, head, tail);
+        this.bones.push(body, head, tail);
 
-        const skeleton = new THREE.Skeleton(bones);
+        const skeleton = new THREE.Skeleton(this.bones);
         const position = geometry.attributes.position;
 
         // Define Skinning Attributes
@@ -133,7 +142,7 @@ class MyFish extends THREE.Object3D {
         );
 
         let skinnedMesh = new THREE.SkinnedMesh(geometry, this.material);
-        skinnedMesh.add(bones[0]);
+        skinnedMesh.add(this.bones[0]);
         skinnedMesh.bind(skeleton);
 
         this.add(skinnedMesh);
@@ -254,6 +263,15 @@ class MyFish extends THREE.Object3D {
         );
         const mesh = new THREE.Mesh(geometry, this.material);
         return mesh;
+    }
+    
+    update() {
+        this.app.timer.update();
+        const timeElapsed = this.app.timer.getElapsed();
+        const t = - (Math.cos(Math.PI * timeElapsed / this.anim_duration) - 1) / 2;
+        const rotation = t * this.anim_angle - (this.anim_angle / 2);
+        this.bones[1].rotation.y = rotation;
+        this.bones[2].rotation.y = -rotation;
     }
 }
 

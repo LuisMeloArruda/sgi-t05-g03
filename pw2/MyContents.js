@@ -102,7 +102,7 @@ class MyContents  {
               rotation: new THREE.Euler(0, 0, 0),
             },
           ];  
-        this.fishContructors = [() => new MyFish(), () => new MyBasicFish]
+        this.fishContructors = [() => new MyFish(app), () => new MyBasicFish]
 
         // Plane related attributes
         this.planeMaterial = new THREE.MeshPhongMaterial({
@@ -231,6 +231,9 @@ class MyContents  {
     update() {
         this.submarineControler.update();
         this.syncsSubmarineLOD()
+        this.fishesGroup.children.forEach((lod) => {
+            lod.children.forEach((fish) => fish.update());
+        });
 
         if (this.app.activeCameraName === 'Submarine') this.updateSubmarineCamera();
     }
