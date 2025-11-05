@@ -1,11 +1,10 @@
 import * as THREE from "three";
 
-// TODO: This is only a placeholder
-class MyTerrainSegment extends THREE.Object3D {
+class MyBasicTerrainSegment extends THREE.Object3D {
 
     constructor(
         // TODO
-        material = new THREE.MeshBasicMaterial({color: 0xccd0da, side: THREE.DoubleSide})
+        material = new THREE.MeshPhongMaterial({color: 0x8e8b61, side: THREE.DoubleSide})
     ) {
         super();
         // TODO
@@ -22,4 +21,22 @@ class MyTerrainSegment extends THREE.Object3D {
     }
 }
 
-export { MyTerrainSegment };
+class MyTerrainSegment extends THREE.Object3D {
+
+    constructor(
+        material = new THREE.MeshPhongMaterial({color: 0x8e8b61, side: THREE.DoubleSide})
+    ) {
+        super();
+        this.material = material;
+        this.build();
+    }
+
+    build() {
+        const geometry = new THREE.PlaneGeometry();
+        let mesh = new THREE.Mesh(geometry, this.material);
+        mesh.rotateX(Math.PI / 2);
+        this.add(mesh);
+    }
+}
+
+export { MyBasicTerrainSegment, MyTerrainSegment};

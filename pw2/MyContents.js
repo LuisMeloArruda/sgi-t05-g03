@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { MyAxis } from './MyAxis.js';
 import { MySubmarineControler, MyMidSubmarine, MyBasicSubmarine} from './objects/MySubmarine.js';
 import { MyRock } from './objects/MyRock.js';
-import { MyTerrainSegment } from './objects/MyTerrainSegment.js';
+import { MyBasicTerrainSegment, MyTerrainSegment } from './objects/MyTerrainSegment.js';
 import { MyBasicCoral, MyCoral } from './objects/MyCoral.js';
 import { MyBubble } from './objects/MyBubble.js';
 import { MyFish } from './objects/MyFish.js';
@@ -33,13 +33,8 @@ class MyContents  {
                 scale: new THREE.Vector3(5, 5, 5),
                 rotation: new THREE.Euler(0, 0, 0),
             },
-            {
-                position: new THREE.Vector3(2.5, 1, 0),
-                scale: new THREE.Vector3(2, 2, 2),
-                rotation: new THREE.Euler(0, 0, 0),
-            },
         ]
-        this.segmentsConstructors = [() => new MyTerrainSegment()]
+        this.segmentsConstructors = [() => new MyTerrainSegment(), () => new MyBasicTerrainSegment()]
 
         this.rocksConfig = [
             {
@@ -173,10 +168,15 @@ class MyContents  {
         ambientLight.intensity = 1;
         this.app.scene.add( ambientLight );
 
+        // add a point light
         const pointlight = new THREE.PointLight( 0xffffff )
-        pointlight.intensity = 25
+        pointlight.intensity = 100
         pointlight.position.set(0, 5, 2)
         this.app.scene.add( pointlight )
+
+        // add fog
+        this.app.scene.fog = new THREE.FogExp2(0x0077be, 0.03);
+        this.app.renderer.setClearColor(0x004466);
         
         // Create a Plane Mesh with basic material
         let plane = new THREE.PlaneGeometry( 20, 20 );
@@ -194,7 +194,7 @@ class MyContents  {
         this.app.scene.add(this.submarineControler);
         
         // add terrain
-        this.createLODs(this.segmentsConfig, this.segmentsConstructors, [0], this.terrainGroup)
+        this.createLODs(this.segmentsConfig, this.segmentsConstructors, [0, 20], this.terrainGroup)
         this.createLODs(this.rocksConfig, this.rocksConstructors, [0], this.terrainGroup)
         this.app.scene.add(this.terrainGroup);
 

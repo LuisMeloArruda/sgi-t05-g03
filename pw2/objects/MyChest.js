@@ -8,7 +8,7 @@ class MyBasicChest extends THREE.Object3D {
     constructor(
         material = new THREE.MeshPhongMaterial({ color: 0x964B00, side: THREE.DoubleSide }),
         pearlMaterial = new THREE.MeshPhongMaterial(
-            { color: "0xbabbf1", specular: "0xffffff", emissive: "0xffffff", shininess: 1000, side: THREE.DoubleSide})
+            { color: 0xbabbf1, specular: 0xffffff, emissive: 0xffffff, shininess: 1000, side: THREE.DoubleSide})
     ) {
         super();
         this.material = material
@@ -71,7 +71,7 @@ class MyChest extends THREE.Object3D {
     constructor(
         material = new THREE.MeshPhongMaterial({ color: 0x964B00, side: THREE.DoubleSide }),
         pearlMaterial = new THREE.MeshPhongMaterial(
-            { color: "0xbabbf1", specular: "0xffffff", emissive: "0xffffff", shininess: 1000, side: THREE.DoubleSide})
+            { color: 0xbabbf1, specular: 0xffffff, emissive: 0xffffff, shininess: 1000, side: THREE.DoubleSide})
     ) {
         super();
         this.material = material
