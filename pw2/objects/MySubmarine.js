@@ -12,7 +12,6 @@ import * as THREE from 'three';
  */
 class MySubmarineControler extends THREE.Object3D {
   constructor(
-    displacement = new THREE.Vector3(0, 0, 0),
     rotationSpeed = 0.1, 
     yLimit = 0.5, 
     speedMax = 0.2,
@@ -21,8 +20,6 @@ class MySubmarineControler extends THREE.Object3D {
     friction = 0.002
   ) {
     super();
-
-    this.position.copy(displacement);
 
     this.mesh = null;
     this.speedHorizontal = 0;

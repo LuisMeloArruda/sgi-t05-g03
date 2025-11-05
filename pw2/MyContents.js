@@ -120,16 +120,22 @@ class MyContents  {
         this.submarineMaterial = new THREE.MeshPhongMaterial({
             color: "#ffff00", specular: "#000000", emissive: "#000000", shininess: 90
         })
-        const submarine_position = new THREE.Vector3(2, 1, 0);
-        this.submarineControler = new MySubmarineControler(submarine_position)
-        this.submarineLOD = new THREE.LOD();
-        this.submarineConfigs = [
+
+        const submarinePosition = new THREE.Vector3(2, 2, 0)
+        const submarineRotation = new THREE.Euler(0, Math.PI / 4, 0)
+        const submarineScale = new THREE.Vector3(0.8, 0.8, 0.8)
+        this.submarineControler = new MySubmarineControler()
+        this.submarineControler.position.copy(submarinePosition)
+        this.submarineControler.rotation.copy(submarineRotation)
+        this.submarineControler.scale.copy(submarineScale)
+
+        this.submarineLODConfigs = [
             {
-              position: new THREE.Vector3(0, 0, 0),
-              scale: new THREE.Vector3(0.8, 0.8, 0.8),
-              rotation: new THREE.Euler(0, 0, 0),
+                position: new THREE.Vector3(0, 0, 0),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(1, 1, 1),
             },
-          ];
+        ];
           
           this.submarineConstructors = [
             () => new MyBasicSubmarine(this.submarineMaterial),
@@ -168,8 +174,7 @@ class MyContents  {
         this.app.scene.add( this.planeMesh );
 
         // add submarine
-        this.createLODs(this.submarineConfigs, this.submarineConstructors, [0, 20], this.submarineLOD);
-        this.submarineControler.add(this.submarineLOD);
+        this.createLODs(this.submarineLODConfigs, this.submarineConstructors, [0, 20], this.submarineControler);
         this.app.scene.add(this.submarineControler);
         
         // add terrain
@@ -225,7 +230,7 @@ class MyContents  {
     /**
      * Updates the camera's position and target to follow the submarine while maintaining a constant offset
      */
-    updateSubmarineCamera() {
+    update3PersonSubmarine() {
         const camera = this.app.activeCamera;
         const controls = this.app.controls;
         
@@ -234,6 +239,36 @@ class MyContents  {
         camera.position.copy(this.submarineControler.position.clone().add(offset));
         
         controls.update();
+    }
+
+    /**
+     * Updates the camera's position and view to follow the submarine in first person
+     */
+    update1PersonSubmarine() {
+        const camera = this.app.activeCamera
+        const controls = this.app.controls
+        const submarine = this.submarineControler
+
+        // look foward
+        const forwardPoint = new THREE.Vector3(0, 0, -5);
+        const worldForward = forwardPoint.clone();
+        submarine.localToWorld(worldForward);
+        controls.target.copy(worldForward);
+        
+        // camera position
+        const box = new THREE.Box3().setFromObject(submarine);
+        const size = new THREE.Vector3();
+        box.getSize(size); 
+
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+
+        const localFront = new THREE.Vector3(0, 0, -size.z / 2);
+
+        const worldFront = localFront.clone();
+        submarine.localToWorld(worldFront);
+
+        camera.position.copy(worldFront);
     }
 
     /**
@@ -250,15 +285,26 @@ class MyContents  {
           }
 
         /**
-         * If the active camera is the submarine
+         * If the active camera is the 3PersonSubmarine
          * Sync camera position/orientation with submarine
          * Handle submarine input/movement
-         * Sync movement across all LOD levels
          */
-        if (this.app.activeCameraName === 'Submarine') {
-            this.updateSubmarineCamera();
+        if (this.app.activeCameraName === '3PersonSubmarine') this.update3PersonSubmarine();
+
+
+        /**
+         * If the active camera is the 1PersonSubmarine
+         * Sync camera position/orientation with submarine
+         */
+        if (this.app.activeCameraName === '1PersonSubmarine') this.update1PersonSubmarine()
+
+        /**
+         * Update Submarine position with keyboard
+         */
+        if (this.app.activeCameraName === 'Fixed' || 
+            this.app.activeCameraName === '1PersonSubmarine' ||
+            this.app.activeCameraName === '3PersonSubmarine') 
             this.submarineControler.update();
-        }
     }
 }
 
