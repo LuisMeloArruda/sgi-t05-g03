@@ -8,6 +8,7 @@ import { MyBubble } from './objects/MyBubble.js';
 import { MyFish } from './objects/MyFish.js';
 import { MyBasicFish } from './objects/MyFish.js';
 import { KeyframeObjectAnimator } from './System/KeyframeObjectAnimator.js'
+import { MyBasicChest, MyChest } from './objects/MyChest.js';
 
 /**
  *  This class contains the contents of out application
@@ -93,9 +94,9 @@ class MyContents  {
         this.fishesConfigs = []
         this.fishQuantity = 50
         
-        this.minX = -5, this.maxX = 5;
-        this.minY = 0,  this.maxY = 5;
-        this.minZ = -5, this.maxZ = 5;
+        this.minX = -10, this.maxX = 10;
+        this.minY = 0,  this.maxY = 10;
+        this.minZ = -10, this.maxZ = 10;
         for (let n = 0; n < this.fishQuantity; n++) {
             this.fishesConfigs.push({
                 position: new THREE.Vector3(
@@ -142,6 +143,17 @@ class MyContents  {
             () => new MyMidSubmarine(this.submarineMaterial),
           ];
 
+          // Chest related attributes 
+          this.chestsGroup = new THREE.Group()
+          this.chestsConfigs = [
+            {
+                position: new THREE.Vector3(6, 1, 0),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(1, 1, 1),
+            },
+        ];
+          this.chestsConstructors = [() => new MyChest(), () => new MyBasicChest()]
+
     }
 
     /**
@@ -163,15 +175,19 @@ class MyContents  {
 
         const pointlight = new THREE.PointLight( 0xffffff )
         pointlight.intensity = 25
-        pointlight.position.set(0, 3, 0)
+        pointlight.position.set(0, 5, 2)
         this.app.scene.add( pointlight )
         
         // Create a Plane Mesh with basic material
-        let plane = new THREE.PlaneGeometry( 10, 10 );
+        let plane = new THREE.PlaneGeometry( 20, 20 );
         this.planeMesh = new THREE.Mesh( plane, this.planeMaterial );
         this.planeMesh.rotation.x = -Math.PI / 2;
         this.planeMesh.position.y = -0;
         this.app.scene.add( this.planeMesh );
+
+        // add chest
+        this.createLODs(this.chestsConfigs, this.chestsConstructors, [0, 20], this.chestsGroup)
+        this.app.scene.add(this.chestsGroup)
 
         // add submarine
         this.createLODs(this.submarineLODConfigs, this.submarineConstructors, [0, 20], this.submarineControler);
@@ -195,7 +211,7 @@ class MyContents  {
         this.app.scene.add(this.fishesGroup);
 
         for (const lod of this.fishesGroup.children) {
-            const animator = new KeyframeObjectAnimator(lod, 60, 180, 
+            const animator = new KeyframeObjectAnimator(lod, 120, 1000, 
                 this.minX, this.maxX, this.minY, 
                 this.maxY, this.minZ, this.maxZ)
             this.fishAnimators.push(animator);
