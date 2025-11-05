@@ -35,7 +35,7 @@ class MyFish extends THREE.Object3D {
         tail_width = 0.1,
         height = 0.3,
         depth = 0.4,
-        subdivisions = 10,
+        subdivisions = 7,
         material = new THREE.MeshStandardMaterial({
             skinning: true,
             metalness: 0.2,
@@ -235,16 +235,20 @@ class MyFish extends THREE.Object3D {
         const end_y = 0;
 
         const vertices = [
-            start_x + (end_x - start_x) * this.upper_fin_start, start_y + (end_y - start_y) * this.upper_fin_start, 0,
             0, this.height / 2, 0,
-            start_x + (end_x - start_x) * this.upper_fin_end, start_y + (end_y - start_y) * this.upper_fin_end, 0,
         ];
+        
+        for (let percentage = this.upper_fin_start; percentage < this.upper_fin_end; percentage += 1 / this.subdivisions) {
+            vertices.push(start_x + (end_x - start_x) * percentage, start_y + (end_y - start_y) * percentage, 0);
+        }
+        vertices.push(start_x + (end_x - start_x) * this.upper_fin_end, start_y + (end_y - start_y) * this.upper_fin_end, 0);
 
-        const indices = [
-            2, 1, 0,
-            // Double side
-            1, 2, 0
-        ];
+        const indices = [];
+        
+        for (let vertice = 2; vertice < vertices.length / 3; vertice++) {
+            indices.push(vertice, 0, vertice - 1);
+            indices.push(0, vertice, vertice - 1);
+        }
 
         return { vertices, indices };
     }
