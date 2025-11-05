@@ -7,6 +7,7 @@ import { MyBasicCoral, MyCoral } from './objects/MyCoral.js';
 import { MyBubble } from './objects/MyBubble.js';
 import { MyFish } from './objects/MyFish.js';
 import { MyBasicFish } from './objects/MyFish.js';
+import { KeyframeObjectAnimator } from './System/KeyframeObjectAnimator.js'
 
 /**
  *  This class contains the contents of out application
@@ -89,20 +90,26 @@ class MyContents  {
         
         // Fishes related attributes
         this.fishesGroup = new THREE.Group();
-        this.fishesGroup.translateY(1.5);
-        this.fishesConfigs = [
-            {
-              position: new THREE.Vector3(0, 0, 0),
-              scale: new THREE.Vector3(0.3, 0.3, 0.3),
-              rotation: new THREE.Euler(0, 0, 0),
-            },
-            {
-              position: new THREE.Vector3(0.5, 0.5, 0.5),
-              scale: new THREE.Vector3(0.3, 0.3, 0.3),
-              rotation: new THREE.Euler(0, 0, 0),
-            },
-          ];  
+        this.fishesConfigs = []
+        this.fishQuantity = 50
+        
+        this.minX = -5, this.maxX = 5;
+        this.minY = 0,  this.maxY = 5;
+        this.minZ = -5, this.maxZ = 5;
+        for (let n = 0; n < this.fishQuantity; n++) {
+            this.fishesConfigs.push({
+                position: new THREE.Vector3(
+                    Math.random() * (this.maxX - this.minX) + this.minX,
+                    Math.random() * (this.maxY - this.minY) + this.minY,
+                    Math.random() * (this.maxZ - this.minZ) + this.minZ
+                  ),
+                scale: new THREE.Vector3(0.3, 0.3, 0.3),
+                rotation: new THREE.Euler(0, Math.PI / 2, 0),
+              })
+        }
+ 
         this.fishContructors = [() => new MyFish(), () => new MyBasicFish]
+        this.fishAnimators = []
 
         // Plane related attributes
         this.planeMaterial = new THREE.MeshPhongMaterial({
@@ -113,19 +120,26 @@ class MyContents  {
         this.submarineMaterial = new THREE.MeshPhongMaterial({
             color: "#ffff00", specular: "#000000", emissive: "#000000", shininess: 90
         })
-        this.submarineControler = new MySubmarineControler(new THREE.Vector3(0, 0, 0))
-        this.submarineLOD = new THREE.LOD();
-        this.submarineConfigs = [
+
+        const submarinePosition = new THREE.Vector3(2, 2, 0)
+        const submarineRotation = new THREE.Euler(0, Math.PI / 4, 0)
+        const submarineScale = new THREE.Vector3(0.8, 0.8, 0.8)
+        this.submarineControler = new MySubmarineControler()
+        this.submarineControler.position.copy(submarinePosition)
+        this.submarineControler.rotation.copy(submarineRotation)
+        this.submarineControler.scale.copy(submarineScale)
+
+        this.submarineLODConfigs = [
             {
-              position: new THREE.Vector3(0, 0, 0),
-              scale: new THREE.Vector3(1, 1, 1),
-              rotation: new THREE.Euler(0, 0, 0),
+                position: new THREE.Vector3(0, 0, 0),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(1, 1, 1),
             },
-          ];
+        ];
           
           this.submarineConstructors = [
-            () => new MyMidSubmarine(1, this.submarineMaterial),
-            () => new MyBasicSubmarine(1, this.submarineMaterial),
+            () => new MyBasicSubmarine(this.submarineMaterial),
+            () => new MyMidSubmarine(this.submarineMaterial),
           ];
 
     }
@@ -144,8 +158,13 @@ class MyContents  {
 
         // add an ambient light
         const ambientLight = new THREE.AmbientLight( 0x555555 );
-        ambientLight.intensity = 50;
+        ambientLight.intensity = 1;
         this.app.scene.add( ambientLight );
+
+        const pointlight = new THREE.PointLight( 0xffffff )
+        pointlight.intensity = 25
+        pointlight.position.set(0, 3, 0)
+        this.app.scene.add( pointlight )
         
         // Create a Plane Mesh with basic material
         let plane = new THREE.PlaneGeometry( 10, 10 );
@@ -155,8 +174,8 @@ class MyContents  {
         this.app.scene.add( this.planeMesh );
 
         // add submarine
-        this.createLODs(this.submarineConfigs, this.submarineConstructors, [0, 20], this.submarineLOD);
-        this.app.scene.add(this.submarineLOD);
+        this.createLODs(this.submarineLODConfigs, this.submarineConstructors, [0, 20], this.submarineControler);
+        this.app.scene.add(this.submarineControler);
         
         // add terrain
         this.createLODs(this.segmentsConfig, this.segmentsConstructors, [0], this.terrainGroup)
@@ -174,6 +193,13 @@ class MyContents  {
         // add fishes
         this.createLODs(this.fishesConfigs, this.fishContructors, [0, 20], this.fishesGroup)
         this.app.scene.add(this.fishesGroup);
+
+        for (const lod of this.fishesGroup.children) {
+            const animator = new KeyframeObjectAnimator(lod, 60, 180, 
+                this.minX, this.maxX, this.minY, 
+                this.maxY, this.minZ, this.maxZ)
+            this.fishAnimators.push(animator);
+        }
     }
 
 
@@ -204,7 +230,7 @@ class MyContents  {
     /**
      * Updates the camera's position and target to follow the submarine while maintaining a constant offset
      */
-    updateSubmarineCamera() {
+    update3PersonSubmarine() {
         const camera = this.app.activeCamera;
         const controls = this.app.controls;
         
@@ -216,23 +242,69 @@ class MyContents  {
     }
 
     /**
-     * synchronization submarine LOD and Controller
+     * Updates the camera's position and view to follow the submarine in first person
      */
-    syncsSubmarineLOD() {
-        this.submarineLOD.position.copy(this.submarineControler.position);
-        this.submarineLOD.rotation.copy(this.submarineControler.rotation);
+    update1PersonSubmarine() {
+        const camera = this.app.activeCamera
+        const controls = this.app.controls
+        const submarine = this.submarineControler
+
+        // look foward
+        const forwardPoint = new THREE.Vector3(0, 0, -5);
+        const worldForward = forwardPoint.clone();
+        submarine.localToWorld(worldForward);
+        controls.target.copy(worldForward);
+        
+        // camera position
+        const box = new THREE.Box3().setFromObject(submarine);
+        const size = new THREE.Vector3();
+        box.getSize(size); 
+
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+
+        const localFront = new THREE.Vector3(0, 0, -size.z / 2);
+
+        const worldFront = localFront.clone();
+        submarine.localToWorld(worldFront);
+
+        camera.position.copy(worldFront);
     }
 
     /**
      * updates the contents
      * this method is called from the render method of the app
-     * 
      */
     update() {
-        this.submarineControler.update();
-        this.syncsSubmarineLOD()
 
-        if (this.app.activeCameraName === 'Submarine') this.updateSubmarineCamera();
+        /**
+         * Update all fish animations (positions + lookAt direction)
+         */
+        for (const animator of this.fishAnimators) {
+            animator.update();
+          }
+
+        /**
+         * If the active camera is the 3PersonSubmarine
+         * Sync camera position/orientation with submarine
+         * Handle submarine input/movement
+         */
+        if (this.app.activeCameraName === '3PersonSubmarine') this.update3PersonSubmarine();
+
+
+        /**
+         * If the active camera is the 1PersonSubmarine
+         * Sync camera position/orientation with submarine
+         */
+        if (this.app.activeCameraName === '1PersonSubmarine') this.update1PersonSubmarine()
+
+        /**
+         * Update Submarine position with keyboard
+         */
+        if (this.app.activeCameraName === 'Fixed' || 
+            this.app.activeCameraName === '1PersonSubmarine' ||
+            this.app.activeCameraName === '3PersonSubmarine') 
+            this.submarineControler.update();
     }
 }
 
