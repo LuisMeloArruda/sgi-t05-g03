@@ -83,6 +83,10 @@ class MyApp  {
 
         // manage window resizes
         window.addEventListener('resize', this.onResize.bind(this), false );
+        
+        // Clock used for animations
+        this.timer = new THREE.Timer();
+        this.timer.connect(document);
     }
 
     /**

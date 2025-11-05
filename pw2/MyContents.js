@@ -108,7 +108,7 @@ class MyContents  {
               })
         }
  
-        this.fishContructors = [() => new MyFish(), () => new MyBasicFish]
+        this.fishContructors = [() => new MyFish(app), () => new MyBasicFish]
         this.fishAnimators = []
 
         // Plane related attributes
@@ -276,6 +276,9 @@ class MyContents  {
      * this method is called from the render method of the app
      */
     update() {
+        this.fishesGroup.children.forEach((lod) => {
+            lod.children.forEach((fish) => fish.update());
+        });
 
         /**
          * Update all fish animations (positions + lookAt direction)
