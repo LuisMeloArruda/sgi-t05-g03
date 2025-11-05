@@ -159,7 +159,7 @@ class MyFish extends THREE.Object3D {
         for (let face = 2; face < this.base_vertices + 2; face++) {
             const left_end = 0;
             const next_face_vertice = ((face - 2 + 1) % this.base_vertices) + 2;
-            indices.push(face, next_face_vertice, left_end);
+            indices.push(next_face_vertice, face, left_end);
         }
 
         let start_idx = 2;
@@ -202,21 +202,19 @@ class MyFish extends THREE.Object3D {
 
     build_tail() {
         const vertices = [
-            this.body_width / 2,
-            0,
-            0,
-            this.body_width / 2 + this.tail_width * this.tail_filling,
-            0,
-            0,
-            this.body_width / 2 + this.tail_width,
-            this.height / 2,
-            0,
-            this.body_width / 2 + this.tail_width,
-            -this.height / 2,
-            0,
+            this.body_width / 2, 0, 0,
+            this.body_width / 2 + this.tail_width * this.tail_filling, 0, 0,
+            this.body_width / 2 + this.tail_width, this.height / 2, 0,
+            this.body_width / 2 + this.tail_width, -this.height / 2, 0,
         ];
 
-        const indices = [2, 0, 1, 1, 0, 3];
+        const indices = [
+            2, 0, 1,
+            1, 0, 3,
+            // Double side
+            0, 2, 1,
+            0, 1, 3
+        ];
 
         return { vertices, indices };
     }
@@ -228,18 +226,16 @@ class MyFish extends THREE.Object3D {
         const end_y = 0;
 
         const vertices = [
-            start_x + (end_x - start_x) * this.upper_fin_start,
-            start_y + (end_y - start_y) * this.upper_fin_start,
-            0,
-            0,
-            this.height / 2,
-            0,
-            start_x + (end_x - start_x) * this.upper_fin_end,
-            start_y + (end_y - start_y) * this.upper_fin_end,
-            0,
+            start_x + (end_x - start_x) * this.upper_fin_start, start_y + (end_y - start_y) * this.upper_fin_start, 0,
+            0, this.height / 2, 0,
+            start_x + (end_x - start_x) * this.upper_fin_end, start_y + (end_y - start_y) * this.upper_fin_end, 0,
         ];
 
-        const indices = [2, 1, 0];
+        const indices = [
+            2, 1, 0,
+            // Double side
+            1, 2, 0
+        ];
 
         return { vertices, indices };
     }
