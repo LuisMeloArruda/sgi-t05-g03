@@ -47,7 +47,6 @@ class MyCoral extends THREE.Object3D {
 
     build() {
         this.makeDna();
-        console.log("Dna: ", this.dna);
         
         for (let i = 0; i < 5; i++) {
             this.update();
@@ -75,11 +74,8 @@ class MyCoral extends THREE.Object3D {
 
     update() {
         if (this.dna.length < this.max_dna_size && this.genePtr < this.dna.length) this.growDna();
-        const change_to_grow = 0.005;
-        for (let i = 0; i < 20; i++) {
-            const is_grow =  Math.random() < change_to_grow;
-            if (is_grow) this.grow();   
-        }
+        const chance_to_grow = 0.1;
+        if (Math.random() < chance_to_grow) this.grow();   
     }
 
     growDna() {
@@ -94,10 +90,10 @@ class MyCoral extends THREE.Object3D {
                 {prob: 0.05, rule: 'ER'},
             ],
             'C': [
-                {prob: 0.62, rule: 'EC'},
-                {prob: 0.10, rule: '[+?C][-!C]'},
-                {prob: 0.10, rule: '[+^C][-&C]'},
-                {prob: 0.10, rule: '[?^C][!&C]'},
+                {prob: 0.47, rule: 'EC'},
+                {prob: 0.15, rule: '[+?CCC]C[-!C]'},
+                {prob: 0.15, rule: '[+^C]CC[-&CCC]'},
+                {prob: 0.15, rule: '[?^CC]CCC[!&CC]'},
                 {prob: 0.07, rule: '[++??&C][--!!&C][+?^^C]'},
                 {prob: 0.01, rule: 'E'},
             ],
@@ -117,7 +113,7 @@ class MyCoral extends THREE.Object3D {
         for (let char of rest) {
             mutation_chance = mutation_chance > 0 ? mutation_chance : 0;
             if (rules[char]) {
-                if (mutation_chance > Math.random()) nextStr += 'C'.repeat((Math.random()*5));
+                if (mutation_chance > Math.random()) nextStr += 'E'.repeat((Math.random()*5));
                 nextStr += this.chooseNextRule(rules[char]);
             } else {
                 nextStr += char;
@@ -151,10 +147,10 @@ class MyCoral extends THREE.Object3D {
         if (this.genePtr >= this.dna.length) {
             return;
         }
-        const pitchAng = 15 * THREE.MathUtils.DEG2RAD;
-        const rollAng = 15 * THREE.MathUtils.DEG2RAD;
-        const yawAng = 10 * THREE.MathUtils.DEG2RAD;
-        const varAng = 9 * THREE.MathUtils.DEG2RAD;
+        const pitchAng = 20 * THREE.MathUtils.DEG2RAD * (0.7 > Math.random() ? 1 : -1);
+        const rollAng = 20 * THREE.MathUtils.DEG2RAD * (0.6 > Math.random() ? 1 : -1);
+        const yawAng = 13 * THREE.MathUtils.DEG2RAD * (0.7 > Math.random() ? 1 : -1);
+        const varAng = 7 * THREE.MathUtils.DEG2RAD * (0.5 > Math.random() ? 1 : -1);
         
         let branchLen = 0.3;
         const lenFact = 1;
