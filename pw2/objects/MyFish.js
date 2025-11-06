@@ -36,12 +36,9 @@ class MyFish extends THREE.Object3D {
         height = 0.3,
         depth = 0.4,
         subdivisions = 7,
-        material = new THREE.MeshStandardMaterial({
-            skinning: true,
-            metalness: 0.2,
-            roughness: 0.8,
+        material = new THREE.MeshPhongMaterial({
             color: 0x1e66f5,
-        }), // TODO
+        })
     ) {
         super();
         this.app = app;
@@ -85,6 +82,7 @@ class MyFish extends THREE.Object3D {
                 "position",
                 new THREE.Float32BufferAttribute(this.vertices, 3),
             );
+        geometry.computeVertexNormals();
 
         // TODO: Remove magic numbers 0.05 and 0.2
         // let left_pectoral_fin = this.build_pectoral_fin();
