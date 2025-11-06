@@ -1,24 +1,96 @@
 import * as THREE from "three";
 
-// TODO: This is only a placeholder
-class MyRock extends THREE.Object3D {
+class MyBasicRock extends THREE.Object3D {
 
     constructor(
-        // TODO
-        material = new THREE.MeshBasicMaterial({color: 0x4c4f69, side: THREE.DoubleSide})
+        material = new THREE.MeshPhongMaterial({ color: 0x4c4f69, side: THREE.DoubleSide })
     ) {
         super();
-        // TODO
         this.material = material;
         this.build();
     }
 
     build() {
-        // TODO
         const geometry = new THREE.BoxGeometry();
         let mesh = new THREE.Mesh(geometry, this.material);
         this.add(mesh);
     }
 }
 
-export { MyRock };
+class MyRock extends THREE.Object3D {
+
+    constructor(
+        material = new THREE.MeshPhongMaterial({
+            color: 0x4c4f69,
+            flatShading: true,
+            shininess: 10,
+            side: THREE.DoubleSide
+        }),
+        segments = 12,
+        noise = 0.25,
+    ) {
+        super();
+        this.material = material
+        this.segments = segments
+        this.noise = noise
+        this.build()
+    }
+
+    build() {
+        const geometry = new THREE.BufferGeometry()
+        const positions = []
+        const indices = []
+
+        for (let y = 0; y <= this.segments; y++) {
+            const v = y / this.segments
+            const phi = v * Math.PI
+
+            for (let x = 0; x <= this.segments; x++) {
+                const u = x / this.segments
+                const theta = u * Math.PI * 2
+
+                const px = Math.sin(phi) * Math.cos(theta)
+                const py = Math.cos(phi)
+                const pz = Math.sin(phi) * Math.sin(theta)
+
+                const displacement = 1 + THREE.MathUtils.randFloatSpread(this.noise)
+
+                positions.push(
+                    px * displacement,
+                    py * displacement,
+                    pz * displacement
+                );
+            }
+        }
+
+        for (let y = 0; y < this.segments; y++) {
+            for (let x = 0; x < this.segments; x++) {
+                const a = y * (this.segments + 1) + x
+                const b = a + this.segments + 1
+                const c = b + 1
+                const d = a + 1
+
+                if (x < this.segments - 1) {
+                    indices.push(a, b, d)
+                    indices.push(b, c, d)
+                } else {
+                    const a2 = y * (this.segments + 1) + x
+                    const b2 = a2 + this.segments + 1
+                    const c2 = y * (this.segments + 1)
+                    const d2 = (y + 1) * (this.segments + 1)
+                    indices.push(a2, b2, c2)
+                    indices.push(b2, d2, c2)
+                }
+            }
+        }
+
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+        geometry.setIndex(indices)
+        geometry.computeVertexNormals()
+
+        const mesh = new THREE.Mesh(geometry, this.material)
+        this.add(mesh)
+    }
+}
+
+export { MyBasicRock, MyRock };

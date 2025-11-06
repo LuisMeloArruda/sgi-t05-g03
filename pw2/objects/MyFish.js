@@ -4,7 +4,7 @@ import { MyApp } from "../MyApp.js";
 // TODO: This is only a placeholder
 class MyBasicFish extends THREE.Object3D {
     constructor(
-        material = new THREE.MeshBasicMaterial({
+        material = new THREE.MeshPhongMaterial({
             color: 0x1e66f5,
             side: THREE.DoubleSide,
         }),
