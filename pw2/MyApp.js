@@ -59,14 +59,14 @@ class MyApp  {
                 
         // Create an empty scene
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color( 0x999999 );
+        this.scene.background = new THREE.Color( 0x10212a );
 
         this.stats = new Stats()
         this.stats.showPanel(1) // 0: fps, 1: ms, 2: mb, 3+: custom
         document.body.appendChild(this.stats.dom)
 
         this.initCameras();
-        this.setActiveCamera('Submarine')
+        this.setActiveCamera('3PersonSubmarine')
 
         this.initPolygonalMode();
 
@@ -83,6 +83,10 @@ class MyApp  {
 
         // manage window resizes
         window.addEventListener('resize', this.onResize.bind(this), false );
+        
+        // Clock used for animations
+        this.timer = new THREE.Timer();
+        this.timer.connect(document);
     }
 
     /**
@@ -96,15 +100,19 @@ class MyApp  {
         freeFly.position.set(0,5,10)
         this.cameras['FreeFly'] = freeFly
 
-        // Create a submarine perspective camera
-        let submarineCamera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000)
-        submarineCamera.position.set(0,5,10)
-        this.cameras['Submarine'] = submarineCamera
+        // Create a 3 person submarine perspective camera
+        let thirdPersonView = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000)
+        thirdPersonView.position.set(0,5,10)
+        this.cameras['3PersonSubmarine'] = thirdPersonView
 
         // Create a fixed perspective camera
         let fixedCamera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000)
         fixedCamera.position.set(0,10,15)
         this.cameras['Fixed'] = fixedCamera
+
+        // Create a 1 person submarine perspective camera
+        let firstPersonView = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000)
+        this.cameras['1PersonSubmarine'] = firstPersonView
     }
 
     /**
@@ -155,7 +163,7 @@ class MyApp  {
                     // Mouse lock down
                     this.renderer.domElement.addEventListener('click', this._onCanvasClick);
                     break;
-                case 'Submarine':
+                case '3PersonSubmarine':
                     // Orbit controls allow the camera to orbit around a target.
                     this.controls = new OrbitControls( this.activeCamera, this.renderer.domElement );
                     this.controls.enableZoom = true
@@ -163,25 +171,16 @@ class MyApp  {
                     this.contents.submarineControler.setupListeners()
                     break;
                 case 'Fixed':
+                case '1PersonSubmarine':
                     this.controls = new OrbitControls( this.activeCamera, this.renderer.domElement );
                     this.controls.enableZoom = false
                     this.controls.enableRotate = false
-                    this.contents.submarineGroup.setupListeners()
+                    this.controls.enabled = false
+                    this.contents.submarineControler.setupListeners()
                     break;
                 default:
                     this.controls.object = this.activeCamera
             }
-
-            if (this.activeCameraName === 'FreeFly') {
-
-            }
-            else if (this.activeCameraName === 'Submarine') {
-
-            }
-            else if (this.activeCameraName === 'Fixed') {
-
-            }
-        
         }
     }
 
