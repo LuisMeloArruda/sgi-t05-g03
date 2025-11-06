@@ -312,6 +312,14 @@ class MyContents  {
             lod.children.forEach((fish) => fish.update());
         });
 
+        for (let child of this.coralsGroup.children) {
+            if (child.type === "LOD") {
+                for (let grand of child.children) {
+                    grand.update();
+                }
+            }
+        }
+
         /**
          * Update all fish animations (positions + lookAt direction)
          */
