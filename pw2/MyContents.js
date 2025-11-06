@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { MyAxis } from './MyAxis.js';
 import { MySubmarineControler, MyMidSubmarine, MyBasicSubmarine} from './objects/MySubmarine.js';
->import { MyBasicRock, MyRock} from './objects/MyRock.js';
+import { MyBasicRock, MyRock} from './objects/MyRock.js';
 import { MyTerrainSegment } from './objects/MyTerrainSegment.js';
 import { MyBasicCoral, MyCoral } from './objects/MyCoral.js';
 import { MyBubble } from './objects/MyBubble.js';
