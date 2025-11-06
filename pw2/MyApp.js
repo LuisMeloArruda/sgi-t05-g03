@@ -59,7 +59,7 @@ class MyApp  {
                 
         // Create an empty scene
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color( 0x999999 );
+        this.scene.background = new THREE.Color( 0x10212a );
 
         this.stats = new Stats()
         this.stats.showPanel(1) // 0: fps, 1: ms, 2: mb, 3+: custom
