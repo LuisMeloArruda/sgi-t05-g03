@@ -26,12 +26,13 @@ class MyCoral extends THREE.Object3D {
 
     constructor(
         material = new THREE.MeshPhongMaterial({color: 0xea76cb, side: THREE.DoubleSide}),
-        complexity = 20,
+        max_dna_size = 1_000,
     ) {
         super();
         this.material = material;
         this.stack = [];
-        this.dna = null;
+        this.max_dna_size = max_dna_size;
+        this.dna = 'ER';
         this.genePtr = 0;
         this.group = new THREE.Group();
         this.group.scale.setScalar(0.3);
@@ -41,11 +42,12 @@ class MyCoral extends THREE.Object3D {
             quaternion: new THREE.Quaternion(),
         };
         this.branchLen = 0.3;
-        this.build(complexity);
+        this.build();
     }
 
-    build(complexity) {
-        this.makeDna(complexity);
+    build() {
+        this.makeDna();
+        console.log("Dna: ", this.dna);
         
         for (let i = 0; i < 5; i++) {
             this.update();
@@ -66,7 +68,21 @@ class MyCoral extends THREE.Object3D {
          
     }
 
-    makeDna(complexity) {
+    makeDna() {
+        // Very simple initial DNA
+        for (let i = 0; i < 4; ++i) this.growDna();
+    }
+
+    update() {
+        if (this.dna.length < this.max_dna_size && this.genePtr < this.dna.length) this.growDna();
+        const change_to_grow = 0.005;
+        for (let i = 0; i < 20; i++) {
+            const is_grow =  Math.random() < change_to_grow;
+            if (is_grow) this.grow();   
+        }
+    }
+
+    growDna() {
         // ops
         // Pitch ^ up  | & dwn (X)
         // Yaw   - lft | + rgt (Y)
@@ -90,41 +106,53 @@ class MyCoral extends THREE.Object3D {
             ]
         }
 
-        const axiom = 'R';
 
-        const any_log = (base, val) => Math.log10(val)/Math.log10(base); 
-        
+        // const any_log = (base, val) => Math.log10(val)/Math.log10(base); 
+    
         // Calc string
-        this.dna = axiom;
-        for (let i = 0; i < complexity; i++) {
-            let nextStr = '';
-            for (const char of this.dna) {
-                if (rules[char]) {
-                    nextStr += this.chooseNextRule(rules[char]);
-                } else {
-                    nextStr += char;
+        let mutation_chance = 0;
+        let generated = this.dna.slice(0, this.genePtr);
+        let rest = this.dna.slice(this.genePtr, this.dna.length);
+        let nextStr = '';
+        for (let char of rest) {
+            mutation_chance = mutation_chance > 0 ? mutation_chance : 0;
+            if (rules[char]) {
+                if (mutation_chance > Math.random()) nextStr += 'C'.repeat((Math.random()*5));
+                nextStr += this.chooseNextRule(rules[char]);
+            } else {
+                nextStr += char;
+                switch (char) {
+                    case '[': {
+                        mutation_chance += 0.05;
+                    }
+                    case ']': {
+                        mutation_chance -= 0.05;
+                    }
+                    case '+':
+                    case '-': {
+                        mutation_chance += 0.1;
+                    }
+                    case '^':
+                    case '&': {
+                        mutation_chance -= 0.1;
+                    }
+                    case '?': 
+                    case '!': {
+                        mutation_chance += 0.01;
+                    }
+                    
                 }
             }
-            this.dna = nextStr;
-            if (this.dna.length >= Math.pow(complexity,any_log(3,complexity))) {
-                console.log("hit limit");
-                return;
-            }
-        }        
-    }
-
-    update() {
-        for (let i = 0; i < 20; i++) {
-            this.grow();   
         }
+        this.dna = generated + nextStr;
     }
 
     grow() {
         if (this.genePtr >= this.dna.length) {
             return;
         }
-        const pitchAng = 10 * THREE.MathUtils.DEG2RAD;
-        const rollAng = 10 * THREE.MathUtils.DEG2RAD;
+        const pitchAng = 15 * THREE.MathUtils.DEG2RAD;
+        const rollAng = 15 * THREE.MathUtils.DEG2RAD;
         const yawAng = 10 * THREE.MathUtils.DEG2RAD;
         const varAng = 9 * THREE.MathUtils.DEG2RAD;
         
@@ -159,7 +187,7 @@ class MyCoral extends THREE.Object3D {
                 const scale = new THREE.Vector3(1, branchLen, 1);
                 instMatrix.compose(startPos, orientation, scale);
                 // this.branchMatrices.push(instMatrix);
-                const branchGeo = new THREE.CylinderGeometry(0.1, 0.1, 1, 6, 1);
+                const branchGeo = new THREE.CylinderGeometry(0.05, 0.05, 1, 6, 1);
                 branchGeo.translate(0, 0.5,0);
                 const branchMat = this.material;
 
