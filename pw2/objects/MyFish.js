@@ -29,7 +29,6 @@ class MyBasicFish extends THREE.Object3D {
 
 class MyFish extends THREE.Object3D {
     constructor(
-        app,
         body_width = 1,
         head_width = 0.2,
         tail_width = 0.1,
@@ -38,10 +37,10 @@ class MyFish extends THREE.Object3D {
         subdivisions = 7,
         material = new THREE.MeshPhongMaterial({
             color: 0x1e66f5,
+            side: THREE.BackSide // TODO
         })
     ) {
         super();
-        this.app = app;
         this.body_width = body_width;
         this.head_width = head_width;
         this.tail_width = tail_width;
@@ -55,6 +54,8 @@ class MyFish extends THREE.Object3D {
         this.upper_fin_end = 0.7;
         this.anim_duration = 1.5;
         this.anim_angle = Math.PI / 180 * 45;
+        this.timer = new THREE.Timer();
+        this.timer.connect(document);
         this.build();
     }
 
@@ -268,8 +269,8 @@ class MyFish extends THREE.Object3D {
     }
     
     update() {
-        this.app.timer.update();
-        const timeElapsed = this.app.timer.getElapsed();
+        this.timer.update();
+        const timeElapsed = this.timer.getElapsed();
         const t = - (Math.cos(Math.PI * timeElapsed / this.anim_duration) - 1) / 2;
         const rotation = t * this.anim_angle - (this.anim_angle / 2);
         this.bones[1].rotation.y = rotation;

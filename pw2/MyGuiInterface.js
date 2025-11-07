@@ -35,6 +35,14 @@ class MyGuiInterface  {
         cameraFolder.add(this.app, 'polygonalMode', ['Fill', 'Wireframe']).name('polygonal mode');
         // note that we are using a property from the app 
         cameraFolder.open()
+        
+        const boidFolder = this.datgui.addFolder('Boid')
+        boidFolder.add(this.app.contents.boid, 'cohesion', 0, 3, 0.01).listen()
+        boidFolder.add(this.app.contents.boid, 'separation', 0, 3, 0.01).listen()
+        boidFolder.add(this.app.contents.boid, 'alignment', 0, 3, 0.01).listen()
+        boidFolder.add(this.app.contents.boid, 'moveSpeed', 0.1, 5, 0.1).listen()
+        boidFolder.add(this.app.contents.boid, 'awareness', 0, 50, 0.1).listen()
+        boidFolder.open()
     }
 }
 
