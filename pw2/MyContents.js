@@ -95,10 +95,7 @@ class MyContents  {
                     0.3,
                     0.4,
                     7,
-                    new THREE.MeshPhongMaterial({
-                        color: 0x8839EF,
-                        side: THREE.BackSide, // TODO
-                    }),
+                    new THREE.MeshPhongMaterial({color: 0x8839EF}),
                 ),
             () => new MyBasicFish(),
         ]

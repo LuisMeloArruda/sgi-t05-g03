@@ -37,7 +37,6 @@ class MyFish extends THREE.Object3D {
         subdivisions = 7,
         material = new THREE.MeshPhongMaterial({
             color: 0x1e66f5,
-            side: THREE.BackSide // TODO
         })
     ) {
         super();
@@ -163,13 +162,15 @@ class MyFish extends THREE.Object3D {
             }
         }
 
+        // Head
         let indices = [];
         for (let face = 2; face < this.base_vertices + 2; face++) {
             const left_end = 0;
             const next_face_vertice = ((face - 2 + 1) % this.base_vertices) + 2;
-            indices.push(next_face_vertice, face, left_end);
+            indices.push(face, next_face_vertice, left_end);
         }
 
+        // Subdivisions
         let start_idx = 2;
         for (
             let subdivision = 0;
@@ -188,11 +189,12 @@ class MyFish extends THREE.Object3D {
                     ((face + 1) % this.base_vertices) +
                     vertices_already_counted +
                     this.base_vertices;
-                indices.push(this_idx, next_vertice, next_face_and_vertice);
-                indices.push(next_face_and_vertice, next_face, this_idx);
+                indices.push(next_vertice, this_idx, next_face_and_vertice);
+                indices.push(next_face, next_face_and_vertice, this_idx);
             }
         }
-
+        
+        // Connection between last base and tail
         start_idx = 2 + this.subdivisions * this.base_vertices;
         for (
             let face = start_idx;
@@ -202,7 +204,7 @@ class MyFish extends THREE.Object3D {
             const right_end = 1;
             const next_face_vertice =
                 ((face - start_idx + 1) % this.base_vertices) + start_idx;
-            indices.push(right_end, next_face_vertice, face);
+            indices.push(next_face_vertice, right_end, face);
         }
 
         return { vertices, indices };
@@ -253,20 +255,20 @@ class MyFish extends THREE.Object3D {
     }
 
     // TODO: Parameterize the pectoral fin
-    build_pectoral_fin() {
-        const vertices = [0, 0, 0, 0.2, 0, 0, 0.1, -0.1, 0, 0, -0.05, 0];
+    // build_pectoral_fin() {
+    //     const vertices = [0, 0, 0, 0.2, 0, 0, 0.1, -0.1, 0, 0, -0.05, 0];
 
-        const indices = [0, 3, 2, 1, 0, 2];
+    //     const indices = [0, 3, 2, 1, 0, 2];
 
-        let geometry = new THREE.BufferGeometry();
-        geometry.setIndex(indices);
-        geometry.setAttribute(
-            "position",
-            new THREE.Float32BufferAttribute(vertices, 3),
-        );
-        const mesh = new THREE.Mesh(geometry, this.material);
-        return mesh;
-    }
+    //     let geometry = new THREE.BufferGeometry();
+    //     geometry.setIndex(indices);
+    //     geometry.setAttribute(
+    //         "position",
+    //         new THREE.Float32BufferAttribute(vertices, 3),
+    //     );
+    //     const mesh = new THREE.Mesh(geometry, this.material);
+    //     return mesh;
+    // }
     
     update() {
         this.timer.update();
