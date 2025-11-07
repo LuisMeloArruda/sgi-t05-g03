@@ -88,9 +88,6 @@ class MyContents  {
  
         this.fishContructors = [() => new MyFish(app), () => new MyBasicFish]
         this.fishAnimators = []
-        
-        // Boid related attributes
-        this.boid = new MyBoid();
 
         // Submarine related attributes
         this.submarineMaterial = new THREE.MeshPhongMaterial({
@@ -176,6 +173,8 @@ class MyContents  {
         }
         this.rocksConstructors = [()=> new MyRock(), () => new MyBasicRock()]
 
+        // Boid related attributes
+        this.boid = new MyBoid([this.submarineControler]);
     }
 
     /**

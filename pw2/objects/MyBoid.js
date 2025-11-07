@@ -3,6 +3,7 @@ import { MyFish } from "./MyFish.js";
 
 class MyBoid extends THREE.Object3D {
     constructor(
+        dangerous_entities,
         cohesion = 2,
         separation = 2,
         alignment = 2,
@@ -14,6 +15,7 @@ class MyBoid extends THREE.Object3D {
         dangerSize = 5,
     ) {
         super();
+        this.dangerous_entities = dangerous_entities;
         this.cohesion = cohesion;
         this.separation = separation;
         this.alignment = alignment;
@@ -98,20 +100,32 @@ class MyBoid extends THREE.Object3D {
             fish.acceleration.add(fish.cohesion);
             fish.acceleration.add(fish.separation);
 
-            // boundary avoidance
-            const lowerDangerZone = this.lowerLimit.clone().addScalar(this.dangerSize);
-            const upperDangerZone = this.upperLimit.clone().subScalar(this.dangerSize);
-            if (fish.position.x <= lowerDangerZone.x / 2) fish.boundavoid.setX(1);
-            else if (fish.position.x >= upperDangerZone.x / 2) fish.boundavoid.setX(-1);
-            if (fish.position.y <= lowerDangerZone.y / 2) fish.boundavoid.setY(1);
-            else if (fish.position.y >= upperDangerZone.y / 2) fish.boundavoid.setY(-1);
-            if (fish.position.z <= lowerDangerZone.z / 2) fish.boundavoid.setZ(1);
-            else if (fish.position.z >= upperDangerZone.z / 2) fish.boundavoid.setZ(-1);
-
-            fish.boundavoid.setLength(Math.min(1, this.moveSpeed));
-
-            fish.acceleration.add(fish.boundavoid);
-
+            // boundary and danger avoidance
+            let danger_found = false;
+            for (const entity of this.dangerous_entities) {
+                if (fish.position.distanceTo(entity.position) <= this.dangerSize) {
+                    danger_found = true;
+                    fish.boundavoid.add(fish.position.clone().sub(entity.position).normalize())
+                }
+            }
+            
+            if (danger_found) {
+                fish.boundavoid.setLength(this.moveSpeed);
+            } else {
+                const lowerDangerZone = this.lowerLimit.clone().addScalar(this.dangerSize);
+                const upperDangerZone = this.upperLimit.clone().subScalar(this.dangerSize);
+                if (fish.position.x <= lowerDangerZone.x / 2) fish.boundavoid.setX(1);
+                else if (fish.position.x >= upperDangerZone.x / 2) fish.boundavoid.setX(-1);
+                if (fish.position.y <= lowerDangerZone.y / 2) fish.boundavoid.setY(1);
+                else if (fish.position.y >= upperDangerZone.y / 2) fish.boundavoid.setY(-1);
+                if (fish.position.z <= lowerDangerZone.z / 2) fish.boundavoid.setZ(1);
+                else if (fish.position.z >= upperDangerZone.z / 2) fish.boundavoid.setZ(-1);
+    
+                fish.boundavoid.setLength(Math.min(1, this.moveSpeed));
+            }
+            
+            fish.acceleration.add(fish.boundavoid);  
+            
             if (
                 !fish.position ||
                 !fish.alignment ||
