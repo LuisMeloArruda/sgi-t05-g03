@@ -10,6 +10,7 @@ import { MyBasicFish } from './objects/MyFish.js';
 import { KeyframeObjectAnimator } from './System/KeyframeObjectAnimator.js'
 import { MyBasicChest, MyChest } from './objects/MyChest.js';
 import { SpaceManager } from './System/SpaceManager.js'
+import { MyBoid } from './objects/MyBoid.js';
 
 /**
  *  This class contains the contents of out application
@@ -117,7 +118,19 @@ class MyContents  {
               })
         }
  
-        this.fishContructors = [() => new MyFish(app), () => new MyBasicFish]
+        this.fishContructors = [
+            () =>
+                new MyFish(
+                    1,
+                    0.2,
+                    0.1,
+                    0.3,
+                    0.4,
+                    7,
+                    new THREE.MeshPhongMaterial({color: 0x8839EF}),
+                ),
+            () => new MyBasicFish(),
+        ]
         this.fishAnimators = []
 
         // Submarine related attributes
@@ -204,6 +217,15 @@ class MyContents  {
         }
         this.rocksConstructors = [()=> new MyRock(), () => new MyBasicRock()]
 
+        // Boid related attributes
+        this.boid = new MyBoid([this.submarineControler], () => {
+            const group = new THREE.Group();
+            const lod = new THREE.LOD();
+            lod.addLevel(new MyFish(), 0);
+            lod.addLevel(new MyBasicFish(), 20);
+            group.add(lod);
+            return group;
+        });
     }
 
     /**
@@ -264,6 +286,8 @@ class MyContents  {
                 this.maxY, this.minZ, this.maxZ)
             this.fishAnimators.push(animator);
         }
+        
+        this.app.scene.add(this.boid);
     }
 
 
@@ -343,6 +367,8 @@ class MyContents  {
         this.fishesGroup.children.forEach((lod) => {
             lod.children.forEach((fish) => fish.update());
         });
+        
+        this.boid.update();
 
         for (let child of this.coralsGroup.children) {
             if (child.type === "LOD") {

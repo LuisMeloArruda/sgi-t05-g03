@@ -29,22 +29,17 @@ class MyBasicFish extends THREE.Object3D {
 
 class MyFish extends THREE.Object3D {
     constructor(
-        app,
         body_width = 1,
         head_width = 0.2,
         tail_width = 0.1,
         height = 0.3,
         depth = 0.4,
         subdivisions = 7,
-        material = new THREE.MeshStandardMaterial({
-            skinning: true,
-            metalness: 0.2,
-            roughness: 0.8,
+        material = new THREE.MeshPhongMaterial({
             color: 0x1e66f5,
-        }), // TODO
+        })
     ) {
         super();
-        this.app = app;
         this.body_width = body_width;
         this.head_width = head_width;
         this.tail_width = tail_width;
@@ -58,6 +53,8 @@ class MyFish extends THREE.Object3D {
         this.upper_fin_end = 0.7;
         this.anim_duration = 1.5;
         this.anim_angle = Math.PI / 180 * 45;
+        this.timer = new THREE.Timer();
+        this.timer.connect(document);
         this.build();
     }
 
@@ -85,6 +82,7 @@ class MyFish extends THREE.Object3D {
                 "position",
                 new THREE.Float32BufferAttribute(this.vertices, 3),
             );
+        geometry.computeVertexNormals();
 
         // TODO: Remove magic numbers 0.05 and 0.2
         // let left_pectoral_fin = this.build_pectoral_fin();
@@ -164,13 +162,15 @@ class MyFish extends THREE.Object3D {
             }
         }
 
+        // Head
         let indices = [];
         for (let face = 2; face < this.base_vertices + 2; face++) {
             const left_end = 0;
             const next_face_vertice = ((face - 2 + 1) % this.base_vertices) + 2;
-            indices.push(next_face_vertice, face, left_end);
+            indices.push(face, next_face_vertice, left_end);
         }
 
+        // Subdivisions
         let start_idx = 2;
         for (
             let subdivision = 0;
@@ -189,11 +189,12 @@ class MyFish extends THREE.Object3D {
                     ((face + 1) % this.base_vertices) +
                     vertices_already_counted +
                     this.base_vertices;
-                indices.push(this_idx, next_vertice, next_face_and_vertice);
-                indices.push(next_face_and_vertice, next_face, this_idx);
+                indices.push(next_vertice, this_idx, next_face_and_vertice);
+                indices.push(next_face, next_face_and_vertice, this_idx);
             }
         }
-
+        
+        // Connection between last base and tail
         start_idx = 2 + this.subdivisions * this.base_vertices;
         for (
             let face = start_idx;
@@ -203,7 +204,7 @@ class MyFish extends THREE.Object3D {
             const right_end = 1;
             const next_face_vertice =
                 ((face - start_idx + 1) % this.base_vertices) + start_idx;
-            indices.push(right_end, next_face_vertice, face);
+            indices.push(next_face_vertice, right_end, face);
         }
 
         return { vertices, indices };
@@ -254,24 +255,24 @@ class MyFish extends THREE.Object3D {
     }
 
     // TODO: Parameterize the pectoral fin
-    build_pectoral_fin() {
-        const vertices = [0, 0, 0, 0.2, 0, 0, 0.1, -0.1, 0, 0, -0.05, 0];
+    // build_pectoral_fin() {
+    //     const vertices = [0, 0, 0, 0.2, 0, 0, 0.1, -0.1, 0, 0, -0.05, 0];
 
-        const indices = [0, 3, 2, 1, 0, 2];
+    //     const indices = [0, 3, 2, 1, 0, 2];
 
-        let geometry = new THREE.BufferGeometry();
-        geometry.setIndex(indices);
-        geometry.setAttribute(
-            "position",
-            new THREE.Float32BufferAttribute(vertices, 3),
-        );
-        const mesh = new THREE.Mesh(geometry, this.material);
-        return mesh;
-    }
+    //     let geometry = new THREE.BufferGeometry();
+    //     geometry.setIndex(indices);
+    //     geometry.setAttribute(
+    //         "position",
+    //         new THREE.Float32BufferAttribute(vertices, 3),
+    //     );
+    //     const mesh = new THREE.Mesh(geometry, this.material);
+    //     return mesh;
+    // }
     
     update() {
-        this.app.timer.update();
-        const timeElapsed = this.app.timer.getElapsed();
+        this.timer.update();
+        const timeElapsed = this.timer.getElapsed();
         const t = - (Math.cos(Math.PI * timeElapsed / this.anim_duration) - 1) / 2;
         const rotation = t * this.anim_angle - (this.anim_angle / 2);
         this.bones[1].rotation.y = rotation;
