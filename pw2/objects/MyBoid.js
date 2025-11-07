@@ -4,6 +4,7 @@ import { MyFish } from "./MyFish.js";
 class MyBoid extends THREE.Object3D {
     constructor(
         dangerous_entities,
+        fish_constructor = () => new MyFish(),
         cohesion = 2,
         separation = 2,
         alignment = 2,
@@ -16,6 +17,7 @@ class MyBoid extends THREE.Object3D {
     ) {
         super();
         this.dangerous_entities = dangerous_entities;
+        this.fish_constructor = fish_constructor;
         this.cohesion = cohesion;
         this.separation = separation;
         this.alignment = alignment;
@@ -35,7 +37,7 @@ class MyBoid extends THREE.Object3D {
 
     build() {
         for (let i = 0; i < this.totalFishes; i++) {
-            const fish = new MyFish(this.app);
+            const fish = this.fish_constructor();
             fish.alignment = new THREE.Vector3(0, 0, 0);
             fish.cohesion = new THREE.Vector3(0, 0, 0);
             fish.separation = new THREE.Vector3(0, 0, 0);

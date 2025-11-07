@@ -174,7 +174,14 @@ class MyContents  {
         this.rocksConstructors = [()=> new MyRock(), () => new MyBasicRock()]
 
         // Boid related attributes
-        this.boid = new MyBoid([this.submarineControler]);
+        this.boid = new MyBoid([this.submarineControler], () => {
+            const group = new THREE.Group();
+            const lod = new THREE.LOD();
+            lod.addLevel(new MyFish(), 0);
+            lod.addLevel(new MyBasicFish(), 20);
+            group.add(lod);
+            return group;
+        });
     }
 
     /**
