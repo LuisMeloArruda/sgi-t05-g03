@@ -86,7 +86,22 @@ class MyContents  {
               })
         }
  
-        this.fishContructors = [() => new MyFish(app), () => new MyBasicFish]
+        this.fishContructors = [
+            () =>
+                new MyFish(
+                    1,
+                    0.2,
+                    0.1,
+                    0.3,
+                    0.4,
+                    7,
+                    new THREE.MeshPhongMaterial({
+                        color: 0x8839EF,
+                        side: THREE.BackSide, // TODO
+                    }),
+                ),
+            () => new MyBasicFish(),
+        ]
         this.fishAnimators = []
 
         // Submarine related attributes
@@ -234,7 +249,7 @@ class MyContents  {
 
         // add fishes
         this.createLODs(this.fishesConfigs, this.fishContructors, [0, 20], this.fishesGroup)
-        // this.app.scene.add(this.fishesGroup);
+        this.app.scene.add(this.fishesGroup);
 
         for (const lod of this.fishesGroup.children) {
             const animator = new KeyframeObjectAnimator(lod, 120, 5000, 
