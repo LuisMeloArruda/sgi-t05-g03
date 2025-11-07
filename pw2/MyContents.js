@@ -25,6 +25,7 @@ class MyContents  {
         this.app = app
         this.axis = null
 
+
         // Terrain related attributes       
         this.terrainGroup = new THREE.Group()
         this.terrain = new MyTerrainSegment()
@@ -37,30 +38,31 @@ class MyContents  {
         // this.coralsGroup.translateX(-2);
         // this.coralsGroup.translateY(0.1);
         // this.coralsGroup.translateZ(2);
+        
         this.coralsConfig = [];
-        const coralQuantity = 30;
+        const coralQuantity = 300;
         for (let i = 0; i < coralQuantity; i++) {
             let x, z, y
             let valid = false
             let tries = 0
 
             while (!valid && tries < 50) {
-                x = (Math.random() - 0.5) * (this.terrain.width / 4)
-                z = (Math.random() - 0.5) * (this.terrain.height / 4)
+                x = (Math.random() - 0.5) * (this.terrain.width)
+                z = (Math.random() - 0.5) * (this.terrain.height)
                 y = this.terrain.getHeightAt(x, z)
                 tries++
 
-                valid = this.space.isFree(x, z, 0.5)
+                valid = this.space.isFree(x, z, 0.1)
             }
 
             if (!valid) continue;
 
-            this.space.occupy(x, z, 0.5, "coral");
+            this.space.occupy(x, z, 0.1, "coral");
+            const scaleFact = 
+                THREE.MathUtils.randFloat(0.1, 0.75);
 
             const scale = new THREE.Vector3(
-                THREE.MathUtils.randFloat(0.5, 0.75),
-                THREE.MathUtils.randFloat(0.5, 0.75),
-                THREE.MathUtils.randFloat(0.5, 0.75)
+                scaleFact,scaleFact,scaleFact
             );
 
             const rotation = new THREE.Euler(
@@ -404,6 +406,7 @@ class MyContents  {
             this.app.activeCameraName === '1PersonSubmarine' ||
             this.app.activeCameraName === '3PersonSubmarine') 
             this.submarineControler.update();
+
     }
 }
 
