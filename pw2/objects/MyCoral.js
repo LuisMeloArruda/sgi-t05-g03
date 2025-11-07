@@ -26,7 +26,7 @@ class MyCoral extends THREE.Object3D {
 
     constructor(
         material = new THREE.MeshPhongMaterial({color: 0xea76cb, side: THREE.DoubleSide}),
-        max_dna_size = 1_000,
+        max_dna_size = 1_000 * (0.25 + Math.random() * 0.75),
     ) {
         super();
         this.material = material;
@@ -79,9 +79,11 @@ class MyCoral extends THREE.Object3D {
     }
 
     update() {
-        if (this.dna.length < this.max_dna_size && this.genePtr < this.dna.length) this.growDna();
         const chance_to_grow = 0.1;
-        if (Math.random() < chance_to_grow) this.grow();   
+        if (Math.random() < chance_to_grow) {
+            if (this.dna.length < this.max_dna_size && this.genePtr < this.dna.length) this.growDna();
+            this.grow();
+        }   
     }
 
     growDna() {
