@@ -34,17 +34,47 @@ class MyContents  {
 
         // Corals related attributes
         this.coralsGroup = new THREE.Group();
-        this.coralsGroup.translateX(-2);
-        this.coralsGroup.translateY(0.1);
-        this.coralsGroup.translateZ(2);
+        // this.coralsGroup.translateX(-2);
+        // this.coralsGroup.translateY(0.1);
+        // this.coralsGroup.translateZ(2);
+        this.coralsConfig = [];
+        const coralQuantity = 30;
+        for (let i = 0; i < coralQuantity; i++) {
+            let x, z, y
+            let valid = false
+            let tries = 0
 
-        this.coralsConfig = [
-            {
-                position: new THREE.Vector3(0, 0, 0),
-                scale: new THREE.Vector3(1, 1, 1),
-                rotation: new THREE.Euler(0, 0, 0),
-            },
-        ]
+            while (!valid && tries < 50) {
+                x = (Math.random() - 0.5) * (this.terrain.width / 4)
+                z = (Math.random() - 0.5) * (this.terrain.height / 4)
+                y = this.terrain.getHeightAt(x, z)
+                tries++
+
+                valid = this.space.isFree(x, z, 0.5)
+            }
+
+            if (!valid) continue;
+
+            this.space.occupy(x, z, 0.5, "coral");
+
+            const scale = new THREE.Vector3(
+                THREE.MathUtils.randFloat(0.5, 0.75),
+                THREE.MathUtils.randFloat(0.5, 0.75),
+                THREE.MathUtils.randFloat(0.5, 0.75)
+            );
+
+            const rotation = new THREE.Euler(
+                0,
+                THREE.MathUtils.randFloat(0, Math.PI * 2),
+                0
+            );
+
+            this.coralsConfig.push({
+                position: new THREE.Vector3(x, y, z),
+                scale: scale,
+                rotation: rotation,
+            });
+        }
         this.coralsConstructors = [() => new MyCoral(), () => new MyBasicCoral()]
 
         // Bubbles related attributes
