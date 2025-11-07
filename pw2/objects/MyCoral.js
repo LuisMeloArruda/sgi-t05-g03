@@ -25,14 +25,14 @@ class MyBasicCoral extends THREE.Object3D {
 class MyCoral extends THREE.Object3D {
 
     constructor(
-        material = new THREE.MeshPhongMaterial({color: 0xea76cb, side: THREE.DoubleSide}),
-        max_dna_size = 1_000 * (0.25 + Math.random() * 0.75),
+        material = new THREE.MeshPhongMaterial({color: 0xea76cb, }),
+        max_dna_size = 500 * (0.25 + Math.random() * 0.75),
     ) {
         super();
         this.material = material;
         const loader = new THREE.TextureLoader();
-        const texture = loader.load("objects/assets/coral_ground_02_rough_4k.jpg");
-        const bump = loader.load("objects/assets/coral_fort_wall_01_ao_4k.jpg");
+        const texture = loader.load("objects/assets/coral_ground_02_rough_480p.jpg");
+        const bump = loader.load("objects/assets/coral_fort_wall_01_ao_480p.jpg");
         texture.colorSpace = THREE.SRGBColorSpace;
         this.material.map = texture;
         this.material.bumpMap = bump;
