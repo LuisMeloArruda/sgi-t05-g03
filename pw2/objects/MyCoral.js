@@ -3,7 +3,7 @@ import * as THREE from "three";
 class MyBasicCoral extends THREE.Object3D {
 
     constructor(
-        material = new THREE.MeshBasicMaterial({color: 0xea76cb, side: THREE.DoubleSide, })
+        material = new THREE.MeshPhongMaterial({color: 0xea76cb, side: THREE.DoubleSide, })
     ) {
         super();
         this.material = material;
@@ -29,6 +29,8 @@ class MyCoral extends THREE.Object3D {
         max_dna_size = 5000 * (0.25 + Math.random() * 0.75),
     ) {
         super();
+        this.clock = new THREE.Timer();
+        this.clock.connect(document);
         this.material = material;
         const loader = new THREE.TextureLoader();
         const texture = loader.load("objects/assets/coral_ground_02_rough_480p.jpg");
@@ -36,6 +38,33 @@ class MyCoral extends THREE.Object3D {
         texture.colorSpace = THREE.SRGBColorSpace;
         this.material.map = texture;
         this.material.bumpMap = bump;
+        this.material.userData.time = { value: 0 };
+        this.material.onBeforeCompile = (shader) => {
+          shader.uniforms.time = this.material.userData.time;  
+          // Manual vertex projection, might not work on different/future versions
+          shader.vertexShader =
+              `
+              uniform float time;
+              `
+              + shader.vertexShader.replace(
+              '#include <project_vertex>',
+              `
+              vec4 mvPosition = vec4( transformed, 1.0 );
+              mvPosition = instanceMatrix * mvPosition;
+  
+              float coralAlpha = time;
+              float sway1 = 0.2 * cos(sin(mod(0.5 * coralAlpha, 2.0 * PI)));
+              float sway2 = 0.2 * sin(cos(mod(0.5 * coralAlpha, 2.0 * PI)));
+              
+              mvPosition.x += mvPosition.y * sway1;
+              mvPosition.z += mvPosition.y * sway2;
+  
+              mvPosition = modelViewMatrix * mvPosition;
+              gl_Position = projectionMatrix * mvPosition;
+              `
+          );  
+        }
+        
         this.stack = [];
         this.max_dna_size = max_dna_size;
         this.dna = 'ER';
@@ -65,11 +94,9 @@ class MyCoral extends THREE.Object3D {
     build() {
         this.makeDna();
         
-        for (let i = 0; i < 5; i++) {
-            this.update();
-        }
         this.group.add(this.branchMesh);
         this.add(this.group);
+
     }
 
     chooseNextRule(options) {
@@ -90,6 +117,8 @@ class MyCoral extends THREE.Object3D {
     }
 
     update() {
+        this.clock.update();
+        this.material.userData.time.value = this.clock.getElapsed();
         if (this.dna.length < this.max_dna_size && this.genePtr < this.dna.length) this.growDna();
         const chance_to_grow = 0.1;
         if (Math.random() < chance_to_grow) {
@@ -134,7 +163,7 @@ class MyCoral extends THREE.Object3D {
         for (let char of rest) {
             mutation_chance = mutation_chance > 0 ? mutation_chance : 0;
             if (rules[char]) {
-                if (mutation_chance > Math.random()) nextStr += 'E'.repeat((Math.random()*5));
+                if (mutation_chance > Math.random()) nextStr += 'E'.repeat((Math.random()*5)) + 'C';
                 nextStr += this.chooseNextRule(rules[char]);
             } else {
                 nextStr += char;
