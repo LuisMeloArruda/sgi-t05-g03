@@ -10,6 +10,7 @@ import { MyBasicFish } from './objects/MyFish.js';
 import { KeyframeObjectAnimator } from './System/KeyframeObjectAnimator.js'
 import { MyBasicChest, MyChest } from './objects/MyChest.js';
 import { SpaceManager } from './System/SpaceManager.js'
+import { MyBoid } from './objects/MyBoid.js';
 
 /**
  *  This class contains the contents of out application
@@ -87,6 +88,9 @@ class MyContents  {
  
         this.fishContructors = [() => new MyFish(app), () => new MyBasicFish]
         this.fishAnimators = []
+        
+        // Boid related attributes
+        this.boid = new MyBoid();
 
         // Submarine related attributes
         this.submarineMaterial = new THREE.MeshPhongMaterial({
@@ -224,7 +228,7 @@ class MyContents  {
 
         // add fishes
         this.createLODs(this.fishesConfigs, this.fishContructors, [0, 20], this.fishesGroup)
-        this.app.scene.add(this.fishesGroup);
+        // this.app.scene.add(this.fishesGroup);
 
         for (const lod of this.fishesGroup.children) {
             const animator = new KeyframeObjectAnimator(lod, 120, 5000, 
@@ -232,6 +236,8 @@ class MyContents  {
                 this.maxY, this.minZ, this.maxZ)
             this.fishAnimators.push(animator);
         }
+        
+        this.app.scene.add(this.boid);
     }
 
 
@@ -311,6 +317,8 @@ class MyContents  {
         this.fishesGroup.children.forEach((lod) => {
             lod.children.forEach((fish) => fish.update());
         });
+        
+        this.boid.update();
 
         for (let child of this.coralsGroup.children) {
             if (child.type === "LOD") {

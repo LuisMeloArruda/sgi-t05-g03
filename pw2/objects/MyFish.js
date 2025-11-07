@@ -38,6 +38,7 @@ class MyFish extends THREE.Object3D {
         subdivisions = 7,
         material = new THREE.MeshPhongMaterial({
             color: 0x1e66f5,
+            side: THREE.BackSide // TODO
         })
     ) {
         super();
