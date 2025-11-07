@@ -3,7 +3,7 @@ import * as THREE from "three";
 class MyBasicCoral extends THREE.Object3D {
 
     constructor(
-        material = new THREE.MeshBasicMaterial({color: 0xea76cb, side: THREE.DoubleSide})
+        material = new THREE.MeshBasicMaterial({color: 0xea76cb, side: THREE.DoubleSide, })
     ) {
         super();
         this.material = material;
@@ -30,6 +30,12 @@ class MyCoral extends THREE.Object3D {
     ) {
         super();
         this.material = material;
+        const loader = new THREE.TextureLoader();
+        const texture = loader.load("objects/assets/coral_ground_02_rough_4k.jpg");
+        const bump = loader.load("objects/assets/coral_fort_wall_01_ao_4k.jpg");
+        texture.colorSpace = THREE.SRGBColorSpace;
+        this.material.map = texture;
+        this.material.bumpMap = bump;
         this.stack = [];
         this.max_dna_size = max_dna_size;
         this.dna = 'ER';
@@ -183,7 +189,7 @@ class MyCoral extends THREE.Object3D {
                 const scale = new THREE.Vector3(1, branchLen, 1);
                 instMatrix.compose(startPos, orientation, scale);
                 // this.branchMatrices.push(instMatrix);
-                const branchGeo = new THREE.CylinderGeometry(0.05, 0.05, 1, 6, 1);
+                const branchGeo = new THREE.CylinderGeometry(0.05, 0.05, 1, 5, 1);
                 branchGeo.translate(0, 0.5,0);
                 const branchMat = this.material;
 
