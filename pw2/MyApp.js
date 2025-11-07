@@ -87,6 +87,7 @@ class MyApp  {
         // Clock used for animations
         this.timer = new THREE.Timer();
         this.timer.connect(document);
+
     }
 
     /**

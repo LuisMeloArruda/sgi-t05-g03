@@ -26,7 +26,7 @@ class MyCoral extends THREE.Object3D {
 
     constructor(
         material = new THREE.MeshPhongMaterial({color: 0xea76cb, }),
-        max_dna_size = 500 * (0.25 + Math.random() * 0.75),
+        max_dna_size = 5000 * (0.25 + Math.random() * 0.75),
     ) {
         super();
         this.material = material;
@@ -40,15 +40,26 @@ class MyCoral extends THREE.Object3D {
         this.max_dna_size = max_dna_size;
         this.dna = 'ER';
         this.genePtr = 0;
+        this.placedCount = 0;
         this.group = new THREE.Group();
         this.group.scale.setScalar(0.3);
-        // this.branchMatrices = [];
+        this.branchMatrices = [];
         this.turtle = {
             position: new THREE.Vector3(0,0,0),
             quaternion: new THREE.Quaternion(),
         };
+        this.branchMesh = this.makeNewMesh(this.max_dna_size);
         this.branchLen = 0.3;
         this.build();
+    }
+
+    makeNewMesh(size) {
+        const branchGeo = new THREE.CylinderGeometry(0.05, 0.05, 1, 5, 1);
+        branchGeo.translate(0, 0.5,0);
+        const branchMat = this.material;
+        const branchMesh = new THREE.InstancedMesh(branchGeo, branchMat, size);
+        branchMesh.name = "🪸";
+        return branchMesh;
     }
 
     build() {
@@ -57,7 +68,7 @@ class MyCoral extends THREE.Object3D {
         for (let i = 0; i < 5; i++) {
             this.update();
         }
-        
+        this.group.add(this.branchMesh);
         this.add(this.group);
     }
 
@@ -79,10 +90,12 @@ class MyCoral extends THREE.Object3D {
     }
 
     update() {
+        if (this.dna.length < this.max_dna_size && this.genePtr < this.dna.length) this.growDna();
         const chance_to_grow = 0.1;
         if (Math.random() < chance_to_grow) {
-            if (this.dna.length < this.max_dna_size && this.genePtr < this.dna.length) this.growDna();
             this.grow();
+            this.group.clear();
+            this.group.add(this.branchMesh);
         }   
     }
 
@@ -190,16 +203,20 @@ class MyCoral extends THREE.Object3D {
                 const orientation = new THREE.Quaternion().setFromUnitVectors(axisY,forward.clone().normalize());
                 const scale = new THREE.Vector3(1, branchLen, 1);
                 instMatrix.compose(startPos, orientation, scale);
-                // this.branchMatrices.push(instMatrix);
-                const branchGeo = new THREE.CylinderGeometry(0.05, 0.05, 1, 5, 1);
-                branchGeo.translate(0, 0.5,0);
-                const branchMat = this.material;
+                this.branchMatrices.push(instMatrix);
+                if (this.branchMatrices.length >= this.branchMesh.count) {
+                    console.log("Making new mesh");
+                    this.branchMesh = this.makeNewMesh(this.branchMesh.count * 2);
+                    for (let i = 0; i < this.branchMatrices.length; i++) {
+                        this.branchMesh.setMatrixAt(i, this.branchMatrices[i]);
+                    }
+                }
 
-                const branchMesh = new THREE.InstancedMesh(branchGeo, branchMat, 1);
-                branchMesh.name = "🪸";
-                branchMesh.setMatrixAt(0, instMatrix);
+                // console.log("Adding matrix to place ", this.placedCount);
+                this.branchMesh.setMatrixAt(this.placedCount, instMatrix);
+                this.branchMesh.instanceMatrix.needsUpdate = true;
+                this.placedCount += 1;
 
-                this.group.add(branchMesh);
                 break;   
             }
             case '+': {
