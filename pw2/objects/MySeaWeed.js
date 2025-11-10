@@ -1,9 +1,9 @@
 import * as THREE from "three";
 
-class MyBasicCoral extends THREE.Object3D {
+class MyBasicSeaweed extends THREE.Object3D {
 
     constructor(
-        material = new THREE.MeshPhongMaterial({color: 0xea76cb, side: THREE.DoubleSide, })
+        material = new THREE.MeshPhongMaterial({color: 0x5C4F25, side: THREE.DoubleSide, })
     ) {
         super();
         this.material = material;
@@ -22,11 +22,11 @@ class MyBasicCoral extends THREE.Object3D {
     update() {}
 }
 
-class MyCoral extends THREE.Object3D {
+class MySeaweed extends THREE.Object3D {
 
     constructor(
-        material = new THREE.MeshPhongMaterial({color: 0xea76cb, }),
-        max_dna_size = 5000 * (0.25 + Math.random() * 0.75),
+        material = new THREE.MeshPhongMaterial({color: 0x5C4F25, side: THREE.DoubleSide }),
+        max_dna_size = 20000 * (0.25 + Math.random() * 0.75),
     ) {
         super();
         this.clock = new THREE.Timer();
@@ -64,7 +64,7 @@ class MyCoral extends THREE.Object3D {
               `
           );  
         }
-        
+
         this.doneGrowing = false;
         this.growthFactor = 1;
         this.stack = [];
@@ -85,14 +85,14 @@ class MyCoral extends THREE.Object3D {
     }
 
     makeNewMesh(size) {
-        const branchGeo = new THREE.CylinderGeometry(0.05, 0.05, 1, 5, 1);
+        const branchGeo = new THREE.PlaneGeometry(0.5,1,1,1);
         branchGeo.translate(0, 0.5,0);
         const branchMat = this.material;
         const branchMesh = new THREE.InstancedMesh(branchGeo, branchMat, size);
-        branchMesh.name = "🪸";
+        branchMesh.name = "🌿";
         return branchMesh;
     }
-    
+
     clearGenetics() {
         this.dna = null;
         this.stack = null;
@@ -128,10 +128,11 @@ class MyCoral extends THREE.Object3D {
         this.material.userData.time.value = this.clock.getElapsed();
         if (this.dna === null) return;
         if (this.genePtr >= this.dna.length) {
-            // console.log("Finished Growning: gf(", this.growthFactor, "), dna(",this.dna.length,")");
+            console.log("Finished Growning: gf(", this.growthFactor, "), dna(",this.dna.length,")");
             this.clearGenetics();
             return;
         }
+
         if (this.dna.length < this.max_dna_size && this.genePtr < this.dna.length && this.growthFactor !== 0) this.growDna();
         const chance_to_grow = 0.1;
         if (Math.random() < chance_to_grow) {
@@ -155,7 +156,7 @@ class MyCoral extends THREE.Object3D {
                 {prob: 0.05, rule: 'ER'},
             ],
             'C': [
-                {prob: 0.47, rule: 'EC'},
+                {prob: 0.47, rule: 'ECCC'},
                 {prob: 0.15, rule: '[+?CCC]C[-!C]'},
                 {prob: 0.15, rule: '[+^C]CC[-&CCC]'},
                 {prob: 0.15, rule: '[?^CC]CCC[!&CC]'},
@@ -214,8 +215,8 @@ class MyCoral extends THREE.Object3D {
         }
         const pitchAng = 20 * THREE.MathUtils.DEG2RAD * (0.7 > Math.random() ? 1 : -1);
         const rollAng = 20 * THREE.MathUtils.DEG2RAD * (0.6 > Math.random() ? 1 : -1);
-        const yawAng = 13 * THREE.MathUtils.DEG2RAD * (0.7 > Math.random() ? 1 : -1);
-        const varAng = 7 * THREE.MathUtils.DEG2RAD * (0.5 > Math.random() ? 1 : -1);
+        const yawAng = 1 * THREE.MathUtils.DEG2RAD * (0.7 > Math.random() ? 1 : -1);
+        const varAng = 0.5 * THREE.MathUtils.DEG2RAD * (0.5 > Math.random() ? 1 : -1);
         
         let branchLen = 0.3;
         const lenFact = 1;
@@ -249,7 +250,7 @@ class MyCoral extends THREE.Object3D {
                 instMatrix.compose(startPos, orientation, scale);
                 this.branchMatrices.push(instMatrix);
                 if (this.branchMatrices.length >= this.branchMesh.count) {
-                    console.info("Making new mesh");
+                    console.log("Making new mesh");
                     this.branchMesh = this.makeNewMesh(this.branchMesh.count * 2);
                     for (let i = 0; i < this.branchMatrices.length; i++) {
                         this.branchMesh.setMatrixAt(i, this.branchMatrices[i]);
@@ -310,4 +311,4 @@ class MyCoral extends THREE.Object3D {
     }
  }
 
-export { MyCoral, MyBasicCoral};
+export { MySeaweed as MySeaweed, MyBasicSeaweed as MyBasicSeaweed };
