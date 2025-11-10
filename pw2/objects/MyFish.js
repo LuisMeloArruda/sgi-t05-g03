@@ -51,7 +51,7 @@ class MyFish extends THREE.Object3D {
         this.tail_filling = 0.5;
         this.upper_fin_start = 0.2;
         this.upper_fin_end = 0.7;
-        this.anim_duration = 1.5;
+        this.anim_duration = 0.5;
         this.anim_angle = Math.PI / 180 * 45;
         this.timer = new THREE.Timer();
         this.timer.connect(document);
