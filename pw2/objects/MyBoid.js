@@ -145,6 +145,7 @@ class MyBoid extends THREE.Object3D {
         this.timer.update();
         const t = this.timer.getDelta();
         for (const fish of this.fishes) {
+            fish.update();
             fish.position.addScaledVector(fish.velocity, t);
             fish.velocity.add(fish.acceleration);
             fish.velocity.clampLength(-this.moveSpeed, this.moveSpeed);

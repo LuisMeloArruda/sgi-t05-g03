@@ -266,6 +266,11 @@ class MyContents  {
         // Boid related attributes
         this.boid = new MyBoid([this.submarineControler], () => {
             const group = new THREE.Group();
+            group.update = () => {
+                group.children[0].children.forEach((fish) => {
+                    fish.update();
+                })
+            };
             const lod = new THREE.LOD();
             lod.addLevel(new MyFish(), 0);
             lod.addLevel(new MyBasicFish(), 20);
