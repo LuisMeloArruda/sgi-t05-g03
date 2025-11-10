@@ -64,7 +64,9 @@ class MySeaweed extends THREE.Object3D {
               `
           );  
         }
-        
+
+        this.doneGrowing = false;
+        this.growthFactor = 1;
         this.stack = [];
         this.max_dna_size = max_dna_size;
         this.dna = 'ER';
@@ -89,6 +91,11 @@ class MySeaweed extends THREE.Object3D {
         const branchMesh = new THREE.InstancedMesh(branchGeo, branchMat, size);
         branchMesh.name = "🌿";
         return branchMesh;
+    }
+
+    clearGenetics() {
+        this.dna = null;
+        this.stack = null;
     }
 
     build() {
@@ -119,12 +126,21 @@ class MySeaweed extends THREE.Object3D {
     update() {
         this.clock.update();
         this.material.userData.time.value = this.clock.getElapsed();
-        if (this.dna.length < this.max_dna_size && this.genePtr < this.dna.length) this.growDna();
+        if (this.dna === null) return;
+        if (this.genePtr >= this.dna.length) {
+            console.log("Finished Growning: gf(", this.growthFactor, "), dna(",this.dna.length,")");
+            this.clearGenetics();
+            return;
+        }
+
+        if (this.dna.length < this.max_dna_size && this.genePtr < this.dna.length && this.growthFactor !== 0) this.growDna();
         const chance_to_grow = 0.1;
         if (Math.random() < chance_to_grow) {
+            const prev_size = this.dna.length;
             this.grow();
             this.group.clear();
             this.group.add(this.branchMesh);
+            this.growthFactor = this.dna.length - prev_size;
         }   
     }
 
