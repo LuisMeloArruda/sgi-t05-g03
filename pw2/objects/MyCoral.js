@@ -128,7 +128,7 @@ class MyCoral extends THREE.Object3D {
         this.material.userData.time.value = this.clock.getElapsed();
         if (this.dna === null) return;
         if (this.genePtr >= this.dna.length) {
-            console.log("Finished Growning: gf(", this.growthFactor, "), dna(",this.dna.length,")");
+            // console.log("Finished Growning: gf(", this.growthFactor, "), dna(",this.dna.length,")");
             this.clearGenetics();
             return;
         }
@@ -249,7 +249,7 @@ class MyCoral extends THREE.Object3D {
                 instMatrix.compose(startPos, orientation, scale);
                 this.branchMatrices.push(instMatrix);
                 if (this.branchMatrices.length >= this.branchMesh.count) {
-                    console.log("Making new mesh");
+                    console.info("Making new mesh");
                     this.branchMesh = this.makeNewMesh(this.branchMesh.count * 2);
                     for (let i = 0; i < this.branchMatrices.length; i++) {
                         this.branchMesh.setMatrixAt(i, this.branchMatrices[i]);
