@@ -13,15 +13,15 @@ import * as THREE from 'three';
 class MySubmarineControler extends THREE.Object3D {
   constructor(
     rotationSpeed = 0.1, 
-    yLimit = 0.5, 
+    yLimit = -10, 
     speedMax = 0.2,
     accelerationHorizontal = 0.005, 
     accelerationVertical = 0.005, 
-    friction = 0.002
+    friction = 0.002,
+    bvh = null,
+    collider = null,
   ) {
     super();
-
-    this.mesh = null;
     this.speedHorizontal = 0;
     this.speedVertical = 0;
     this.rotationSpeed = rotationSpeed;
@@ -30,6 +30,8 @@ class MySubmarineControler extends THREE.Object3D {
     this.friction = friction
     this.speedMax = speedMax
     this.yLimit = yLimit;
+    this.bvh = bvh
+    this.collider = collider
 
     this.pressedKeys = new Set();
   }
@@ -45,6 +47,13 @@ class MySubmarineControler extends THREE.Object3D {
   dispose() {
     window.removeEventListener('keydown', this._onKeyDown);
     window.removeEventListener('keyup', this._onKeyUp);
+  }
+
+  addBVH(bvh) {
+    this.bvh = bvh
+  }
+
+  modifyCollider(newCollider) {
   }
 
   update() {
@@ -97,6 +106,9 @@ class MySubmarineControler extends THREE.Object3D {
     // Horizontal direction left or right
     if (this.pressedKeys.has('KeyA')) this.rotateY(this.rotationSpeed);
     if (this.pressedKeys.has('KeyD')) this.rotateY(-this.rotationSpeed);
+
+    // BVH
+    
   }
 }
 

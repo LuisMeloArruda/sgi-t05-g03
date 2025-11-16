@@ -12,6 +12,8 @@ import { KeyframeObjectAnimator } from './System/KeyframeObjectAnimator.js'
 import { MyBasicChest, MyChest } from './objects/MyChest.js';
 import { SpaceManager } from './System/SpaceManager.js'
 import { MyBoid } from './objects/MyBoid.js';
+import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
+import { BVH, SphereCollider } from './System/BVH.js'
 
 /**
  *  This class contains the contents of out application
@@ -25,7 +27,6 @@ class MyContents  {
     constructor(app) {
         this.app = app
         this.axis = null
-
 
         // Terrain related attributes       
         this.terrainGroup = new THREE.Group()
@@ -184,7 +185,7 @@ class MyContents  {
             color: "#ffff00", specular: "#000000", emissive: "#000000", shininess: 90
         })
 
-        const submarinePosition = new THREE.Vector3(2, 2, 0)
+        const submarinePosition = new THREE.Vector3(2, 7, 0)
         const submarineRotation = new THREE.Euler(0, Math.PI / 4, 0)
         const submarineScale = new THREE.Vector3(0.8, 0.8, 0.8)
         this.submarineControler = new MySubmarineControler()
@@ -335,6 +336,7 @@ class MyContents  {
         this.createLODs(this.fishesConfigs, this.fishContructors, [0, 20], this.fishesGroup)
         this.app.scene.add(this.fishesGroup);
 
+        // fishesGroup keyframe
         for (const lod of this.fishesGroup.children) {
             const animator = new KeyframeObjectAnimator(lod, 120, 5000, 
                 this.minX, this.maxX, this.minY, 
@@ -342,7 +344,33 @@ class MyContents  {
             this.fishAnimators.push(animator);
         }
         
+        // fishesGroup boid
         this.app.scene.add(this.boid);
+
+        // BVH
+        THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
+        THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree
+        THREE.Mesh.prototype.raycast = acceleratedRaycast
+
+        this.bvh = new BVH();
+
+        // Static objects BVH
+        this.bvh.buildBVHForGroup(this.terrainGroup)
+
+        // Static objects BVH helpers
+        this.bvh.addBVHHelpersForGroup(this.terrainGroup)
+
+        // add objects to BVH
+        this.bvh.addGroup(this.terrainGroup)
+
+        // add BVH helpers to scene
+        for (const helper of this.bvh.bvhHelpers) {
+            this.app.scene.add(helper);
+        }
+        
+        // Dynamic objects BVH
+        this.submarineControler.addBVH(this.bvh)
+        this.submarineControler.modifyCollider(new SphereCollider(this.submarineControler, 3, true))
     }
 
 
@@ -468,7 +496,7 @@ class MyContents  {
             this.app.activeCameraName === '1PersonSubmarine' ||
             this.app.activeCameraName === '3PersonSubmarine') 
             this.submarineControler.update();
-
+    
     }
 }
 
