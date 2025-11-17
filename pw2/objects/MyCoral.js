@@ -38,6 +38,7 @@ class MyCoral extends THREE.Object3D {
         texture.colorSpace = THREE.SRGBColorSpace;
         this.material.map = texture;
         this.material.bumpMap = bump;
+        this.material.bumpScale = 10;
         this.material.userData.time = { value: 0 };
         this.material.onBeforeCompile = (shader) => {
           shader.uniforms.time = this.material.userData.time;  
