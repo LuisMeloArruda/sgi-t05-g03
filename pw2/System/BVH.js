@@ -1,109 +1,61 @@
-import * as THREE from 'three';
-import { MeshBVHHelper } from 'three-mesh-bvh';
+import * as THREE from "three";
+import { MeshBVH, MeshBVHHelper } from "three-mesh-bvh";
+import { StaticGeometryGenerator } from "three-mesh-bvh";
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
 class BVH {
 
     constructor() {
-        this.groups = []
-        this.bvhHelpers = []
+        this.mesh = null;
     }
 
-    addGroup(group) {
-        this.groups.push(group)
-    }
+    addMeshes(groups, material = null) {
+        const geometries = []
 
-    buildBVHForGroup(group) {
-        group.traverse(obj => {
-            if (obj.isMesh && obj.geometry) {
-                obj.geometry.computeBoundsTree();
-            }
-        });
-    }
+        for (const group of groups) {
+            group.updateMatrixWorld(true)
 
-    disposeBVHForGroup(group) {
-        group.traverse(obj => {
-            if (obj.isMesh && obj.geometry) {
-                obj.geometry.disposeBoundsTree();
-            }
-        });
-    }
-
-    addBVHHelpersForGroup(group) {
-        group.traverse(obj => {
-            if (obj.isMesh && obj.geometry?.boundsTree) {
-
-                const helper = new MeshBVHHelper(obj, 10);
-            
-                helper.color.set(0x0000ff);
-                helper.opacity = 1;
-                helper.displayEdges = true;
-                helper.displayParents = false;
-
-                this.bvhHelpers.push(helper);
-            }
-        });
-    }
-
-    removeBVHHelpersForObject(object) {
-        this.bvhHelpers.pop(object)
-    }
-
-    checkSphereCollision(collider) {
-        const center = collider.getCenter()
-        const radius = collider.radius
-    
-        const sphere = new THREE.Sphere(center.clone(), radius)
-        const inv = new THREE.Matrix4()
-    
-        for (const group of this.groups) {
-            if (!group) continue
-    
-            let hit = false
-    
             group.traverse(obj => {
-                if (hit) return
-    
-                if (obj.isMesh && obj.geometry?.boundsTree) {
-    
-                    inv.copy(obj.matrixWorld).invert()
-                    const sphereLocal = sphere.clone().applyMatrix4(inv)
-    
-                    if (obj.geometry.boundsTree.intersectsSphere(sphereLocal)) {
-                        hit = true
-                    }
+                if (obj.isMesh && obj.geometry) {
+                    const geom = obj.geometry.clone()
+                    geom.applyMatrix4(obj.matrixWorld)
+                    geom.deleteAttribute("uv")
+                    geometries.push(geom)
                 }
-            });
-    
-            if (hit) return true
+            })
         }
-    
-        return false
+
+        const mergedGeom = BufferGeometryUtils.mergeGeometries(geometries)
+
+        const tempGroup = new THREE.Group()
+        tempGroup.add(new THREE.Mesh(mergedGeom))
+
+        const gen = new StaticGeometryGenerator(tempGroup)
+        gen.attributes = ["position"]
+
+        const finalGeom = gen.generate()
+
+        finalGeom.boundsTree = new MeshBVH(finalGeom)
+
+        const mat =
+            material ??
+            new THREE.MeshBasicMaterial({
+                wireframe: true,
+                transparent: true,
+                opacity: 0.1
+            });
+
+        this.mesh = new THREE.Mesh(finalGeom, mat)
+
+        return this.mesh
+    }
+
+    createHelper(mesh, depth = 10) {
+        const helper = new MeshBVHHelper(mesh, depth)
+        helper.visible = true
+
+        return helper
     }
 }
 
-class SphereCollider {
-    constructor(parent, radius, helper = false, color = 0xff0000) {
-        this.parent = parent
-        this.radius = radius
-        this.helper = helper
-        this.color = color
-
-        if (helper) {
-            const geo = new THREE.SphereGeometry(radius, 16, 16)
-            const mat = new THREE.MeshBasicMaterial({
-                color,
-                wireframe: true
-            });
-            this.helper = new THREE.Mesh(geo, mat)
-
-            parent.add(this.helper)
-        }
-    }
-
-    getCenter() {
-        return this.parent.getWorldPosition(new THREE.Vector3())
-    }
-}
-
-
-export {BVH, SphereCollider};
+export { BVH };

@@ -13,7 +13,8 @@ import { MyBasicChest, MyChest } from './objects/MyChest.js';
 import { SpaceManager } from './System/SpaceManager.js'
 import { MyBoid } from './objects/MyBoid.js';
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
-import { BVH, SphereCollider } from './System/BVH.js'
+import { BVH } from './System/BVH.js'
+
 
 /**
  *  This class contains the contents of out application
@@ -352,26 +353,61 @@ class MyContents  {
         THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree
         THREE.Mesh.prototype.raycast = acceleratedRaycast
 
-        this.bvh = new BVH();
+        this.bvh = new BVH()
 
-        // Static objects BVH
-        this.bvh.buildBVHForGroup(this.terrainGroup)
+        const collider = this.bvh.addMeshes([this.terrainGroup])
 
-        // Static objects BVH helpers
-        this.bvh.addBVHHelpersForGroup(this.terrainGroup)
+        this.submarineControler.setBVHCapsuleInfo()
+        this.submarineControler.bvh = this.bvh
 
-        // add objects to BVH
-        this.bvh.addGroup(this.terrainGroup)
+        // Debug
+        const helper = this.bvh.createHelper(collider, 10)
+        const subHelper = this.submarineControler.createCapsuleHelper()
 
-        // add BVH helpers to scene
-        for (const helper of this.bvh.bvhHelpers) {
-            this.app.scene.add(helper);
-        }
-        
-        // Dynamic objects BVH
-        this.submarineControler.addBVH(this.bvh)
-        this.submarineControler.modifyCollider(new SphereCollider(this.submarineControler, 3, true))
+        this.submarineControler.add(subHelper)
+        this.app.scene.add(helper)
     }
+
+    createCapsuleGeometryHelper(entity, color = 0x00ff00) {
+        const { segment, radius } = entity.userData.capsuleInfo
+        const length = segment.start.distanceTo(segment.end)
+        const height = Math.max(0, length - radius * 2)
+    
+        const geo = new THREE.CapsuleGeometry(radius, height, 8, 16);
+        const mat = new THREE.MeshBasicMaterial({
+            color,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.5
+        });
+    
+        const mesh = new THREE.Mesh(geo, mat)
+    
+        const direction = new THREE.Vector3().subVectors(
+            segment.end,
+            segment.start
+        );
+    
+        const up = new THREE.Vector3(0, 1, 0)
+        const quaternion = new THREE.Quaternion().setFromUnitVectors(
+            up,
+            direction.clone().normalize()
+        );
+    
+        mesh.quaternion.copy(quaternion)
+    
+        const midpoint = new THREE.Vector3().addVectors(
+            segment.start,
+            segment.end
+        ).multiplyScalar(0.5)
+    
+        mesh.position.copy(midpoint)
+    
+        entity.add(mesh)
+    
+        return mesh
+    }
+    
 
 
     /**
