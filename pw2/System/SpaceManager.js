@@ -8,15 +8,6 @@ import * as THREE from "three";
  * @param {number} width - Total width of the managed area.
  * @param {number} height - Total height of the managed area.
  * @param {Array<Object>} objects - List of occupied spots (position + radius).
- *
- * @method isFree
- * @description Checks if a position is within bounds and not overlapping any existing object.
- *
- * @method occupy
- * @description Registers a new occupied position with its radius and optional type.
- *
- * @method clear
- * @description Removes all stored occupancy data.
  */
 class SpaceManager {
     constructor(width, height) {

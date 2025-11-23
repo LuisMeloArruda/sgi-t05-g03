@@ -12,7 +12,7 @@ class MyBoid extends THREE.Object3D {
         alignment = 0.5,
         moveSpeed = 5,
         awareness = 5,
-        totalFishes = 100,
+        totalFishes = 150,
         lowerLimit = new THREE.Vector3(-50, -5, -50),
         upperLimit = new THREE.Vector3(50, 50, 50),
         dangerSize = 5,
@@ -45,7 +45,6 @@ class MyBoid extends THREE.Object3D {
     }
 
     build() {
-        this._neighborCenters = [];
         for (let i = 0; i < this.totalFishes; i++) {
             const fish = this.fish_constructor();
             fish.alignment = new THREE.Vector3(0, 0, 0);
@@ -66,11 +65,10 @@ class MyBoid extends THREE.Object3D {
             );
             this.fishes.push(fish);
             this.add(fish);
-            this._neighborCenters[i] = this.fishes[i].position.clone();
         }
 
         this.neighborStructure = new DynamicBVH({ leafSize: 8 });
-        this.neighborStructure.build(this._neighborCenters);
+        this.neighborStructure.build(this.fishes);
     }
 
     _applyBoundaryAvoidance(fish) {
@@ -117,13 +115,13 @@ class MyBoid extends THREE.Object3D {
     flockBVH() {
         for (let i = 0; i < this.fishes.length; i++) {
             const fish = this.fishes[i];
-            fish.boundavoid.set(0,0,0);
-            fish.acceleration.set(0,0,0);
     
-            const idxs = this.neighborStructure.querySphere(fish.position, this.awareness, []);
-            const neighbors = idxs
-                .filter(j => j !== i)
-                .map(j => this.fishes[j]);
+            fish.boundavoid.set(0, 0, 0);
+            fish.acceleration.set(0, 0, 0);
+    
+            const neighbors = this.neighborStructure
+                .querySphere(fish.position, this.awareness, [])
+                .filter(other => other !== fish);
     
             this._computeBoidForces(fish, neighbors);
             this._applyStaticCollision(fish);
@@ -247,29 +245,11 @@ class MyBoid extends THREE.Object3D {
         }
     }
 
-    _updateNeighborCenters() {
-        for (let i = 0; i < this.fishes.length; i++) {
-            this._neighborCenters[i].copy(this.fishes[i].position);
-        }
-    }
-    
-    _rebuildDynamicBVH(elapsed) {
-        if (elapsed - this._lastBVHRebuild >= this.bvhRebuildInterval) {
-            this._lastBVHRebuild = elapsed;
-            this.neighborStructure.build(this._neighborCenters);
-        }
-    }    
-
     update() {
         this.timer.update();
         const t = this.timer.getDelta();
 
         if (this.useBVH) {
-            const elapsed = this.timer.getElapsed();
-
-            this._updateNeighborCenters();
-            this._rebuildDynamicBVH(elapsed);
-            
             this.flockBVH();
         } else {
             this.flockBruteForce();

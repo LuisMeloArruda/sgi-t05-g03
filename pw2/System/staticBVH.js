@@ -11,13 +11,6 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
  * @class staticBVH
  *
  * @param {THREE.Mesh|null} mesh - The final merged BVH-enabled mesh.
- *
- * @method buildMesh
- * @description Collects meshes from given groups, merges them, bakes transforms,
- *              generates a static geometry, and builds a MeshBVH.
- *
- * @method createHelper
- * @description Creates a MeshBVHHelper for debugging the BVH structure.
  */
 class staticBVH {
 

@@ -1,49 +1,44 @@
 import * as THREE from "three";
 
 /**
- * A lightweight BVH structure used to accelerate proximity queries for moving objects.
- * Operates only on object center positions for fast tree build and traversal.
+ * A lightweight dynamic BVH structure used to accelerate proximity queries
+ * for moving 3D objects.
+ *
  *
  * @class DynamicBVH
  *
- * @property {number} leafSize - Maximum number of items allowed in a leaf node.
- * @property {Object|null} root - Root node of the BVH hierarchy.
- * @property {THREE.Vector3[]} centers - Array of references to object center positions.
+ * @param {number} leafSize
+ *    Maximum number of objects allowed inside a leaf node.
  *
- * @method build
- * @description Rebuilds the BVH tree using the provided array of center positions.
+ * @param {Object|null} root
+ *    Root node of the BVH hierarchy.
  *
- * @method querySphere
- * @description Returns indices of all objects within the given spherical radius.
- *
- * @method dispose
- * @description Clears all BVH data and resets the structure.
+ * @param {Object[]|null} objects
+ *    Array of references to the original scene objects. Their positions are
+ *    accessed dynamically during queries.
  */
 class DynamicBVH {
     constructor({ leafSize = 8 } = {}) {
         this.leafSize = leafSize;
         this.root = null;
-        this.centers = null;
-        this._boxes = null;
+        this.objects = null; // <<--- guardamos os objetos diretamente
     }
 
-    build(centers) {
-        this.centers = centers;
-        this._boxes = centers.map(c => {
-            const b = new THREE.Box3();
-            b.min.copy(c);
-            b.max.copy(c);
-            return b;
-        });
+    build(objects) {
+        this.objects = objects;
 
-        const indices = centers.map((_, i) => i);
+        const indices = objects.map((_, i) => i);
         this.root = this._buildRecursive(indices);
     }
 
     _buildRecursive(indices) {
         const node = {};
         const box = new THREE.Box3();
-        for (const i of indices) box.expandByPoint(this.centers[i]);
+
+        // usa a posição do objeto diretamente
+        for (const i of indices) {
+            box.expandByPoint(this.objects[i].position);
+        }
         node.box = box;
 
         if (indices.length <= this.leafSize) {
@@ -55,17 +50,22 @@ class DynamicBVH {
 
         const size = new THREE.Vector3();
         box.getSize(size);
-        let axis = 0;
-        if (size.y > size.x && size.y >= size.z) axis = 1;
-        else if (size.z > size.x && size.z > size.y) axis = 2;
 
-        indices.sort((a, b) => this.centers[a].getComponent(axis) - this.centers[b].getComponent(axis));
+        let axis = size.x >= size.y && size.x >= size.z ? 0 :
+                   size.y >= size.z ? 1 : 2;
+
+        indices.sort((a, b) =>
+            this.objects[a].position.getComponent(axis) -
+            this.objects[b].position.getComponent(axis)
+        );
+
         const mid = Math.floor(indices.length / 2);
         const leftIdx = indices.slice(0, mid);
         const rightIdx = indices.slice(mid);
 
         node.isLeaf = false;
         node.indices = null;
+
         node.left = this._buildRecursive(leftIdx);
         node.right = this._buildRecursive(rightIdx);
         return node;
@@ -80,20 +80,24 @@ class DynamicBVH {
 
     _queryNode(node, sphere, out) {
         if (!node.box.intersectsSphere(sphere)) return;
+
         if (node.isLeaf) {
             for (const i of node.indices) {
-                if (this.centers[i].distanceTo(sphere.center) <= sphere.radius) out.push(i);
+                const p = this.objects[i].position;
+                if (p.distanceTo(sphere.center) <= sphere.radius) {
+                    out.push(this.objects[i]);
+                }
             }
             return;
         }
+
         if (node.left) this._queryNode(node.left, sphere, out);
         if (node.right) this._queryNode(node.right, sphere, out);
     }
 
     dispose() {
         this.root = null;
-        this.centers = null;
-        this._boxes = null;
+        this.objects = null;
     }
 }
 
