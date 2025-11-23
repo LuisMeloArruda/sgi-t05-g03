@@ -357,10 +357,10 @@ class MyContents  {
         this.app.scene.add(this.boid);
 
         // BVH
-        this.staticBVH.addMeshes([this.terrainGroup])
+        this.staticBVH.buildMesh([this.terrainGroup])
 
         this.submarineControler.setBVHCapsuleInfo()
-        this.submarineControler.bvh = this.staticBVH
+        this.submarineControler.staticBVH = this.staticBVH
 
         // BVH Debug
         this.terrainBVHHelper = this.staticBVH.createHelper(this.staticBVH.mesh)

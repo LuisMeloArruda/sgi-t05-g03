@@ -1,19 +1,19 @@
 import * as THREE from "three";
 import { MyFish } from "./MyFish.js";
-import { StaticGeometryGenerator } from "three-mesh-bvh";
+import { DynamicBVH } from "../System/dynamicBVH.js";
 
 class MyBoid extends THREE.Object3D {
     constructor(
         dangerous_entities,
         staticBVH,
         fish_constructor = () => new MyFish(),
-        cohesion = 2,
-        separation = 2,
-        alignment = 0.2,
+        cohesion = 0.5,
+        separation = 0.5,
+        alignment = 0.5,
         moveSpeed = 5,
-        awareness = 25,
-        totalFishes = 50,
-        lowerLimit = new THREE.Vector3(-50, 5, -50),
+        awareness = 5,
+        totalFishes = 100,
+        lowerLimit = new THREE.Vector3(-50, -5, -50),
         upperLimit = new THREE.Vector3(50, 50, 50),
         dangerSize = 5,
         useBVH = true,
@@ -37,13 +37,15 @@ class MyBoid extends THREE.Object3D {
 
         // BVH attributes
         this.useBVH = useBVH;
-        this.fishBVHMesh = null;
         this.staticBVH = staticBVH;
+        this.bvhRebuildInterval = 1;
+        this._lastBVHRebuild = 0;
 
         this.build();
     }
 
     build() {
+        this._neighborCenters = [];
         for (let i = 0; i < this.totalFishes; i++) {
             const fish = this.fish_constructor();
             fish.alignment = new THREE.Vector3(0, 0, 0);
@@ -64,7 +66,11 @@ class MyBoid extends THREE.Object3D {
             );
             this.fishes.push(fish);
             this.add(fish);
+            this._neighborCenters[i] = this.fishes[i].position.clone();
         }
+
+        this.neighborStructure = new DynamicBVH({ leafSize: 8 });
+        this.neighborStructure.build(this._neighborCenters);
     }
 
     _applyBoundaryAvoidance(fish) {
@@ -95,12 +101,12 @@ class MyBoid extends THREE.Object3D {
         }
     }
 
-    _distanceToSubmarineCapsule(fishPosition, submarine) {
-        const capsule = submarine.userData.capsuleInfo;
+    _distanceToCapsule(fishPosition, entity) {
+        const capsule = entity.userData.capsuleInfo;
         if (!capsule) return Infinity;
 
-        const start = capsule.segment.start.clone().applyMatrix4(submarine.matrixWorld);
-        const end   = capsule.segment.end.clone().applyMatrix4(submarine.matrixWorld);
+        const start = capsule.segment.start.clone().applyMatrix4(entity.matrixWorld);
+        const end = capsule.segment.end.clone().applyMatrix4(entity.matrixWorld);
 
         const closest = new THREE.Vector3();
         new THREE.Line3(start, end).closestPointToPoint(fishPosition, true, closest);
@@ -109,90 +115,161 @@ class MyBoid extends THREE.Object3D {
     }
 
     flockBVH() {
-    }
-
-    flockBruteForce() {
-        if (this.fishes.length <= 1) return;
-
-        for (const fish of this.fishes) {
-            fish.alignment.set(0,0,0);
-            fish.cohesion.set(0,0,0);
-            fish.separation.set(0,0,0);
+        for (let i = 0; i < this.fishes.length; i++) {
+            const fish = this.fishes[i];
             fish.boundavoid.set(0,0,0);
-
-            let total = 0;
-            if (this.awareness > 0) {
-                for (const other_fish of this.fishes) {
-                    if (fish === other_fish) continue;
-                    const distance = fish.position.distanceTo(other_fish.position);
-                    if (distance <= 0) continue;
-                    if (distance >= this.awareness) continue;
-                    if (!this._viewingAngle(other_fish.position)) continue;
-                    fish.alignment.add(other_fish.velocity);
-                    fish.cohesion.add(other_fish.position);
-                    const away = fish.position.clone().sub(other_fish.position);
-                    if (away.lengthSq() > 0) {
-                        fish.separation.addScaledVector(away, 1 / distance);
-                    }
-                    total++;
-                }
-            }
-
-            if (total > 0) {
-                // alignment
-                fish.alignment.divideScalar(total);
-                if (fish.alignment.lengthSq() > 0.000001) {
-                    fish.alignment.normalize().multiplyScalar(this.alignment);
-                    fish.acceleration.add(fish.alignment);
-                }
-
-                fish.cohesion.divideScalar(total);
-                fish.cohesion.sub(fish.position);
-                if (fish.cohesion.lengthSq() > 0.000001) {
-                    fish.cohesion.normalize().multiplyScalar(this.cohesion);
-                    fish.acceleration.add(fish.cohesion);
-                }
-
-                if (fish.separation.lengthSq() > 0.000001) {
-                    fish.separation.normalize().multiplyScalar(this.separation);
-                    fish.acceleration.add(fish.separation);
-                }
-            }
-
-            // boundary and danger avoidance
-            let danger_found = false;
-            for (const entity of this.dangerous_entities || []) {
-                if (!entity) continue;
-                if (entity.userData?.capsuleInfo) {
-                    const d = this._distanceToSubmarineCapsule(fish.position, entity);
-                    if (d <= this.dangerSize) {
-                        danger_found = true;
-                        fish.boundavoid.add(fish.position.clone().sub(entity.position).normalize());
-                    }
-                } else if (entity.position) {
-                    if (fish.position.distanceTo(entity.position) <= this.dangerSize) {
-                        danger_found = true;
-                        fish.boundavoid.add(fish.position.clone().sub(entity.position).normalize());
-                    }
-                }
-            }
-
-            if (danger_found) {
-                if (fish.boundavoid.lengthSq() > 0.000001) {
-                    fish.boundavoid.normalize().multiplyScalar(this.moveSpeed);
-                    fish.acceleration.add(fish.boundavoid);
-                }
-            } else {
-                this._applyBoundaryAvoidance(fish);
-            }
+            fish.acceleration.set(0,0,0);
+    
+            const idxs = this.neighborStructure.querySphere(fish.position, this.awareness, []);
+            const neighbors = idxs
+                .filter(j => j !== i)
+                .map(j => this.fishes[j]);
+    
+            this._computeBoidForces(fish, neighbors);
+            this._applyStaticCollision(fish);
+            this._applyDangerAvoidance(fish);
         }
     }
+    
+    flockBruteForce() {
+        for (const fish of this.fishes) {
+            fish.boundavoid.set(0,0,0);
+            fish.acceleration.set(0,0,0);
+    
+            const neighbors = [];
+    
+            for (const other of this.fishes) {
+                if (fish === other) continue;
+                const dist = fish.position.distanceTo(other.position);
+                if (dist > 0 && dist < this.awareness) neighbors.push(other);
+            }
+    
+            this._computeBoidForces(fish, neighbors);
+            this._applyStaticCollision(fish);
+            this._applyDangerAvoidance(fish);
+        }
+    }
+    
+
+    _computeBoidForces(fish, neighbors) {
+        let total = 0;
+    
+        fish.alignment.set(0,0,0);
+        fish.cohesion.set(0,0,0);
+        fish.separation.set(0,0,0);
+    
+        const tmp = new THREE.Vector3();
+    
+        for (const other of neighbors) {
+            if (other === fish) continue;
+            if (!this._viewingAngle(other.position)) continue;
+    
+            fish.alignment.add(other.velocity);
+            fish.cohesion.add(other.position);
+    
+            tmp.copy(fish.position).sub(other.position);
+            const d = tmp.length();
+            if (d > 0) fish.separation.addScaledVector(tmp, 1/d);
+    
+            total++;
+        }
+    
+        if (total === 0) return;
+    
+        // alignment
+        fish.alignment.divideScalar(total);
+        if (fish.alignment.lengthSq() > 0.000001) {
+            fish.alignment.normalize().multiplyScalar(this.alignment);
+            fish.acceleration.add(fish.alignment);
+        }
+    
+        // cohesion
+        fish.cohesion.divideScalar(total);
+        fish.cohesion.sub(fish.position);
+        if (fish.cohesion.lengthSq() > 0.000001) {
+            fish.cohesion.normalize().multiplyScalar(this.cohesion);
+            fish.acceleration.add(fish.cohesion);
+        }
+    
+        // separation
+        if (fish.separation.lengthSq() > 0.000001) {
+            fish.separation.normalize().multiplyScalar(this.separation);
+            fish.acceleration.add(fish.separation);
+        }
+    }
+
+    _applyDangerAvoidance(fish) {
+        let danger_found = false;
+    
+        for (const entity of this.dangerous_entities || []) {
+            if (!entity) continue;
+    
+            const d = entity.userData?.capsuleInfo
+                ? this._distanceToCapsule(fish.position, entity)
+                : fish.position.distanceTo(entity.position);
+    
+            if (d <= this.dangerSize) {
+                danger_found = true;
+                fish.boundavoid.add(
+                    fish.position.clone().sub(entity.position).normalize()
+                );
+            }
+        }
+    
+        if (danger_found) {
+            if (fish.boundavoid.lengthSq() > 0.000001) {
+                fish.boundavoid.normalize().multiplyScalar(this.moveSpeed);
+                fish.acceleration.add(fish.boundavoid);
+            }
+            return;
+        }
+    
+        this._applyBoundaryAvoidance(fish);
+    }
+    
+    _applyStaticCollision(fish) {
+        const staticBVH = this.staticBVH?.mesh?.geometry?.boundsTree;
+        if (!staticBVH) return;
+    
+        const sphere = new THREE.Sphere(fish.position, this.dangerSize);
+        let hit = false;
+    
+        staticBVH.shapecast({
+            intersectsBounds: box => sphere.intersectsBox(box),
+            intersectsTriangle: tri => { hit = true; return true; }
+        });
+    
+        if (hit) {
+            const avoid = fish.velocity.clone().multiplyScalar(-1);
+            avoid.y += 1.5;
+            avoid.setLength(this.moveSpeed);
+            fish.acceleration.add(avoid);
+        }
+    }
+
+    _updateNeighborCenters() {
+        for (let i = 0; i < this.fishes.length; i++) {
+            this._neighborCenters[i].copy(this.fishes[i].position);
+        }
+    }
+    
+    _rebuildDynamicBVH(elapsed) {
+        if (elapsed - this._lastBVHRebuild >= this.bvhRebuildInterval) {
+            this._lastBVHRebuild = elapsed;
+            this.neighborStructure.build(this._neighborCenters);
+        }
+    }    
 
     update() {
         this.timer.update();
         const t = this.timer.getDelta();
 
         if (this.useBVH) {
+            const elapsed = this.timer.getElapsed();
+
+            this._updateNeighborCenters();
+            this._rebuildDynamicBVH(elapsed);
+            
             this.flockBVH();
         } else {
             this.flockBruteForce();

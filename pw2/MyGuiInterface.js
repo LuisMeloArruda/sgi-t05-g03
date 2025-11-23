@@ -25,7 +25,7 @@ class MyGuiInterface  {
         this.contents = contents
         this.debug = {
             showBVHHelper: false,
-            showCapsuleHelper: false
+            showCapsuleHelper: false,
         };
     }
 
@@ -45,11 +45,28 @@ class MyGuiInterface  {
             .name('BVH Acceleration')
             .listen();
 
-            boidFolder.add(this.app.contents.boid, 'cohesion',    0, 3, 0.2).listen();
-            boidFolder.add(this.app.contents.boid, 'separation',  0, 3, 0.2).listen();
-            boidFolder.add(this.app.contents.boid, 'alignment',   0, 3, 0.2).listen();
+            boidFolder.add({ mode: "neutral" }, "mode", ["separate", "neutral", "join"])
+            .name("Behavior")
+            .onChange(mode => {
+                const boid = this.app.contents.boid;
+        
+                if (mode === "separate") {
+                    boid.separation = 2;
+                    boid.cohesion   = 1.5;
+                }
+                else if (mode === "neutral") {
+                    boid.separation = 1.5;
+                    boid.cohesion   = 1.5;
+                }
+                else if (mode === "join") {
+                    boid.separation = 1.5;
+                    boid.cohesion   = 2;
+                }
+            });
+        
+            boidFolder.add(this.app.contents.boid, 'alignment', 0, 1, 0.1).listen();
             boidFolder.add(this.app.contents.boid, 'moveSpeed',   0.1, 10, 0.5).listen();
-            boidFolder.add(this.app.contents.boid, 'awareness',   1, 100, 0.1).listen();
+            boidFolder.add(this.app.contents.boid, 'awareness',   0.1, 10, 0.1).listen();
         boidFolder.open()
 
         // BVH Helpers 

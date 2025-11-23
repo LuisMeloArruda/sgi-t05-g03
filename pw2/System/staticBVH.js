@@ -3,13 +3,29 @@ import { MeshBVH, MeshBVHHelper } from "three-mesh-bvh";
 import { StaticGeometryGenerator } from "three-mesh-bvh";
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
+/**
+ * Builds a BVH-optimized mesh from multiple static scene meshes by merging and
+ * baking their geometries into a single world-transformed BufferGeometry.
+ * Used for fast collision and proximity queries on static objects.
+ *
+ * @class staticBVH
+ *
+ * @param {THREE.Mesh|null} mesh - The final merged BVH-enabled mesh.
+ *
+ * @method buildMesh
+ * @description Collects meshes from given groups, merges them, bakes transforms,
+ *              generates a static geometry, and builds a MeshBVH.
+ *
+ * @method createHelper
+ * @description Creates a MeshBVHHelper for debugging the BVH structure.
+ */
 class staticBVH {
 
     constructor() {
         this.mesh = null;
     }
 
-    addMeshes(groups, material = null) {
+    buildMesh(groups, material = null) {
         const geometries = []
 
         for (const group of groups) {
