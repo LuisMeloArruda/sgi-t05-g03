@@ -25,7 +25,7 @@ class MySubmarineControler extends THREE.Object3D {
     accelerationHorizontal = 0.005, 
     accelerationVertical = 0.005, 
     friction = 0.002,
-    bvh = null,
+    staticBVH = null,
   ) {
     super();
     this.speedHorizontal = 0
@@ -36,7 +36,7 @@ class MySubmarineControler extends THREE.Object3D {
     this.friction = friction
     this.speedMax = speedMax
     this.yLimit = yLimit
-    this.bvh = bvh
+    this.staticBVH = staticBVH
 
     this.pressedKeys = new Set();
   }
@@ -185,8 +185,8 @@ class MySubmarineControler extends THREE.Object3D {
       const predictedPos = this.position.clone().add(moveZ)
 
       let hit = false
-      if (this.bvh) {
-        hit = this.bvh && this.checkCollisionAtPosition(this.bvh.mesh, predictedPos);
+      if (this.staticBVH) {
+        hit = this.staticBVH && this.checkCollisionAtPosition(this.staticBVH.mesh, predictedPos);
       }
 
       if (!hit) {
@@ -214,25 +214,28 @@ class MySubmarineControler extends THREE.Object3D {
 
     if (Math.abs(this.speedVertical) > 0) {
 
-      const moveY = new THREE.Vector3(0, this.speedVertical, 0)
-      const predictedPos = this.position.clone().add(moveY)
-
-      let hit = false
-      if (this.bvh) {
-        hit = this.bvh && this.checkCollisionAtPosition(this.bvh.mesh, predictedPos)
+      const moveY = new THREE.Vector3(0, this.speedVertical, 0);
+      const predictedPos = this.position.clone().add(moveY);
+    
+      let testPos = predictedPos;
+    
+      // tolerance
+      if (this.pressedKeys.has('KeyP')) {
+        testPos = predictedPos.clone().add(new THREE.Vector3(0, 0.2, 0));
       }
-
+    
+      let hit = false;
+      if (this.staticBVH) {
+        hit = this.checkCollisionAtPosition(this.staticBVH.mesh, testPos);
+      }
+    
       if (!hit) {
         this.translateY(this.speedVertical);
-        if (this.position.y < this.yLimit) {
-          this.position.y = this.yLimit;
-          this.speedVertical = 0
-        }
       } else {
-        this.speedVertical = 0
+        this.speedVertical = 0;
       }
     }
-
+    
     // Horizontal direction left or right 
     if (this.pressedKeys.has('KeyA')) this.rotateY(this.rotationSpeed) 
     if (this.pressedKeys.has('KeyD')) this.rotateY(-this.rotationSpeed)

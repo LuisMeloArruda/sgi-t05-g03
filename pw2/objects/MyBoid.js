@@ -1,19 +1,22 @@
 import * as THREE from "three";
 import { MyFish } from "./MyFish.js";
+import { StaticGeometryGenerator } from "three-mesh-bvh";
 
 class MyBoid extends THREE.Object3D {
     constructor(
         dangerous_entities,
+        staticBVH,
         fish_constructor = () => new MyFish(),
         cohesion = 2,
         separation = 2,
-        alignment = 2,
+        alignment = 0.2,
         moveSpeed = 5,
         awareness = 25,
         totalFishes = 50,
         lowerLimit = new THREE.Vector3(-50, 5, -50),
         upperLimit = new THREE.Vector3(50, 50, 50),
         dangerSize = 5,
+        useBVH = true,
     ) {
         super();
         this.dangerous_entities = dangerous_entities;
@@ -24,13 +27,18 @@ class MyBoid extends THREE.Object3D {
         this.moveSpeed = moveSpeed;
         this.awareness = awareness;
         this.totalFishes = totalFishes;
-        this.lowerLimit = lowerLimit;
-        this.upperLimit = upperLimit;
+        this.lowerLimit = lowerLimit.clone();
+        this.upperLimit = upperLimit.clone();
         this.dangerSize = dangerSize;
 
         this.fishes = [];
         this.timer = new THREE.Timer();
         this.timer.connect(document);
+
+        // BVH attributes
+        this.useBVH = useBVH;
+        this.fishBVHMesh = null;
+        this.staticBVH = staticBVH;
 
         this.build();
     }
@@ -59,99 +67,149 @@ class MyBoid extends THREE.Object3D {
         }
     }
 
-    // Loop through every fish to update forces/accelerations
-    flock() {
+    _applyBoundaryAvoidance(fish) {
+        const margin = Math.max(0.0001, this.dangerSize);
+        const steer = new THREE.Vector3();
+
+        if (fish.position.x < this.lowerLimit.x + margin) {
+            steer.x += (this.lowerLimit.x + margin - fish.position.x) * 0.2;
+        } else if (fish.position.x > this.upperLimit.x - margin) {
+            steer.x -= (fish.position.x - (this.upperLimit.x - margin)) * 0.2;
+        }
+
+        if (fish.position.y < this.lowerLimit.y + margin) {
+            steer.y += (this.lowerLimit.y + margin - fish.position.y) * 0.2;
+        } else if (fish.position.y > this.upperLimit.y - margin) {
+            steer.y -= (fish.position.y - (this.upperLimit.y - margin)) * 0.2;
+        }
+
+        if (fish.position.z < this.lowerLimit.z + margin) {
+            steer.z += (this.lowerLimit.z + margin - fish.position.z) * 0.2;
+        } else if (fish.position.z > this.upperLimit.z - margin) {
+            steer.z -= (fish.position.z - (this.upperLimit.z - margin)) * 0.2;
+        }
+
+        if (steer.lengthSq() > 0) {
+            steer.normalize().multiplyScalar(Math.max(0.1, this.separation) * 2.0);
+            fish.acceleration.add(steer);
+        }
+    }
+
+    _distanceToSubmarineCapsule(fishPosition, submarine) {
+        const capsule = submarine.userData.capsuleInfo;
+        if (!capsule) return Infinity;
+
+        const start = capsule.segment.start.clone().applyMatrix4(submarine.matrixWorld);
+        const end   = capsule.segment.end.clone().applyMatrix4(submarine.matrixWorld);
+
+        const closest = new THREE.Vector3();
+        new THREE.Line3(start, end).closestPointToPoint(fishPosition, true, closest);
+
+        return closest.distanceTo(fishPosition) - capsule.radius;
+    }
+
+    flockBVH() {
+    }
+
+    flockBruteForce() {
         if (this.fishes.length <= 1) return;
 
-        // TODO: Improve performance; no need to test all fishes, just the ones close enough.
         for (const fish of this.fishes) {
+            fish.alignment.set(0,0,0);
+            fish.cohesion.set(0,0,0);
+            fish.separation.set(0,0,0);
+            fish.boundavoid.set(0,0,0);
+
             let total = 0;
-            for (const other_fish of this.fishes) {
-                if (fish === other_fish) continue;
-                const distance = fish.position.distanceTo(other_fish.position);
-                if (distance <= 0) continue;
-                if (distance >= this.awareness) continue;
-                if (!this._viewingAngle(other_fish.position)) continue;
-                fish.alignment.add(other_fish.velocity);
-                fish.cohesion.add(other_fish.position);
-                fish.separation.addScaledVector(
-                    fish.position.clone().sub(other_fish.position),
-                    1 / distance,
-                );
-                total++;
+            if (this.awareness > 0) {
+                for (const other_fish of this.fishes) {
+                    if (fish === other_fish) continue;
+                    const distance = fish.position.distanceTo(other_fish.position);
+                    if (distance <= 0) continue;
+                    if (distance >= this.awareness) continue;
+                    if (!this._viewingAngle(other_fish.position)) continue;
+                    fish.alignment.add(other_fish.velocity);
+                    fish.cohesion.add(other_fish.position);
+                    const away = fish.position.clone().sub(other_fish.position);
+                    if (away.lengthSq() > 0) {
+                        fish.separation.addScaledVector(away, 1 / distance);
+                    }
+                    total++;
+                }
             }
 
-            if (total <= 0) continue;
+            if (total > 0) {
+                // alignment
+                fish.alignment.divideScalar(total);
+                if (fish.alignment.lengthSq() > 0.000001) {
+                    fish.alignment.normalize().multiplyScalar(this.alignment);
+                    fish.acceleration.add(fish.alignment);
+                }
 
-            // the average direction of the neighbors' velocities
-            fish.alignment.setLength(Math.min(this.moveSpeed, this.alignment));
+                fish.cohesion.divideScalar(total);
+                fish.cohesion.sub(fish.position);
+                if (fish.cohesion.lengthSq() > 0.000001) {
+                    fish.cohesion.normalize().multiplyScalar(this.cohesion);
+                    fish.acceleration.add(fish.cohesion);
+                }
 
-            // the average position of neighbors
-            fish.cohesion.divideScalar(total);
-            // the direction from current position to average
-            fish.cohesion.sub(fish.position);
-            // an acceleration with that direction
-            fish.cohesion.setLength(Math.min(this.moveSpeed, this.cohesion));
-
-            // and average direction of the repulsion from neighbors
-            fish.separation.setLength(
-                Math.min(this.moveSpeed, this.separation),
-            );
-
-            fish.acceleration.add(fish.alignment);
-            fish.acceleration.add(fish.cohesion);
-            fish.acceleration.add(fish.separation);
+                if (fish.separation.lengthSq() > 0.000001) {
+                    fish.separation.normalize().multiplyScalar(this.separation);
+                    fish.acceleration.add(fish.separation);
+                }
+            }
 
             // boundary and danger avoidance
             let danger_found = false;
-            for (const entity of this.dangerous_entities) {
-                if (fish.position.distanceTo(entity.position) <= this.dangerSize) {
-                    danger_found = true;
-                    fish.boundavoid.add(fish.position.clone().sub(entity.position).normalize())
+            for (const entity of this.dangerous_entities || []) {
+                if (!entity) continue;
+                if (entity.userData?.capsuleInfo) {
+                    const d = this._distanceToSubmarineCapsule(fish.position, entity);
+                    if (d <= this.dangerSize) {
+                        danger_found = true;
+                        fish.boundavoid.add(fish.position.clone().sub(entity.position).normalize());
+                    }
+                } else if (entity.position) {
+                    if (fish.position.distanceTo(entity.position) <= this.dangerSize) {
+                        danger_found = true;
+                        fish.boundavoid.add(fish.position.clone().sub(entity.position).normalize());
+                    }
                 }
             }
-            
+
             if (danger_found) {
-                fish.boundavoid.setLength(this.moveSpeed);
+                if (fish.boundavoid.lengthSq() > 0.000001) {
+                    fish.boundavoid.normalize().multiplyScalar(this.moveSpeed);
+                    fish.acceleration.add(fish.boundavoid);
+                }
             } else {
-                const lowerDangerZone = this.lowerLimit.clone().addScalar(this.dangerSize);
-                const upperDangerZone = this.upperLimit.clone().subScalar(this.dangerSize);
-                if (fish.position.x <= lowerDangerZone.x / 2) fish.boundavoid.setX(1);
-                else if (fish.position.x >= upperDangerZone.x / 2) fish.boundavoid.setX(-1);
-                if (fish.position.y <= lowerDangerZone.y / 2) fish.boundavoid.setY(1);
-                else if (fish.position.y >= upperDangerZone.y / 2) fish.boundavoid.setY(-1);
-                if (fish.position.z <= lowerDangerZone.z / 2) fish.boundavoid.setZ(1);
-                else if (fish.position.z >= upperDangerZone.z / 2) fish.boundavoid.setZ(-1);
-    
-                fish.boundavoid.setLength(Math.min(1, this.moveSpeed));
+                this._applyBoundaryAvoidance(fish);
             }
-            
-            fish.acceleration.add(fish.boundavoid);  
-            
-            if (
-                !fish.position ||
-                !fish.alignment ||
-                !fish.cohesion ||
-                !fish.separation ||
-                !fish.boundavoid ||
-                !fish.acceleration
-            )
-                console.error(fish);
         }
     }
 
     update() {
-        this.flock();
         this.timer.update();
         const t = this.timer.getDelta();
+
+        if (this.useBVH) {
+            this.flockBVH();
+        } else {
+            this.flockBruteForce();
+        }
+
         for (const fish of this.fishes) {
-            fish.update();
             fish.position.addScaledVector(fish.velocity, t);
             fish.velocity.add(fish.acceleration);
-            fish.velocity.clampLength(-this.moveSpeed, this.moveSpeed);
+
+            fish.velocity.clampLength(0, Math.max(0.0001, this.moveSpeed));
+
             fish.acceleration.set(0, 0, 0);
+
             fish.lookAt(fish.position.clone().add(fish.velocity));
-            fish.rotateY(Math.PI / 2); // The fish head should be pointing in the direction
+            fish.rotateY(Math.PI / 2);
+
+            fish.position.clamp(this.lowerLimit, this.upperLimit);
         }
     }
 

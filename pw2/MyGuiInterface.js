@@ -23,6 +23,10 @@ class MyGuiInterface  {
      */
     setContents(contents) {
         this.contents = contents
+        this.debug = {
+            showBVHHelper: false,
+            showCapsuleHelper: false
+        };
     }
 
     /**
@@ -37,12 +41,29 @@ class MyGuiInterface  {
         cameraFolder.open()
         
         const boidFolder = this.datgui.addFolder('Boid')
-        boidFolder.add(this.app.contents.boid, 'cohesion', 0, 3, 0.01).listen()
-        boidFolder.add(this.app.contents.boid, 'separation', 0, 3, 0.01).listen()
-        boidFolder.add(this.app.contents.boid, 'alignment', 0, 3, 0.01).listen()
-        boidFolder.add(this.app.contents.boid, 'moveSpeed', 0.1, 5, 0.1).listen()
-        boidFolder.add(this.app.contents.boid, 'awareness', 0, 50, 0.1).listen()
+        boidFolder.add(this.app.contents.boid, 'useBVH')
+            .name('BVH Acceleration')
+            .listen();
+
+            boidFolder.add(this.app.contents.boid, 'cohesion',    0, 3, 0.2).listen();
+            boidFolder.add(this.app.contents.boid, 'separation',  0, 3, 0.2).listen();
+            boidFolder.add(this.app.contents.boid, 'alignment',   0, 3, 0.2).listen();
+            boidFolder.add(this.app.contents.boid, 'moveSpeed',   0.1, 10, 0.5).listen();
+            boidFolder.add(this.app.contents.boid, 'awareness',   1, 100, 0.1).listen();
         boidFolder.open()
+
+        // BVH Helpers 
+        const bvhFolder = this.datgui.addFolder('BVH Helpers');
+
+        bvhFolder.add(this.debug, 'showBVHHelper')
+            .name('Terrain BVH Helper')
+            .onChange(v => this.contents.terrainBVHHelper.visible = v);
+
+        bvhFolder.add(this.debug, 'showCapsuleHelper')
+            .name('Submarine Hitbox Helper')
+            .onChange(v => this.contents.submarineBVHHelper.visible = v);
+
+        bvhFolder.open();
     }
 }
 

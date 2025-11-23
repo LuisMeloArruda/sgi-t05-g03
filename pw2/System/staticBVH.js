@@ -3,7 +3,7 @@ import { MeshBVH, MeshBVHHelper } from "three-mesh-bvh";
 import { StaticGeometryGenerator } from "three-mesh-bvh";
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
-class BVH {
+class staticBVH {
 
     constructor() {
         this.mesh = null;
@@ -50,7 +50,7 @@ class BVH {
         return this.mesh
     }
 
-    createHelper(mesh, depth = 10) {
+    createHelper(mesh, depth = 40) {
         const helper = new MeshBVHHelper(mesh, depth)
         helper.visible = true
 
@@ -58,4 +58,4 @@ class BVH {
     }
 }
 
-export { BVH };
+export { staticBVH };

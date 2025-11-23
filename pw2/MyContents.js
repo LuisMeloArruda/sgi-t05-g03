@@ -13,7 +13,7 @@ import { MyBasicChest, MyChest } from './objects/MyChest.js';
 import { SpaceManager } from './System/SpaceManager.js'
 import { MyBoid } from './objects/MyBoid.js';
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
-import { BVH } from './System/BVH.js'
+import { staticBVH } from './System/staticBVH.js'
 
 
 /**
@@ -28,6 +28,15 @@ class MyContents  {
     constructor(app) {
         this.app = app
         this.axis = null
+
+        // BVH related attributes
+        THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
+        THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree
+        THREE.Mesh.prototype.raycast = acceleratedRaycast
+
+        this.staticBVH = new staticBVH()
+        this.terrainBVHHelper = null
+        this.submarineBVHHelper = null
 
         // Terrain related attributes       
         this.terrainGroup = new THREE.Group()
@@ -125,8 +134,6 @@ class MyContents  {
         }
         this.seaweedConstructors = [() => new MySeaweed(), () => new MyBasicSeaweed()]
 
-
-        
         // Bubbles related attributes
         this.bubblesGroup = new THREE.Group();
         this.bubblesGroup.translateX(-2);
@@ -266,7 +273,7 @@ class MyContents  {
         this.rocksConstructors = [()=> new MyRock(), () => new MyBasicRock()]
 
         // Boid related attributes
-        this.boid = new MyBoid([this.submarineControler], () => {
+        this.boid = new MyBoid([this.submarineControler], this.staticBVH,() => {
             const group = new THREE.Group();
             group.update = () => {
                 group.children[0].children.forEach((fish) => {
@@ -278,7 +285,8 @@ class MyContents  {
             lod.addLevel(new MyBasicFish(), 20);
             group.add(lod);
             return group;
-        });
+        }
+        );
     }
 
     /**
@@ -349,66 +357,21 @@ class MyContents  {
         this.app.scene.add(this.boid);
 
         // BVH
-        THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
-        THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree
-        THREE.Mesh.prototype.raycast = acceleratedRaycast
-
-        this.bvh = new BVH()
-
-        const collider = this.bvh.addMeshes([this.terrainGroup])
+        this.staticBVH.addMeshes([this.terrainGroup])
 
         this.submarineControler.setBVHCapsuleInfo()
-        this.submarineControler.bvh = this.bvh
+        this.submarineControler.bvh = this.staticBVH
 
-        // Debug
-        const helper = this.bvh.createHelper(collider, 10)
-        const subHelper = this.submarineControler.createCapsuleHelper()
+        // BVH Debug
+        this.terrainBVHHelper = this.staticBVH.createHelper(this.staticBVH.mesh)
+        this.submarineBVHHelper = this.submarineControler.createCapsuleHelper()
 
-        this.submarineControler.add(subHelper)
-        this.app.scene.add(helper)
+        this.terrainBVHHelper.visible = false
+        this.submarineBVHHelper.visible = false
+
+        this.submarineControler.add(this.submarineBVHHelper)
+        this.app.scene.add(this.terrainBVHHelper)
     }
-
-    createCapsuleGeometryHelper(entity, color = 0x00ff00) {
-        const { segment, radius } = entity.userData.capsuleInfo
-        const length = segment.start.distanceTo(segment.end)
-        const height = Math.max(0, length - radius * 2)
-    
-        const geo = new THREE.CapsuleGeometry(radius, height, 8, 16);
-        const mat = new THREE.MeshBasicMaterial({
-            color,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.5
-        });
-    
-        const mesh = new THREE.Mesh(geo, mat)
-    
-        const direction = new THREE.Vector3().subVectors(
-            segment.end,
-            segment.start
-        );
-    
-        const up = new THREE.Vector3(0, 1, 0)
-        const quaternion = new THREE.Quaternion().setFromUnitVectors(
-            up,
-            direction.clone().normalize()
-        );
-    
-        mesh.quaternion.copy(quaternion)
-    
-        const midpoint = new THREE.Vector3().addVectors(
-            segment.start,
-            segment.end
-        ).multiplyScalar(0.5)
-    
-        mesh.position.copy(midpoint)
-    
-        entity.add(mesh)
-    
-        return mesh
-    }
-    
-
 
     /**
      * Creates LOD objects from configs and adds them to a group.
