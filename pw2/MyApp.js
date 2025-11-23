@@ -91,10 +91,9 @@ class MyApp  {
 
         // Pick Helper
         this.pickHelper = new PickHelper();
-        window.addEventListener('mousemove', this.pickHelper.setPickPosition);
         window.addEventListener('mouseout', this.pickHelper.clearPickPosition);
         window.addEventListener('mouseleave', this.pickHelper.clearPickPosition);
-        window.addEventListener('click', (event) => this.pickHelper.pick(this.scene, this.activeCamera));
+        window.addEventListener('click', (event) => this.pickHelper.pick(event, this.scene, this.activeCamera));
     }
 
     /**

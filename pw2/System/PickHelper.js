@@ -5,12 +5,14 @@ import * as THREE from "three";
 class PickHelper {
     constructor() {
         this.raycaster = new THREE.Raycaster();
-        this.pickPosition = { x: -100000, y: -100000 };
+        this.pickPosition = { x: NaN, y: NaN };
         this.pickedObject = null;
         this.pickedObjectSavedColor = 0;
     }
 
-    pick(scene, camera) {
+    pick(event, scene, camera) {
+        this.setPickPosition(event.clientX, event.clientY);
+        
         // restore the color if there is a picked object
         if (this.pickedObject) {
             this.pickedObject.material.emissive.setHex(
@@ -25,6 +27,7 @@ class PickHelper {
         const intersectedObjects = this.raycaster.intersectObjects(
             scene.children,
         );
+                
         if (intersectedObjects.length) {
             // pick the first object. It's the closest one
             this.pickedObject = intersectedObjects[0].object;
@@ -37,18 +40,18 @@ class PickHelper {
         }
     }
 
-    setPickPosition(event) {
+    setPickPosition(clientX, clientY) {
         const rect = canvas.getBoundingClientRect();
         const pos = {
-            x: ((event.clientX - rect.left) * canvas.width) / rect.width,
-            y: ((event.clientY - rect.top) * canvas.height) / rect.height,
+            x: ((clientX - rect.left) * canvas.clientWidth) / rect.width,
+            y: ((clientY - rect.top) * canvas.clientHeight) / rect.height,
         };
-        this.pickPosition.x = (pos.x / canvas.width) * 2 - 1;
-        this.pickPosition.y = (pos.y / canvas.height) * -2 + 1; // note we flip Y
+        this.pickPosition.x = (pos.x / canvas.clientWidth) * 2 - 1;
+        this.pickPosition.y = (pos.y / canvas.clientHeight) * -2 + 1; // note we flip Y        
     }
 
     clearPickPosition() {
-        this.pickPosition = { x: -100000, y: -100000 };
+        this.pickPosition = { x: NaN, y: NaN };
     }
 }
 
