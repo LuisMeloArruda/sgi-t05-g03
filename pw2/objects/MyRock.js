@@ -17,34 +17,51 @@ class MyBasicRock extends THREE.Object3D {
     }
 }
 
+const rockDefaultMaterialSingleton = {
+    material: null
+};
+
 class MyRock extends THREE.Object3D {
 
     constructor(
-        material = new THREE.MeshPhongMaterial({
-            // color: 0x4c4f69,
-            // flatShading: true,
-            // shininess: 10,
-            side: THREE.DoubleSide
-        }),
+        material = rockDefaultMaterialSingleton,
         segments = 12,
         noise = 0.25,
     ) {
         super();
-        this.material = material
+        this.initializeSingletonMaterial();
 
-        const loader = new THREE.TextureLoader();
-        const texture = loader.load("objects/assets/aerial_rocks_02_diff_480p.jpg");
-        const bump = loader.load("objects/assets/aerial_rocks_02_nor_dx_480p.jpg");
-        // const texture = loader.load("objects/assets/coral_ground_02_rough_480p.jpg");
-        // const bump = loader.load("objects/assets/coral_fort_wall_01_ao_480p.jpg");
-        texture.colorSpace = THREE.SRGBColorSpace;
-        this.material.map = texture;
-        this.material.bumpMap = bump;
-        this.material.bumpScale = 10;
+        if (material === rockDefaultMaterialSingleton) {
+            this.material = material.material
+        } else {
+            this.material = material
+        }
+
 
         this.segments = segments
         this.noise = noise
         this.build()
+    }
+
+    initializeSingletonMaterial() {
+        if (rockDefaultMaterialSingleton.material === null) {
+            rockDefaultMaterialSingleton.material = new THREE.MeshPhongMaterial({
+                // color: 0x4c4f69,
+                // flatShading: true,
+                // shininess: 10,
+                side: THREE.DoubleSide
+            });
+            const loader = new THREE.TextureLoader();
+            const texture = loader.load("objects/assets/aerial_rocks_02_diff_480p.jpg");
+            const bump = loader.load("objects/assets/aerial_rocks_02_nor_dx_480p.jpg");
+            const disp = loader.load("objects/assets/aerial_rocks_02_disp_480p.jpg");
+            texture.colorSpace = THREE.SRGBColorSpace;
+            rockDefaultMaterialSingleton.material.map = texture;
+            rockDefaultMaterialSingleton.material.bumpMap = bump;
+            rockDefaultMaterialSingleton.material.bumpScale = 10;
+            rockDefaultMaterialSingleton.material.displacementMap = disp;
+            rockDefaultMaterialSingleton.material.displacementScale = 0.35;
+        }
     }
 
     build() {
