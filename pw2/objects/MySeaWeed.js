@@ -33,11 +33,12 @@ class MySeaweed extends THREE.Object3D {
         this.clock.connect(document);
         this.material = material;
         const loader = new THREE.TextureLoader();
-        const texture = loader.load("objects/assets/coral_ground_02_rough_480p.jpg");
-        const bump = loader.load("objects/assets/coral_fort_wall_01_ao_480p.jpg");
+        const texture = loader.load("objects/assets/kelp_bump.png");
+        const bump = loader.load("objects/assets/kelp_bump.png");
         texture.colorSpace = THREE.SRGBColorSpace;
         this.material.map = texture;
         this.material.bumpMap = bump;
+        this.material.bumpScale = 10;
         this.material.userData.time = { value: 0 };
         this.material.onBeforeCompile = (shader) => {
           shader.uniforms.time = this.material.userData.time;  

@@ -22,47 +22,49 @@ class MyBasicCoral extends THREE.Object3D {
     update() {}
 }
 
-class MyCoral extends THREE.Object3D {
+const coralMat = {
+    material: null,
+};
 
+class MyCoral extends THREE.Object3D {
     constructor(
-        material = new THREE.MeshPhongMaterial({color: 0xea76cb, }),
+        material = coralMat.material,
         max_dna_size = 5000 * (0.25 + Math.random() * 0.75),
     ) {
         super();
         this.clock = new THREE.Timer();
         this.clock.connect(document);
+        if (material === null) {
+            this.initSingletonMat();
+            material = coralMat.material;
+        };
         this.material = material;
-        const loader = new THREE.TextureLoader();
-        const texture = loader.load("objects/assets/coral_ground_02_rough_480p.jpg");
-        const bump = loader.load("objects/assets/coral_fort_wall_01_ao_480p.jpg");
-        texture.colorSpace = THREE.SRGBColorSpace;
-        this.material.map = texture;
-        this.material.bumpMap = bump;
-        this.material.userData.time = { value: 0 };
-        this.material.onBeforeCompile = (shader) => {
-          shader.uniforms.time = this.material.userData.time;  
-          // Manual vertex projection, might not work on different/future versions
-          shader.vertexShader =
-              `
-              uniform float time;
-              `
-              + shader.vertexShader.replace(
-              '#include <project_vertex>',
-              `
-              vec4 mvPosition = vec4( transformed, 1.0 );
-              mvPosition = instanceMatrix * mvPosition;
+        if (this.material !== coralMat) {
+            this.material.onBeforeCompile = (shader) => {
+              shader.uniforms.time = this.material.userData.time;  
+              // Manual vertex projection, might not work on different/future versions
+              shader.vertexShader =
+                  `
+                  uniform float time;
+                  `
+                  + shader.vertexShader.replace(
+                  '#include <project_vertex>',
+                  `
+                  vec4 mvPosition = vec4( transformed, 1.0 );
+                  mvPosition = instanceMatrix * mvPosition;
   
-              float coralAlpha = time;
-              float sway1 = 0.2 * cos(sin(mod(0.5 * coralAlpha, 2.0 * PI)));
-              float sway2 = 0.2 * sin(cos(mod(0.5 * coralAlpha, 2.0 * PI)));
+                  float coralAlpha = time;
+                  float sway1 = 0.2 * cos(sin(mod(0.5 * coralAlpha, 2.0 * PI)));
+                  float sway2 = 0.2 * sin(cos(mod(0.5 * coralAlpha, 2.0 * PI)));
               
-              mvPosition.x += mvPosition.y * sway1;
-              mvPosition.z += mvPosition.y * sway2;
+                  mvPosition.x += mvPosition.y * sway1;
+                  mvPosition.z += mvPosition.y * sway2;
   
-              mvPosition = modelViewMatrix * mvPosition;
-              gl_Position = projectionMatrix * mvPosition;
-              `
-          );  
+                  mvPosition = modelViewMatrix * mvPosition;
+                  gl_Position = projectionMatrix * mvPosition;
+                  `
+              );
+           }
         }
         
         this.doneGrowing = false;
@@ -82,6 +84,45 @@ class MyCoral extends THREE.Object3D {
         this.branchMesh = this.makeNewMesh(this.max_dna_size);
         this.branchLen = 0.3;
         this.build();
+    }
+
+    initSingletonMat() {
+        if (coralMat.material === null) {
+            coralMat.material = new THREE.MeshPhongMaterial({color: 0xea76cb, side: THREE.DoubleSide, });
+            const loader = new THREE.TextureLoader();
+            const texture = loader.load("objects/assets/coral_ground_02_rough_480p.jpg");
+            const bump = loader.load("objects/assets/coral_fort_wall_01_ao_480p.jpg");
+            texture.colorSpace = THREE.SRGBColorSpace;
+            coralMat.material.map = texture;
+            coralMat.material.bumpMap = bump;
+            coralMat.material.bumpScale = 10;
+            coralMat.material.userData.time = { value: 0 };
+            coralMat.material.onBeforeCompile = (shader) => {
+              shader.uniforms.time = this.material.userData.time;  
+              // Manual vertex projection, might not work on different/future versions
+              shader.vertexShader =
+                  `
+                  uniform float time;
+                  `
+                  + shader.vertexShader.replace(
+                  '#include <project_vertex>',
+                  `
+                  vec4 mvPosition = vec4( transformed, 1.0 );
+                  mvPosition = instanceMatrix * mvPosition;
+  
+                  float coralAlpha = time;
+                  float sway1 = 0.2 * cos(sin(mod(0.5 * coralAlpha, 2.0 * PI)));
+                  float sway2 = 0.2 * sin(cos(mod(0.5 * coralAlpha, 2.0 * PI)));
+              
+                  mvPosition.x += mvPosition.y * sway1;
+                  mvPosition.z += mvPosition.y * sway2;
+  
+                  mvPosition = modelViewMatrix * mvPosition;
+                  gl_Position = projectionMatrix * mvPosition;
+                  `
+              );  
+           }
+        }
     }
 
     makeNewMesh(size) {
