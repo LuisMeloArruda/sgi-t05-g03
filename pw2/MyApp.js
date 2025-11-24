@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { MyContents } from './MyContents.js';
 import { MyGuiInterface } from './MyGuiInterface.js';
+import { PickHelper } from './System/PickHelper.js';
 import Stats from 'three/addons/libs/stats.module.js'
 
 
@@ -88,6 +89,11 @@ class MyApp  {
         this.timer = new THREE.Timer();
         this.timer.connect(document);
 
+        // Pick Helper
+        this.pickHelper = new PickHelper();
+        window.addEventListener('mouseout', this.pickHelper.clearPickPosition);
+        window.addEventListener('mouseleave', this.pickHelper.clearPickPosition);
+        window.addEventListener('click', (event) => this.pickHelper.pick(event, this.scene, this.activeCamera));
     }
 
     /**
@@ -259,7 +265,7 @@ class MyApp  {
         else {
             this.controls.update();
         }
-
+        
         // render the scene
         this.renderer.render(this.scene, this.activeCamera);
 
