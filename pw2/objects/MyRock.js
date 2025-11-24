@@ -21,9 +21,9 @@ class MyRock extends THREE.Object3D {
 
     constructor(
         material = new THREE.MeshPhongMaterial({
-            color: 0x4c4f69,
-            flatShading: true,
-            shininess: 10,
+            // color: 0x4c4f69,
+            // flatShading: true,
+            // shininess: 10,
             side: THREE.DoubleSide
         }),
         segments = 12,
@@ -31,6 +31,17 @@ class MyRock extends THREE.Object3D {
     ) {
         super();
         this.material = material
+
+        const loader = new THREE.TextureLoader();
+        const texture = loader.load("objects/assets/aerial_rocks_02_diff_480p.jpg");
+        const bump = loader.load("objects/assets/aerial_rocks_02_nor_dx_480p.jpg");
+        // const texture = loader.load("objects/assets/coral_ground_02_rough_480p.jpg");
+        // const bump = loader.load("objects/assets/coral_fort_wall_01_ao_480p.jpg");
+        texture.colorSpace = THREE.SRGBColorSpace;
+        this.material.map = texture;
+        this.material.bumpMap = bump;
+        this.material.bumpScale = 10;
+
         this.segments = segments
         this.noise = noise
         this.build()
@@ -40,6 +51,7 @@ class MyRock extends THREE.Object3D {
         const geometry = new THREE.BufferGeometry()
         const positions = []
         const indices = []
+        const uv = []
 
         for (let y = 0; y <= this.segments; y++) {
             const v = y / this.segments
@@ -60,6 +72,8 @@ class MyRock extends THREE.Object3D {
                     py * displacement,
                     pz * displacement
                 );
+
+                uv.push(u,v);
             }
         }
 
@@ -84,7 +98,9 @@ class MyRock extends THREE.Object3D {
             }
         }
 
+
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+        geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv,2));
         geometry.setIndex(indices)
         geometry.computeVertexNormals()
 
