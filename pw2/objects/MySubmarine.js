@@ -1,5 +1,12 @@
 import * as THREE from 'three';
 
+// Reused temp objects to avoid per-frame allocations and share across multiple submarines.
+const _tempMat = new THREE.Matrix4();
+const _tempSegment = new THREE.Line3();
+const _tempBox = new THREE.Box3();
+const _vecA = new THREE.Vector3();
+const _vecB = new THREE.Vector3();
+
 /**
  * @param {THREE.Vector3} displacement - Vector displacement from the initial position.
  * @param {THREE.Material|null} material - Material of the submarine.
@@ -13,90 +20,225 @@ import * as THREE from 'three';
 class MySubmarineControler extends THREE.Object3D {
   constructor(
     rotationSpeed = 0.1, 
-    yLimit = 0.5, 
+    yLimit = -10, 
     speedMax = 0.2,
     accelerationHorizontal = 0.005, 
     accelerationVertical = 0.005, 
-    friction = 0.002
+    friction = 0.002,
+    staticBVH = null,
   ) {
     super();
-
-    this.mesh = null;
-    this.speedHorizontal = 0;
-    this.speedVertical = 0;
-    this.rotationSpeed = rotationSpeed;
-    this.accelerationVertical = accelerationVertical;
+    this.speedHorizontal = 0
+    this.speedVertical = 0
+    this.rotationSpeed = rotationSpeed
+    this.accelerationVertical = accelerationVertical
     this.accelerationHorizontal = accelerationHorizontal
     this.friction = friction
     this.speedMax = speedMax
-    this.yLimit = yLimit;
+    this.yLimit = yLimit
+    this.staticBVH = staticBVH
 
     this.pressedKeys = new Set();
   }
 
   setupListeners() {
-    this._onKeyDown = (e) => this.pressedKeys.add(e.code);
-    this._onKeyUp = (e) => this.pressedKeys.delete(e.code);
+    this._onKeyDown = (e) => this.pressedKeys.add(e.code)
+    this._onKeyUp = (e) => this.pressedKeys.delete(e.code)
 
-    window.addEventListener('keydown', this._onKeyDown);
-    window.addEventListener('keyup', this._onKeyUp);
+    window.addEventListener('keydown', this._onKeyDown)
+    window.addEventListener('keyup', this._onKeyUp)
   }
 
   dispose() {
-    window.removeEventListener('keydown', this._onKeyDown);
-    window.removeEventListener('keyup', this._onKeyUp);
+    window.removeEventListener('keydown', this._onKeyDown)
+    window.removeEventListener('keyup', this._onKeyUp)
   }
 
+  setBVHCapsuleInfo() {
+    const box = new THREE.Box3();
+
+    this.traverse(obj => {
+        if (obj.isMesh && obj.geometry) {
+            box.expandByObject(obj);
+        }
+    });
+
+    const size = new THREE.Vector3();
+    box.getSize(size);
+
+    const radius = size.x * 0.5;
+    const halfLength = (size.z - radius * 2) * 0.5;
+
+    this.userData.capsuleInfo = {
+        radius: radius,
+        segment: new THREE.Line3(
+            new THREE.Vector3(0, 0, -halfLength),
+            new THREE.Vector3(0, 0, halfLength)
+        )
+    };
+  }
+
+  createCapsuleHelper() {
+    const info = this.userData.capsuleInfo
+    if (!info) return
+
+    const { radius, segment } = info
+
+    const halfLength = segment.start.distanceTo(segment.end) * 0.5
+    const length = halfLength * 2
+
+    const capsuleGeo = new THREE.CapsuleGeometry(radius, length, 8, 16)
+    capsuleGeo.rotateX(Math.PI / 2)
+
+    const material = new THREE.MeshBasicMaterial({
+        color: 0x00ff00,
+        wireframe: true
+    });
+
+    const capsuleMesh = new THREE.Mesh(capsuleGeo, material)
+
+    capsuleMesh.position.set(0, 0, 0)
+
+    const helper = new THREE.Group()
+    helper.add(capsuleMesh)
+
+    this.userData.capsuleHelper = helper
+
+    return helper
+}
+
+  checkCollisionAtPosition(collider, testPosition) {
+    const capsuleInfo = this.userData.capsuleInfo
+
+    _tempMat.copy(collider.matrixWorld).invert()
+
+    _tempSegment.copy(capsuleInfo.segment)
+
+    const tempMatrixWorld = new THREE.Matrix4()
+        .compose(
+            testPosition,
+            this.quaternion,
+            new THREE.Vector3(1,1,1)
+        );
+
+    _tempSegment.start
+        .applyMatrix4(tempMatrixWorld)
+        .applyMatrix4(_tempMat)
+
+    _tempSegment.end
+        .applyMatrix4(tempMatrixWorld)
+        .applyMatrix4(_tempMat)
+
+    _tempBox.makeEmpty()
+    _tempBox.expandByPoint(_tempSegment.start)
+    _tempBox.expandByPoint(_tempSegment.end)
+
+    _tempBox.min.addScalar(-capsuleInfo.radius)
+    _tempBox.max.addScalar(capsuleInfo.radius)
+
+    let collided = false;
+
+    collider.geometry.boundsTree.shapecast({
+        intersectsBounds: box => box.intersectsBox(_tempBox),
+        intersectsTriangle: tri => {
+            const triPoint = _vecA
+            const capsulePoint = _vecB
+
+            const distance = tri.closestPointToSegment(
+                _tempSegment,
+                triPoint,
+                capsulePoint
+            );
+
+            if (distance < capsuleInfo.radius) {
+                collided = true
+                return true
+            }
+        }
+    });
+
+    return collided
+}
+
   update() {
-    // Horizontal speed
+    // horizontal
     if (this.pressedKeys.has('KeyW')) {
-      if (this.speedHorizontal < this.speedMax) {
+      if (this.speedHorizontal < this.speedMax)
         this.speedHorizontal += this.accelerationHorizontal;
-      }
     }
     else if (this.pressedKeys.has('KeyS')) {
-      if (this.speedHorizontal > -this.speedMax / 2) {
+      if (this.speedHorizontal > -this.speedMax / 2)
         this.speedHorizontal -= this.accelerationHorizontal;
-      }
     }
     else {
-      if (Math.abs(this.speedHorizontal) > 0.001) {
+      if (Math.abs(this.speedHorizontal) > 0.001)
         this.speedHorizontal -= this.friction * Math.sign(this.speedHorizontal);
+      else
+        this.speedHorizontal = 0
+    }
+
+    if (Math.abs(this.speedHorizontal) > 0) {
+
+      const moveZ = new THREE.Vector3(0, 0, -this.speedHorizontal)
+        .applyQuaternion(this.quaternion)
+
+      const predictedPos = this.position.clone().add(moveZ)
+
+      let hit = false
+      if (this.staticBVH) {
+        hit = this.staticBVH && this.checkCollisionAtPosition(this.staticBVH.mesh, predictedPos);
+      }
+
+      if (!hit) {
+        this.translateZ(-this.speedHorizontal)
       } else {
         this.speedHorizontal = 0;
       }
     }
 
-    if (Math.abs(this.speedHorizontal) > 0) {
-      this.translateZ(-this.speedHorizontal);
-    }
-
-    // Vertical speed
+    // vertical
     if (this.pressedKeys.has('KeyP')) {
       if (this.speedVertical < this.speedMax)
         this.speedVertical += this.accelerationVertical;
-    } 
+    }
     else if (this.pressedKeys.has('KeyL') && this.position.y > this.yLimit) {
       if (this.speedVertical > -this.speedMax)
         this.speedVertical -= this.accelerationVertical;
-    } 
+    }
     else {
       if (Math.abs(this.speedVertical) > 0.001)
         this.speedVertical -= this.friction * Math.sign(this.speedVertical);
-      else this.speedVertical = 0;
+      else
+        this.speedVertical = 0
     }
 
     if (Math.abs(this.speedVertical) > 0) {
-      this.translateY(this.speedVertical);
-      if (this.position.y < this.yLimit) {
-        this.position.y = this.yLimit;
+
+      const moveY = new THREE.Vector3(0, this.speedVertical, 0);
+      const predictedPos = this.position.clone().add(moveY);
+    
+      let testPos = predictedPos;
+    
+      // tolerance
+      if (this.pressedKeys.has('KeyP')) {
+        testPos = predictedPos.clone().add(new THREE.Vector3(0, 0.2, 0));
+      }
+    
+      let hit = false;
+      if (this.staticBVH) {
+        hit = this.checkCollisionAtPosition(this.staticBVH.mesh, testPos);
+      }
+    
+      if (!hit) {
+        this.translateY(this.speedVertical);
+      } else {
         this.speedVertical = 0;
       }
     }
-  
-    // Horizontal direction left or right
-    if (this.pressedKeys.has('KeyA')) this.rotateY(this.rotationSpeed);
-    if (this.pressedKeys.has('KeyD')) this.rotateY(-this.rotationSpeed);
+    
+    // Horizontal direction left or right 
+    if (this.pressedKeys.has('KeyA')) this.rotateY(this.rotationSpeed) 
+    if (this.pressedKeys.has('KeyD')) this.rotateY(-this.rotationSpeed)
   }
 }
 

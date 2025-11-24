@@ -1,5 +1,14 @@
 import * as THREE from "three";
 
+/**
+ * Manages 2D spatial occupancy for placing objects without overlap.
+ * Operates on the XZ plane using circular bounds.
+ *
+ * @class SpaceManager
+ * @param {number} width - Total width of the managed area.
+ * @param {number} height - Total height of the managed area.
+ * @param {Array<Object>} objects - List of occupied spots (position + radius).
+ */
 class SpaceManager {
     constructor(width, height) {
         this.width = width

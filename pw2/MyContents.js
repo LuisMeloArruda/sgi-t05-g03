@@ -12,6 +12,9 @@ import { KeyframeObjectAnimator } from './System/KeyframeObjectAnimator.js'
 import { MyBasicChest, MyChest } from './objects/MyChest.js';
 import { SpaceManager } from './System/SpaceManager.js'
 import { MyBoid } from './objects/MyBoid.js';
+import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
+import { staticBVH } from './System/staticBVH.js'
+
 
 /**
  *  This class contains the contents of out application
@@ -26,6 +29,14 @@ class MyContents  {
         this.app = app
         this.axis = null
 
+        // BVH related attributes
+        THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
+        THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree
+        THREE.Mesh.prototype.raycast = acceleratedRaycast
+
+        this.staticBVH = new staticBVH()
+        this.terrainBVHHelper = null
+        this.submarineBVHHelper = null
 
         // Terrain related attributes       
         this.terrainGroup = new THREE.Group()
@@ -123,8 +134,6 @@ class MyContents  {
         }
         this.seaweedConstructors = [() => new MySeaweed(), () => new MyBasicSeaweed()]
 
-
-        
         // Bubbles related attributes
         this.bubblesGroup = new THREE.Group();
         this.bubblesGroup.translateX(-2);
@@ -184,7 +193,7 @@ class MyContents  {
             color: "#ffff00", specular: "#000000", emissive: "#000000", shininess: 90
         })
 
-        const submarinePosition = new THREE.Vector3(2, 2, 0)
+        const submarinePosition = new THREE.Vector3(2, 7, 0)
         const submarineRotation = new THREE.Euler(0, Math.PI / 4, 0)
         const submarineScale = new THREE.Vector3(0.8, 0.8, 0.8)
         this.submarineControler = new MySubmarineControler()
@@ -264,7 +273,7 @@ class MyContents  {
         this.rocksConstructors = [()=> new MyRock(), () => new MyBasicRock()]
 
         // Boid related attributes
-        this.boid = new MyBoid([this.submarineControler], () => {
+        this.boid = new MyBoid([this.submarineControler], this.staticBVH,() => {
             const group = new THREE.Group();
             group.update = () => {
                 group.children[0].children.forEach((fish) => {
@@ -276,7 +285,8 @@ class MyContents  {
             lod.addLevel(new MyBasicFish(), 20);
             group.add(lod);
             return group;
-        });
+        }
+        );
     }
 
     /**
@@ -335,6 +345,7 @@ class MyContents  {
         this.createLODs(this.fishesConfigs, this.fishContructors, [0, 20], this.fishesGroup)
         this.app.scene.add(this.fishesGroup);
 
+        // fishesGroup keyframe
         for (const lod of this.fishesGroup.children) {
             const animator = new KeyframeObjectAnimator(lod, 120, 5000, 
                 this.minX, this.maxX, this.minY, 
@@ -342,9 +353,25 @@ class MyContents  {
             this.fishAnimators.push(animator);
         }
         
+        // fishesGroup boid
         this.app.scene.add(this.boid);
-    }
 
+        // BVH
+        this.staticBVH.buildMesh([this.terrainGroup])
+
+        this.submarineControler.setBVHCapsuleInfo()
+        this.submarineControler.staticBVH = this.staticBVH
+
+        // BVH Debug
+        this.terrainBVHHelper = this.staticBVH.createHelper(this.staticBVH.mesh)
+        this.submarineBVHHelper = this.submarineControler.createCapsuleHelper()
+
+        this.terrainBVHHelper.visible = false
+        this.submarineBVHHelper.visible = false
+
+        this.submarineControler.add(this.submarineBVHHelper)
+        this.app.scene.add(this.terrainBVHHelper)
+    }
 
     /**
      * Creates LOD objects from configs and adds them to a group.
@@ -468,7 +495,7 @@ class MyContents  {
             this.app.activeCameraName === '1PersonSubmarine' ||
             this.app.activeCameraName === '3PersonSubmarine') 
             this.submarineControler.update();
-
+    
     }
 }
 
