@@ -66,7 +66,7 @@ class MyGuiInterface  {
         
             boidFolder.add(this.app.contents.boid, 'alignment', 0, 1, 0.1).listen();
             boidFolder.add(this.app.contents.boid, 'moveSpeed',   0.1, 10, 0.5).listen();
-            boidFolder.add(this.app.contents.boid, 'awareness',   0.1, 10, 0.1).listen();
+            boidFolder.add(this.app.contents.boid, 'awareness',   0.1, 25, 0.1).listen();
         boidFolder.open()
 
         // BVH Helpers 
