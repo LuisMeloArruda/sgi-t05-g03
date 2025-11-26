@@ -232,6 +232,56 @@ class MyContents  {
         this.chestsConstructors = [() => new MyChest(), () => new MyBasicChest()]
 
         // Rocks related attributes
+        const video = document.createElement('video');
+        video.src = './objects/assets/rock/crabs.mp4';
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.autoplay = true;
+
+        const texture = new THREE.VideoTexture(video);
+        texture.colorSpace = THREE.SRGBColorSpace;
+
+        const rockCrabMaterial = new THREE.MeshPhongMaterial({
+            map: texture,
+            side: THREE.DoubleSide
+        });
+        this.rocksCrabConstructors = [()=> new MyRock(rockCrabMaterial), () => new MyBasicRock(rockCrabMaterial)]
+
+        this.rockCrabConfig = [
+            {
+                position: new THREE.Vector3(0, this.terrain.getHeightAt(0, 5), 10),
+                rotation: new THREE.Euler(0, 0, 0),
+                scale: new THREE.Vector3(2, 2, 2),
+            },
+        ];
+
+        const video2 = document.createElement('video');
+        video2.src = './objects/assets/rock/rockcrab2.mp4';
+        video2.muted = true;
+        video2.loop = true;
+        video2.playsInline = true;
+        video2.autoplay = true;
+
+        const texture2 = new THREE.VideoTexture(video2);
+        texture2.colorSpace = THREE.SRGBColorSpace;
+
+        const rockCrabMaterial2 = new THREE.MeshPhongMaterial({
+            map: texture2,
+            side: THREE.DoubleSide
+        });
+        this.rocksCrabConstructors2 = [()=> new MyRock(rockCrabMaterial2), () => new MyBasicRock(rockCrabMaterial2)]
+
+        this.rockCrabConfig2 = [
+            {
+                position: new THREE.Vector3(-15, this.terrain.getHeightAt(-15, 0), 0),
+                rotation: new THREE.Euler(0, Math.PI, 0),
+                scale: new THREE.Vector3(1, 3, 3),
+            },
+        ];
+        this.space.occupy(0, 10, 2, "rockCrab")
+        this.space.occupy(-15, 0, 2, "rockCrab2")
+
         this.rocksConfig = []
         const rocksQuantity = 100
         for (let i = 0; i < rocksQuantity; i++) {
@@ -317,6 +367,8 @@ class MyContents  {
         this.app.renderer.setClearColor(0x004466); 
 
         // add terrain
+        this.createLODs(this.rockCrabConfig2, this.rocksCrabConstructors2, [0, 40], this.terrainGroup)
+        this.createLODs(this.rockCrabConfig, this.rocksCrabConstructors, [0, 40], this.terrainGroup)
         this.createLODs(this.rocksConfig, this.rocksConstructors, [0, 40], this.terrainGroup)
         this.terrainGroup.add(this.terrain)
         this.app.scene.add(this.terrainGroup);
