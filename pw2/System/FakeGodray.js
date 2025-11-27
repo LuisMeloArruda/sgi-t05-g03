@@ -85,7 +85,7 @@ function createGodrayMaterial(params = {}) {
         float ang = atan(vLocalPos.x, vLocalPos.z);
         if (abs(ang) > 1.57) discard;
 
-        float alpha = n * fres * mask;
+        float alpha = n * fres * mask * 0.15;
 
         gl_FragColor = vec4(u_color, alpha);
       }

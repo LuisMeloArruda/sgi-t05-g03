@@ -453,14 +453,14 @@ class MyContents  {
               tiltZ
             ],
             color: '#ADD8E6',
-            topRadius: 0.1,
-            bottomRadius: 2,
+            topRadius: 1.7,
+            bottomRadius: 1,
             height: 150,
             timeSpeed: 0.5,
             noiseScale: 1,
             smoothBottom: 1,
             smoothTop: 0.1,
-            fresnelPower: 10
+            fresnelPower: 2
           });
       
           group.add(godray);
