@@ -90,10 +90,10 @@ class MyApp  {
         this.timer.connect(document);
 
         // Pick Helper
-        this.pickHelper = new PickHelper();
-        window.addEventListener('mouseout', this.pickHelper.clearPickPosition);
-        window.addEventListener('mouseleave', this.pickHelper.clearPickPosition);
-        window.addEventListener('click', (event) => this.pickHelper.pick(event, this.scene, this.activeCamera));
+        // this.pickHelper = new PickHelper();
+        // window.addEventListener('mouseout', this.pickHelper.clearPickPosition);
+        // window.addEventListener('mouseleave', this.pickHelper.clearPickPosition);
+        // window.addEventListener('click', (event) => this.pickHelper.pick(event, this.scene, this.activeCamera));
     }
 
     /**
