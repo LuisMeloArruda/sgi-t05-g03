@@ -13,7 +13,8 @@ import { MyBasicChest, MyChest } from './objects/MyChest.js';
 import { SpaceManager } from './System/SpaceManager.js'
 import { MyBoid } from './objects/MyBoid.js';
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
-import { staticBVH } from './System/staticBVH.js'
+import { staticBVH } from './System/StaticBVH.js'
+import { createGodray } from './System/FakeGodray.js';
 
 
 /**
@@ -357,19 +358,23 @@ class MyContents  {
         this.app.scene.add( ambientLight );
 
         // add a point light
-        const pointlight = new THREE.PointLight( 0xffffff )
-        pointlight.intensity = 100
-        pointlight.position.set(0, 5, 2)
+        const pointlight = new THREE.PointLight( 0xADD8E6 )
+        pointlight.intensity = 1000
+        pointlight.position.set(0, 50, 0)
         this.app.scene.add( pointlight )
 
         // add fog
         this.app.scene.fog = new THREE.FogExp2(0x081A23, 0.03);
         this.app.renderer.setClearColor(0x004466); 
 
+        // Godrays
+        this.godray = this.initFakeGodrays()
+        this.app.scene.add(this.godray)
+
         // add terrain
         this.createLODs(this.rockCrabConfig2, this.rocksCrabConstructors2, [0, 40], this.terrainGroup)
         this.createLODs(this.rockCrabConfig, this.rocksCrabConstructors, [0, 40], this.terrainGroup)
-        this.createLODs(this.rocksConfig, this.rocksConstructors, [0, 40], this.terrainGroup)
+        // this.createLODs(this.rocksConfig, this.rocksConstructors, [0, 40], this.terrainGroup)
         this.terrainGroup.add(this.terrain)
         this.app.scene.add(this.terrainGroup);
 
@@ -382,11 +387,11 @@ class MyContents  {
         this.app.scene.add(this.submarineControler);
         
         // add corals
-        this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 20], this.coralsGroup)
+        // this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 20], this.coralsGroup)
         this.app.scene.add(this.coralsGroup);
 
         // add seaweed
-        this.createLODs(this.seaweedConfig, this.seaweedConstructors, [0, 20], this.seaweedGroup)
+        // this.createLODs(this.seaweedConfig, this.seaweedConstructors, [0, 20], this.seaweedGroup)
         this.app.scene.add(this.seaweedGroup);
 
         // add bubble
@@ -394,7 +399,7 @@ class MyContents  {
         this.app.scene.add(this.bubblesGroup);
 
         // add fishes
-        this.createLODs(this.fishesConfigs, this.fishContructors, [0, 20], this.fishesGroup)
+        // this.createLODs(this.fishesConfigs, this.fishContructors, [0, 20], this.fishesGroup)
         this.app.scene.add(this.fishesGroup);
 
         // fishesGroup keyframe
@@ -405,8 +410,8 @@ class MyContents  {
             this.fishAnimators.push(animator);
         }
         
-        // fishesGroup boid
-        this.app.scene.add(this.boid);
+        // // fishesGroup boid
+        // this.app.scene.add(this.boid);
 
         // BVH
         this.staticBVH.buildMesh([this.terrainGroup])
@@ -425,6 +430,46 @@ class MyContents  {
         this.app.scene.add(this.terrainBVHHelper)
     }
 
+    initFakeGodrays({
+        count = 50,
+        spread = 75,
+        position = [0, 100, 0]
+      } = {}) {
+      
+        const group = new THREE.Group();
+        group.position.fromArray(position);
+      
+        const degToRad = (deg) => deg * Math.PI / 180;
+      
+        for (let i = 0; i < count; i++) {
+          const tiltX = degToRad(THREE.MathUtils.randFloatSpread(spread));
+          const tiltZ = degToRad(THREE.MathUtils.randFloatSpread(spread));
+    
+          const godray = createGodray({
+            position: [0, 0, 0],
+            rotation: [
+              tiltX,
+              0,
+              tiltZ
+            ],
+            color: '#ADD8E6',
+            topRadius: 0.1,
+            bottomRadius: 2,
+            height: 150,
+            timeSpeed: 2,
+            noiseScale: 4,
+            smoothBottom: 1,
+            smoothTop: 0.1,
+            fresnelPower: 2
+          });
+      
+          group.add(godray);
+        }
+      
+        return group;
+      }
+      
+    
     /**
      * Creates LOD objects from configs and adds them to a group.
      * 
@@ -548,6 +593,12 @@ class MyContents  {
             this.app.activeCameraName === '3PersonSubmarine') 
             this.submarineControler.update();
     
+        // Fake Godrays tick
+        const dt = this.app.clock.getDelta();
+        for (let i = 0; i < this.godray.children.length; i++) {
+            const element = this.godray.children[i];
+            if (element.tick) element.tick(dt);
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { MyFish } from "./MyFish.js";
-import { DynamicBVH } from "../System/dynamicBVH.js";
+import { DynamicBVH } from "../System/DynamicBVH.js";
 
 class MyBoid extends THREE.Object3D {
     constructor(
@@ -12,7 +12,7 @@ class MyBoid extends THREE.Object3D {
         alignment = 0.5,
         moveSpeed = 5,
         awareness = 12.5,
-        totalFishes = 150,
+        totalFishes = 50,
         lowerLimit = new THREE.Vector3(-50, 5, -50),
         upperLimit = new THREE.Vector3(50, 50, 50),
         dangerSize = 5,
