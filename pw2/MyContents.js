@@ -358,7 +358,7 @@ class MyContents  {
         this.app.scene.add( ambientLight );
 
         // add a point light
-        const pointlight = new THREE.PointLight( 0xffffff )
+        const pointlight = new THREE.PointLight( 0xADD8E6 )
         pointlight.intensity = 1000
         pointlight.position.set(0, 50, 0)
         this.app.scene.add( pointlight )
@@ -453,11 +453,11 @@ class MyContents  {
               tiltZ
             ],
             color: '#ADD8E6',
-            topRadius: 1.7,
-            bottomRadius: 1,
+            topRadius: 0.1,
+            bottomRadius: 2,
             height: 150,
-            timeSpeed: 0.5,
-            noiseScale: 1,
+            timeSpeed: 2,
+            noiseScale: 4,
             smoothBottom: 1,
             smoothTop: 0.1,
             fresnelPower: 2

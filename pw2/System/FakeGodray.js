@@ -79,7 +79,7 @@ function createGodrayMaterial(params = {}) {
         float fres = pow(abs(dot(vNormal, viewDir)), u_fresnelPower);
 
         float y = 1.0 - vUv.y;
-        float mask = smoothstep(u_smoothTop, u_smoothBottom, y);
+        float mask = smoothstep(u_smoothBottom, u_smoothTop, y);
         mask = pow(mask, 1.8);
 
         float ang = atan(vLocalPos.x, vLocalPos.z);
