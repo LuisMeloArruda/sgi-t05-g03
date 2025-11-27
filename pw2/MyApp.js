@@ -94,6 +94,10 @@ class MyApp  {
         // window.addEventListener('mouseout', this.pickHelper.clearPickPosition);
         // window.addEventListener('mouseleave', this.pickHelper.clearPickPosition);
         // window.addEventListener('click', (event) => this.pickHelper.pick(event, this.scene, this.activeCamera));
+
+        // Shadows
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     }
 
     /**
@@ -265,7 +269,7 @@ class MyApp  {
         else {
             this.controls.update();
         }
-        
+
         // render the scene
         this.renderer.render(this.scene, this.activeCamera);
 

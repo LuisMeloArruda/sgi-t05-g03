@@ -358,10 +358,15 @@ class MyContents  {
         this.app.scene.add( ambientLight );
 
         // add a point light
-        const pointlight = new THREE.PointLight( 0xADD8E6 )
-        pointlight.intensity = 1000
-        pointlight.position.set(0, 50, 0)
-        this.app.scene.add( pointlight )
+        const sun = new THREE.PointLight(0xffffff);
+        sun.position.set(0, 50, 0);
+        sun.intensity = 1000;
+        
+        sun.castShadow = true;
+        
+        sun.shadow.mapSize.width = 4096;
+        sun.shadow.mapSize.height = 4096;
+        this.app.scene.add(sun);
 
         // add fog
         this.app.scene.fog = new THREE.FogExp2(0x081A23, 0.03);
@@ -374,32 +379,39 @@ class MyContents  {
         // add terrain
         this.createLODs(this.rockCrabConfig2, this.rocksCrabConstructors2, [0, 40], this.terrainGroup)
         this.createLODs(this.rockCrabConfig, this.rocksCrabConstructors, [0, 40], this.terrainGroup)
-        // this.createLODs(this.rocksConfig, this.rocksConstructors, [0, 40], this.terrainGroup)
+        this.createLODs(this.rocksConfig, this.rocksConstructors, [0, 40], this.terrainGroup)
+        this.enableShadows(this.terrainGroup, true, true);
+        this.enableShadows(this.terrain, false, true);
         this.terrainGroup.add(this.terrain)
         this.app.scene.add(this.terrainGroup);
 
         // add chest
         this.createLODs(this.chestsConfigs, this.chestsConstructors, [0, 20], this.chestsGroup)
+        this.enableShadows(this.submarineControler, true, false);
         this.app.scene.add(this.chestsGroup)
 
         // add submarine
         this.createLODs(this.submarineLODConfigs, this.submarineConstructors, [0, 20], this.submarineControler);
+        this.enableShadows(this.submarineControler, true, false);
         this.app.scene.add(this.submarineControler);
         
         // add corals
         // this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 20], this.coralsGroup)
+        // this.enableShadows(this.coralsGroup, true, false);
         this.app.scene.add(this.coralsGroup);
 
         // add seaweed
         // this.createLODs(this.seaweedConfig, this.seaweedConstructors, [0, 20], this.seaweedGroup)
+        // this.enableShadows(this.seaweedGroup, true, false);
         this.app.scene.add(this.seaweedGroup);
 
         // add bubble
         this.createLODs(this.bubblesConfigs, this.bubblesConstructors, [0], this.bubblesGroup)
+        this.enableShadows(this.bubblesGroup, true, false);
         this.app.scene.add(this.bubblesGroup);
 
         // add fishes
-        // this.createLODs(this.fishesConfigs, this.fishContructors, [0, 20], this.fishesGroup)
+        this.createLODs(this.fishesConfigs, this.fishContructors, [0, 20], this.fishesGroup)
         this.app.scene.add(this.fishesGroup);
 
         // fishesGroup keyframe
@@ -410,8 +422,8 @@ class MyContents  {
             this.fishAnimators.push(animator);
         }
         
-        // // fishesGroup boid
-        // this.app.scene.add(this.boid);
+        // fishesGroup boid
+        this.app.scene.add(this.boid);
 
         // BVH
         this.staticBVH.buildMesh([this.terrainGroup])
@@ -469,30 +481,47 @@ class MyContents  {
         return group;
       }
       
-    
     /**
      * Creates LOD objects from configs and adds them to a group.
      * 
      * @param {Array<Object>} configs - Each with position, scale, rotation (Vector3, Vector3, Euler)
      * @param {Array<Function>} constructors - Functions returning mesh per LOD level
      * @param {Array<number>} distances - Distances for each LOD level
-     * @param {THREE.Group} targetParent - Group to add the LODs to
+     * @param {THREE.Group} targetParent - Group to add the LODs to 
      */
     createLODs(configs, constructors, distances, targetParent) {
         for (const cfg of configs) {
-          const lod = new THREE.LOD();
-      
-          for (let i = 0; i < constructors.length; i++) {
-            const obj = constructors[i]();
-            obj.scale.copy(cfg.scale);
-            obj.rotation.copy(cfg.rotation);
-            lod.addLevel(obj, distances[i]);
-          }
-      
-          lod.position.copy(cfg.position);
-          targetParent.add(lod);
+            const lod = new THREE.LOD();
+    
+            for (let i = 0; i < constructors.length; i++) {
+                const obj = constructors[i]();
+                obj.scale.copy(cfg.scale);
+                obj.rotation.copy(cfg.rotation);
+                lod.addLevel(obj, distances[i]);
+            }
+    
+            lod.position.copy(cfg.position);
+            targetParent.add(lod);
         }
-      }
+    }
+
+    /**
+     * Enable or disable shadows in any object hierarchy (Group, LOD, Mesh).
+     * 
+     * @param {THREE.Object3D} root
+     * @param {boolean} cast
+     * @param {boolean} receive
+     */
+    enableShadows(root, cast = true, receive = true) {
+        root.traverse(obj => {
+            if (obj.isMesh) {
+                obj.castShadow = cast;
+                obj.receiveShadow = receive;
+                if (obj.material) obj.material.needsUpdate = true;
+            }
+        });
+    }
+
       
     /**
      * Updates the camera's position and target to follow the submarine while maintaining a constant offset
