@@ -17,13 +17,13 @@ const _vecB = new THREE.Vector3();
  * @param {number} accelerationVertical - Vertical acceleration
  * @param {friction} friction - Friction applied when not accelerating
  */
-class MySubmarineControler extends THREE.Object3D {
+class MySubmarineController extends THREE.Object3D {
   constructor(
-    rotationSpeed = 0.1, 
-    yLimit = -10, 
+    rotationSpeed = 0.1,
+    yLimit = -10,
     speedMax = 0.2,
-    accelerationHorizontal = 0.005, 
-    accelerationVertical = 0.005, 
+    accelerationHorizontal = 0.005,
+    accelerationVertical = 0.005,
     friction = 0.002,
     staticBVH = null,
   ) {
@@ -39,7 +39,128 @@ class MySubmarineControler extends THREE.Object3D {
     this.staticBVH = staticBVH
 
     this.pressedKeys = new Set();
+    this.build()
   }
+
+  build() {
+    // Front Light
+    const frontLight = new THREE.SpotLight(0xffff00);
+    frontLight.intensity = 50;
+    frontLight.distance = 20;
+    frontLight.angle = 0.5;
+    frontLight.penumbra = 1.0;
+    frontLight.decay = 1.0;
+
+    frontLight.castShadow = true;
+    frontLight.shadow.bias = -0.0005;
+    frontLight.shadow.normalBias = 0.02;
+    frontLight.shadow.mapSize.width = 1024;
+    frontLight.shadow.mapSize.height = 1024;
+
+    frontLight.position.set(0, 0, -1.7)
+
+    this.add(frontLight.target);
+    frontLight.target.position.set(0, 0, -10);
+
+    this.frontLightHelper = new THREE.SpotLightHelper(frontLight)
+    this.frontLightHelper.visible = false
+    this.frontLight = frontLight;
+
+    this.flashlightMesh = this.createFlashlightMesh();
+    this.flashlightMesh.scale.set(1.8, 1.8, 1)
+    this.flashlightMesh.position.copy(this.frontLight.position);
+
+    this.add(this.frontLight, this.frontLightHelper, this.flashlightMesh)
+
+    // Flashing warning light
+    const warningLight = new THREE.PointLight(0xff0000);
+    warningLight.intensity = 2
+    warningLight.distance = 20
+    warningLight.decay = 1.0
+
+    warningLight.position.set(0, 1.4, -0.5)
+
+    this.warningLightHelper = new THREE.PointLightHelper(warningLight)
+    this.warningLightHelper.visible = false
+    this.warningLightFrequency = 0.5;
+    this.warningLightBaseIntensity = warningLight.intensity;
+    this.warningLight = warningLight
+
+    this.flagMesh = this.createWarningLampMesh();
+    this.flagMesh.scale.set(0.2, 0.2, 0.2)
+    this.flagMesh.rotation.y = Math.PI / 2
+    this.flagMesh.position.copy(this.warningLight.position);
+
+    this.add(this.warningLight, this.flagMesh)
+  }
+
+  createFlashlightMesh() {
+    const innerRadius = 0.3;
+    const outerRadius = 0.33;
+
+    const innerGeo = new THREE.SphereGeometry(innerRadius, 16, 16);
+    const outerGeo = new THREE.SphereGeometry(outerRadius, 16, 16);
+
+    innerMat = new THREE.MeshPhongMaterial({
+      color: 0xffff00,
+      emissive: 0xffff00,
+      shininess: 80,
+      transparent: true,
+      opacity: 0.9
+    });
+
+    const outerMat = new THREE.MeshPhongMaterial({
+      color: 0xffff00,
+      wireframe: true,
+      wireframeLinewidth: 1
+    });
+
+    const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+    const outerMesh = new THREE.Mesh(outerGeo, outerMat);
+
+    const group = new THREE.Group();
+    group.add(innerMesh);
+    group.add(outerMesh);
+
+    return group;
+  }
+
+
+  createWarningLampMesh() {
+    const radius = 0.35;
+    const length = 1.0;
+
+    const glassGeo = new THREE.CapsuleGeometry(radius, length, 8, 12);
+    const cageGeo = new THREE.CapsuleGeometry(radius * 1.05, length * 1.05, 8, 12);
+
+    const glassMat = new THREE.MeshPhongMaterial({
+      color: 0xff0000,
+      emissive: 0xaa0000,
+      roughness: 0.2,
+      transmission: 0.6,
+      thickness: 0.5,
+      transparent: true
+    });
+
+    const cageMat = new THREE.MeshPhongMaterial({
+      color: 0x111111,
+      wireframe: true,
+      wireframeLinewidth: 1
+    });
+
+    const glass = new THREE.Mesh(glassGeo, glassMat);
+    const cage = new THREE.Mesh(cageGeo, cageMat);
+
+    glass.rotation.x = Math.PI / 2;
+    cage.rotation.x = Math.PI / 2;
+
+    const group = new THREE.Group();
+    group.add(glass);
+    group.add(cage);
+
+    return group;
+  }
+
 
   setupListeners() {
     this._onKeyDown = (e) => this.pressedKeys.add(e.code)
@@ -58,9 +179,9 @@ class MySubmarineControler extends THREE.Object3D {
     const box = new THREE.Box3();
 
     this.traverse(obj => {
-        if (obj.isMesh && obj.geometry) {
-            box.expandByObject(obj);
-        }
+      if (obj.isMesh && obj.geometry) {
+        box.expandByObject(obj);
+      }
     });
 
     const size = new THREE.Vector3();
@@ -70,11 +191,11 @@ class MySubmarineControler extends THREE.Object3D {
     const halfLength = (size.z - radius * 2) * 0.5;
 
     this.userData.capsuleInfo = {
-        radius: radius,
-        segment: new THREE.Line3(
-            new THREE.Vector3(0, 0, -halfLength),
-            new THREE.Vector3(0, 0, halfLength)
-        )
+      radius: radius,
+      segment: new THREE.Line3(
+        new THREE.Vector3(0, 0, -halfLength),
+        new THREE.Vector3(0, 0, halfLength)
+      )
     };
   }
 
@@ -91,8 +212,8 @@ class MySubmarineControler extends THREE.Object3D {
     capsuleGeo.rotateX(Math.PI / 2)
 
     const material = new THREE.MeshBasicMaterial({
-        color: 0x00ff00,
-        wireframe: true
+      color: 0x00ff00,
+      wireframe: true
     });
 
     const capsuleMesh = new THREE.Mesh(capsuleGeo, material)
@@ -105,7 +226,7 @@ class MySubmarineControler extends THREE.Object3D {
     this.userData.capsuleHelper = helper
 
     return helper
-}
+  }
 
   checkCollisionAtPosition(collider, testPosition) {
     const capsuleInfo = this.userData.capsuleInfo
@@ -115,19 +236,19 @@ class MySubmarineControler extends THREE.Object3D {
     _tempSegment.copy(capsuleInfo.segment)
 
     const tempMatrixWorld = new THREE.Matrix4()
-        .compose(
-            testPosition,
-            this.quaternion,
-            new THREE.Vector3(1,1,1)
-        );
+      .compose(
+        testPosition,
+        this.quaternion,
+        new THREE.Vector3(1, 1, 1)
+      );
 
     _tempSegment.start
-        .applyMatrix4(tempMatrixWorld)
-        .applyMatrix4(_tempMat)
+      .applyMatrix4(tempMatrixWorld)
+      .applyMatrix4(_tempMat)
 
     _tempSegment.end
-        .applyMatrix4(tempMatrixWorld)
-        .applyMatrix4(_tempMat)
+      .applyMatrix4(tempMatrixWorld)
+      .applyMatrix4(_tempMat)
 
     _tempBox.makeEmpty()
     _tempBox.expandByPoint(_tempSegment.start)
@@ -139,28 +260,42 @@ class MySubmarineControler extends THREE.Object3D {
     let collided = false;
 
     collider.geometry.boundsTree.shapecast({
-        intersectsBounds: box => box.intersectsBox(_tempBox),
-        intersectsTriangle: tri => {
-            const triPoint = _vecA
-            const capsulePoint = _vecB
+      intersectsBounds: box => box.intersectsBox(_tempBox),
+      intersectsTriangle: tri => {
+        const triPoint = _vecA
+        const capsulePoint = _vecB
 
-            const distance = tri.closestPointToSegment(
-                _tempSegment,
-                triPoint,
-                capsulePoint
-            );
+        const distance = tri.closestPointToSegment(
+          _tempSegment,
+          triPoint,
+          capsulePoint
+        );
 
-            if (distance < capsuleInfo.radius) {
-                collided = true
-                return true
-            }
+        if (distance < capsuleInfo.radius) {
+          collided = true
+          return true
         }
+      }
     });
 
     return collided
-}
+  }
+
+  updateWarningLight() {
+    const freq = this.warningLightFrequency;
+
+    const t = performance.now() * 0.001;
+
+    const pulse = Math.sin(t * freq * Math.PI * 2);
+
+    const normalized = (pulse + 1) * 0.5;
+
+    this.warningLight.intensity = normalized * this.warningLightBaseIntensity;
+  }
 
   update() {
+    this.updateWarningLight()
+
     // horizontal
     if (this.pressedKeys.has('KeyW')) {
       if (this.speedHorizontal < this.speedMax)
@@ -216,28 +351,28 @@ class MySubmarineControler extends THREE.Object3D {
 
       const moveY = new THREE.Vector3(0, this.speedVertical, 0);
       const predictedPos = this.position.clone().add(moveY);
-    
+
       let testPos = predictedPos;
-    
+
       // tolerance
       if (this.pressedKeys.has('KeyP')) {
         testPos = predictedPos.clone().add(new THREE.Vector3(0, 0.2, 0));
       }
-    
+
       let hit = false;
       if (this.staticBVH) {
         hit = this.checkCollisionAtPosition(this.staticBVH.mesh, testPos);
       }
-    
+
       if (!hit) {
         this.translateY(this.speedVertical);
       } else {
         this.speedVertical = 0;
       }
     }
-    
+
     // Horizontal direction left or right 
-    if (this.pressedKeys.has('KeyA')) this.rotateY(this.rotationSpeed) 
+    if (this.pressedKeys.has('KeyA')) this.rotateY(this.rotationSpeed)
     if (this.pressedKeys.has('KeyD')) this.rotateY(-this.rotationSpeed)
   }
 }
@@ -246,12 +381,15 @@ class MySubmarineControler extends THREE.Object3D {
  * Very basic visual-only LOD version of the submarine (low poly)
  */
 class MyBasicSubmarine extends THREE.Object3D {
-  constructor(material = new THREE.MeshPhongMaterial({ color: 0xcccc00 , side: THREE.DoubleSide})) {
+  constructor(
+    material = new THREE.MeshPhongMaterial({ color: 0xcccc00, side: THREE.DoubleSide }),
+  ) {
     super();
+    this.material = material
     // body
-    const bodyCapsule = new THREE.CapsuleGeometry(1*0.9, 1*2, 16, 16, 16)
+    const bodyCapsule = new THREE.CapsuleGeometry(1 * 0.9, 1 * 2, 16, 16, 16)
     const bodyCylinder = new THREE.CylinderGeometry(1 * 0.6, 1, 1 * 1.4)
-    const bodyBox = new THREE.BoxGeometry(1, 1*0.05, 1)
+    const bodyBox = new THREE.BoxGeometry(1, 1 * 0.05, 1)
 
     const bodySphereMesh = new THREE.Mesh(bodyCapsule, material)
     bodySphereMesh.rotateX(Math.PI / 2)
@@ -268,8 +406,8 @@ class MyBasicSubmarine extends THREE.Object3D {
 
     // periscope
     const periscope = new THREE.TorusGeometry(1 * 10, 1 * 0.5, 1 * 10, 1 * 10, 1 * 1.5)
-    const periscopeMaterial = new THREE.MeshPhongMaterial({color: 0x686a69, side: THREE.DoubleSide})
-    const periscopeMesh =  new THREE.Mesh(periscope, periscopeMaterial)
+    const periscopeMaterial = new THREE.MeshPhongMaterial({ color: 0x686a69, side: THREE.DoubleSide })
+    const periscopeMesh = new THREE.Mesh(periscope, periscopeMaterial)
     periscopeMesh.position.y = 0.7
     periscopeMesh.position.z = -0.9
     periscopeMesh.rotateY(-Math.PI / 2)
@@ -298,7 +436,7 @@ class MyBasicSubmarine extends THREE.Object3D {
       windowGroup.add(windowMesh);
       windowGroup.add(glassMesh);
     }
-    
+
     for (let i = 0; i < 3; i++) {
       const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial)
       const glassMesh = new THREE.Mesh(glassGeometry, glassMaterial)
@@ -331,18 +469,23 @@ class MyBasicSubmarine extends THREE.Object3D {
 
     this.add(bodyCapsuleMesh, bodySphereMesh, bodyBoxMesh, periscopeMesh, windowGroup, hatchGroup)
   }
+
 }
 
 /**
  * Mid-level version of the submarine (moderate detail)
  */
 class MyMidSubmarine extends THREE.Object3D {
-    constructor(material = new THREE.MeshBasicMaterial({ color: 0x888888 })) {
-        super();
-        const submarine = new THREE.BoxGeometry(1, 1, 1);
-        const submarineMesh = new THREE.Mesh(submarine, material);
-        this.add(submarineMesh);
-        }
+  constructor(
+    material = new THREE.MeshBasicMaterial({ color: 0x888888 }),
+  ) {
+    super();
+    this.material = material
+    const submarine = new THREE.BoxGeometry(1, 1, 1);
+    const submarineMesh = new THREE.Mesh(submarine, material);
+
+    this.add(submarineMesh);
+  }
 }
 
-export { MySubmarineControler, MyMidSubmarine, MyBasicSubmarine };
+export { MySubmarineController, MyMidSubmarine, MyBasicSubmarine };
