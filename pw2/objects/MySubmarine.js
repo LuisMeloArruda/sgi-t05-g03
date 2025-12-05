@@ -101,7 +101,7 @@ class MySubmarineController extends THREE.Object3D {
     const innerGeo = new THREE.SphereGeometry(innerRadius, 16, 16);
     const outerGeo = new THREE.SphereGeometry(outerRadius, 16, 16);
 
-    innerMat = new THREE.MeshPhongMaterial({
+    const innerMat = new THREE.MeshPhongMaterial({
       color: 0xffff00,
       emissive: 0xffff00,
       shininess: 80,
