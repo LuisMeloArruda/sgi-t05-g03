@@ -94,6 +94,10 @@ class MyApp  {
         // window.addEventListener('mouseout', this.pickHelper.clearPickPosition);
         // window.addEventListener('mouseleave', this.pickHelper.clearPickPosition);
         // window.addEventListener('click', (event) => this.pickHelper.pick(event, this.scene, this.activeCamera));
+
+        // Shadows
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     }
 
     /**
@@ -147,7 +151,7 @@ class MyApp  {
                 }
                 this.controls = null;
                 this.renderer.domElement.removeEventListener('click', this._onCanvasClick);
-                this.contents.submarineControler.dispose();
+                this.contents.submarineController.dispose();
             }
             
 
@@ -175,7 +179,7 @@ class MyApp  {
                     this.controls = new OrbitControls( this.activeCamera, this.renderer.domElement );
                     this.controls.enableZoom = true
                     // for soft camera rotation while in submarine mode
-                    this.contents.submarineControler.setupListeners()
+                    this.contents.submarineController.setupListeners()
                     break;
                 case 'Fixed':
                 case '1PersonSubmarine':
@@ -183,7 +187,7 @@ class MyApp  {
                     this.controls.enableZoom = false
                     this.controls.enableRotate = false
                     this.controls.enabled = false
-                    this.contents.submarineControler.setupListeners()
+                    this.contents.submarineController.setupListeners()
                     break;
                 default:
                     this.controls.object = this.activeCamera
@@ -265,7 +269,7 @@ class MyApp  {
         else {
             this.controls.update();
         }
-        
+
         // render the scene
         this.renderer.render(this.scene, this.activeCamera);
 
