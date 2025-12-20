@@ -38,6 +38,11 @@ class MyGuiInterface {
         cameraFolder.add(this.app, 'activeCameraName', ['FreeFly', '3PersonSubmarine', 'Fixed', '1PersonSubmarine']).name("active camera");
         cameraFolder.add(this.app, 'polygonalMode', ['Fill', 'Wireframe']).name('polygonal mode');
         // note that we are using a property from the app 
+
+        cameraFolder.add( this.app.postprocessing.params, 'focus', 1, 50, 1).onChange( () => this.app.postprocessing.update() );
+        cameraFolder.add( this.app.postprocessing.params, 'aperture', 0.00001, 0.001, 0.00001).onChange( () => this.app.postprocessing.update() );
+        cameraFolder.add( this.app.postprocessing.params, 'maxblur', 0.0, 0.01, 0.001).onChange( () => this.app.postprocessing.update() );
+        
         cameraFolder.open()
 
         const boidFolder = this.datgui.addFolder('Boid')
@@ -67,7 +72,7 @@ class MyGuiInterface {
         boidFolder.add(this.app.contents.boid, 'alignment', 0, 1, 0.1).listen();
         boidFolder.add(this.app.contents.boid, 'moveSpeed', 0.1, 10, 0.5).listen();
         boidFolder.add(this.app.contents.boid, 'awareness', 0.1, 25, 0.1).listen();
-        boidFolder.open()
+        boidFolder.close()
 
         // BVH Helpers 
         const bvhFolder = this.datgui.addFolder('BVH Helpers');
@@ -80,10 +85,11 @@ class MyGuiInterface {
             .name('Submarine Hitbox Helper')
             .onChange(v => this.contents.submarineBVHHelper.visible = v);
 
-        bvhFolder.open();
+        bvhFolder.close();
 
         // Submarine Lights
         const lightsFolder = this.datgui.addFolder('Lights');
+        lightsFolder.close()
 
         lightsFolder.add(this.contents.submarineController.frontLightHelper, 'visible')
             .name('Show Front Light Helper');
