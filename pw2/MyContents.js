@@ -364,8 +364,8 @@ class MyContents {
 
         sun.castShadow = true;
 
-        sun.shadow.mapSize.width = 4096;
-        sun.shadow.mapSize.height = 4096;
+        sun.shadow.mapSize.width = 1024;
+        sun.shadow.mapSize.height = 1024;
         this.app.scene.add(sun);
 
         // add fog
@@ -548,7 +548,7 @@ class MyContents {
         const submarine = this.submarineController
 
         // look foward
-        const forwardPoint = new THREE.Vector3(0, 0, -5);
+        const forwardPoint = new THREE.Vector3(0, 0, -100);
         const worldForward = forwardPoint.clone();
         submarine.localToWorld(worldForward);
         controls.target.copy(worldForward);
@@ -561,7 +561,7 @@ class MyContents {
         const center = new THREE.Vector3();
         box.getCenter(center);
 
-        const localFront = new THREE.Vector3(0, 0, -size.z / 2);
+        const localFront = new THREE.Vector3(0, 0, -size.z / 8);
 
         const worldFront = localFront.clone();
         submarine.localToWorld(worldFront);
@@ -573,7 +573,7 @@ class MyContents {
      * updates the contents
      * this method is called from the render method of the app
      */
-    update() {
+    update(delta) {
         this.fishesGroup.children.forEach((lod) => {
             lod.children.forEach((fish) => fish.update());
         });
@@ -625,13 +625,10 @@ class MyContents {
             this.submarineController.update()
         }
 
-
-
         // Fake Godrays tick
-        const dt = this.app.clock.getDelta();
         for (let i = 0; i < this.godray.children.length; i++) {
             const element = this.godray.children[i];
-            if (element.tick) element.tick(dt);
+            if (element.tick) element.tick(delta);
         }
     }
 }

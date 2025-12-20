@@ -16,7 +16,7 @@ class MyBasicFish extends THREE.Object3D {
 
     build() {
         // TODO: Replace with BoxSquare
-        const geometry = new THREE.SphereGeometry(0.5);
+        const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
         let mesh = new THREE.Mesh(geometry, this.material);
         mesh.scale.set(1.0, 0.3, 0.3);
         this.add(mesh);

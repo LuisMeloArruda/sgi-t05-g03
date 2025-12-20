@@ -6,6 +6,7 @@ import { MyContents } from './MyContents.js';
 import { MyGuiInterface } from './MyGuiInterface.js';
 import { PickHelper } from './System/PickHelper.js';
 import Stats from 'three/addons/libs/stats.module.js'
+import { MyPostProcessing } from './System/MyPostProcessing.js';
 
 
 /**
@@ -73,7 +74,7 @@ class MyApp  {
 
         // Create a renderer with Antialiasing
         this.renderer = new THREE.WebGLRenderer({antialias:true});
-        this.renderer.setPixelRatio( window.devicePixelRatio );
+        this.renderer.setPixelRatio( 1 );
         this.renderer.setClearColor("#000000");
 
         // Configure renderer size
@@ -97,7 +98,12 @@ class MyApp  {
 
         // Shadows
         this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.renderer.shadowMap.type = THREE.PCFShadowMap;
+
+        // Create DoF
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+        this.postprocessing = new MyPostProcessing(this.renderer, this.scene, this.activeCamera);
     }
 
     /**
@@ -107,22 +113,22 @@ class MyApp  {
         const aspect = window.innerWidth / window.innerHeight;
 
         // Create a free fly perspective camera Q and E roll. WASD for movement. Mouse to look around
-        const freeFly = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000 )
+        const freeFly = new THREE.PerspectiveCamera( 75, aspect, 0.1, 200 )
         freeFly.position.set(0,5,10)
         this.cameras['FreeFly'] = freeFly
 
         // Create a 3 person submarine perspective camera
-        let thirdPersonView = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000)
+        let thirdPersonView = new THREE.PerspectiveCamera( 75, aspect, 0.1, 200 )
         thirdPersonView.position.set(0,5,10)
         this.cameras['3PersonSubmarine'] = thirdPersonView
 
         // Create a fixed perspective camera
-        let fixedCamera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000)
+        let fixedCamera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 200 )
         fixedCamera.position.set(0,10,15)
         this.cameras['Fixed'] = fixedCamera
 
         // Create a 1 person submarine perspective camera
-        let firstPersonView = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000)
+        let firstPersonView = new THREE.PerspectiveCamera( 75, aspect, 0.1, 200 )
         this.cameras['1PersonSubmarine'] = firstPersonView
     }
 
@@ -157,6 +163,7 @@ class MyApp  {
 
             this.lastCameraName = this.activeCameraName;
             this.activeCamera = this.cameras[this.activeCameraName]
+            this.postprocessing.setCamera(this.activeCamera);
             document.getElementById("camera").innerHTML = this.activeCameraName
            
             // call on resize to update the camera aspect ratio
@@ -230,6 +237,7 @@ class MyApp  {
             this.activeCamera.aspect = window.innerWidth / window.innerHeight;
             this.activeCamera.updateProjectionMatrix();
             this.renderer.setSize( window.innerWidth, window.innerHeight );
+            this.postprocessing.resize(window.innerWidth, window.innerHeight);
         }
     }
     /**
@@ -256,14 +264,15 @@ class MyApp  {
 
         this.updatePolygonalMode();
 
+        const delta = this.clock.getDelta()
+
         // update the animation if contents were provided
         if (this.activeCamera !== undefined && this.activeCamera !== null) {
-            this.contents.update()
+            this.contents.update(delta)
         }
 
         // required if controls.enableDamping or controls.autoRotate are set to true 
         if (this.activeCameraName === 'FreeFly') {
-            const delta = this.clock.getDelta()
             this.controls.update(delta);
         }
         else {
@@ -271,7 +280,7 @@ class MyApp  {
         }
 
         // render the scene
-        this.renderer.render(this.scene, this.activeCamera);
+        this.postprocessing.render();
 
         // subsequent async calls to the render loop
         requestAnimationFrame( this.render.bind(this) );
