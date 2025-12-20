@@ -43,7 +43,7 @@ class MyGuiInterface {
         cameraFolder.add( this.app.postprocessing.params, 'aperture', 0.00001, 0.001, 0.00001).onChange( () => this.app.postprocessing.update() );
         cameraFolder.add( this.app.postprocessing.params, 'maxblur', 0.0, 0.01, 0.001).onChange( () => this.app.postprocessing.update() );
         
-        cameraFolder.open()
+        cameraFolder.close()
 
         const boidFolder = this.datgui.addFolder('Boid')
         boidFolder.add(this.app.contents.boid, 'useBVH')
@@ -87,9 +87,23 @@ class MyGuiInterface {
 
         bvhFolder.close();
 
-        // Submarine Lights
-        const lightsFolder = this.datgui.addFolder('Lights');
-        lightsFolder.close()
+        // Submarine
+        const submarineFolder = this.datgui.addFolder('Submarine')
+        submarineFolder.close()
+
+        // Submarine Shield
+        const shieldFolder = submarineFolder.addFolder('Submarine Shield')
+        shieldFolder.open()
+
+        const shieldParams = this.contents.shieldParams
+        shieldFolder.add(shieldParams, 'c', 0, 1.5, 0.1).onChange(v => this.contents.shield.setIntensity(v, shieldParams.p))
+        shieldFolder.add(shieldParams, 'p', 0, 8, 1).onChange(v => this.contents.shield.setIntensity(shieldParams.c, v))
+        shieldFolder.addColor(shieldParams, 'color').onChange(v => this.contents.shield.setColor(v))
+        shieldFolder.add(shieldParams, 'visible').onChange(v => this.contents.shield.visible = v)
+        
+        // Submarine Light
+        const lightsFolder = submarineFolder.addFolder('Submarine Lights');
+        lightsFolder.open()
 
         lightsFolder.add(this.contents.submarineController.frontLightHelper, 'visible')
             .name('Show Front Light Helper');
@@ -131,8 +145,6 @@ class MyGuiInterface {
         // Warning pulso (freq)
         warnFolder.add(this.contents.submarineController, 'warningLightFrequency', 0.1, 5, 0.1)
             .name('Pulse Frequency');
-
-
 
     }
 }
