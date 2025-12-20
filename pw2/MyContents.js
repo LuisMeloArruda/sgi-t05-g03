@@ -15,6 +15,7 @@ import { MyBoid } from './objects/MyBoid.js';
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
 import { staticBVH } from './System/StaticBVH.js'
 import { createGodray } from './System/FakeGodray.js';
+import { MyShieldEffect } from './objects/MyShieldEffect.js';
 
 
 /**
@@ -201,6 +202,25 @@ class MyContents {
         this.submarineController.position.copy(submarinePosition)
         this.submarineController.rotation.copy(submarineRotation)
         this.submarineController.scale.copy(submarineScale)
+
+        const geometry = new THREE.CapsuleGeometry(1.6, 1.5, 8, 16, );
+        geometry.rotateX(Math.PI/2)
+        this.shieldParams = {
+            color: '#00ffff',
+            c: 1,
+            p: 2,
+            visible: true
+        }
+
+        this.shield = new MyShieldEffect(geometry,
+            {
+                color: this.shieldParams.color,
+                scale: 1.0,
+                c: this.shieldParams.c,
+                p: this.shieldParams.p,
+            }
+        )
+        this.submarineController.add(this.shield)
 
         this.submarineLODConfigs = [
             {
@@ -392,7 +412,8 @@ class MyContents {
 
         // add submarine
         this.createLODs(this.submarineLODConfigs, this.submarineConstructors, [0, 20], this.submarineController);
-        this.enableShadows(this.submarineController, true, false);
+        this.enableShadows(this.submarineController, true, false)
+        this.enableShadows(this.shield, false, false)
         this.app.scene.add(this.submarineController, this.submarineController.warningLightHelper);
 
         // add corals
