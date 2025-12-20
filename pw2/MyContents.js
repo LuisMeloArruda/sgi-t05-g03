@@ -15,6 +15,7 @@ import { MyBoid } from './objects/MyBoid.js';
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
 import { staticBVH } from './System/StaticBVH.js'
 import { createGodray } from './System/FakeGodray.js';
+import { MyWaterSurface } from './objects/MyWaterSurface.js';
 
 
 /**
@@ -338,6 +339,10 @@ class MyContents {
             return group;
         }
         );
+        
+        // Water surface related attributes
+        this.waterSurface = new MyWaterSurface();
+        this.waterSurface.position.setY(70);
     }
 
     /**
@@ -441,7 +446,8 @@ class MyContents {
         this.submarineController.add(this.submarineBVHHelper)
         this.app.scene.add(this.terrainBVHHelper)
 
-
+        // Water surface
+        this.app.scene.add(this.waterSurface);
     }
 
     initFakeGodrays({
