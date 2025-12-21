@@ -435,14 +435,14 @@ class MyContents {
         this.app.scene.add(this.submarineController, this.submarineController.warningLightHelper);
 
         // add corals
-        this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 20], this.coralsGroup)
-        this.enableShadows(this.coralsGroup, true, false);
-        this.app.scene.add(this.coralsGroup);
+        // this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 20], this.coralsGroup)
+        // this.enableShadows(this.coralsGroup, true, false);
+        // this.app.scene.add(this.coralsGroup);
 
         // add seaweed
         // this.createLODs(this.seaweedConfig, this.seaweedConstructors, [0, 20], this.seaweedGroup)
         // this.enableShadows(this.seaweedGroup, true, false);
-        this.app.scene.add(this.seaweedGroup);
+        // this.app.scene.add(this.seaweedGroup);
 
         // add bubble
         this.createLODs(this.bubblesConfigs, this.bubblesConstructors, [0], this.bubblesGroup)
