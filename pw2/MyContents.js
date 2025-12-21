@@ -172,10 +172,10 @@ class MyContents {
         // Fishes related attributes
         this.fishesGroup = new THREE.Group();
         this.fishesConfigs = []
-        this.fishQuantity = 500
+        this.fishQuantity = 100
 
         this.minX = -50, this.maxX = 50;
-        this.minY = 0, this.maxY = 50;
+        this.minY = 0, this.maxY = 30;
         this.minZ = -50, this.maxZ = 50;
         for (let n = 0; n < this.fishQuantity; n++) {
             this.fishesConfigs.push({
