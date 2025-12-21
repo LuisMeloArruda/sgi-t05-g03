@@ -39,6 +39,7 @@ class MyPostProcessing {
         maxblur: this.params.maxblur,
     });
 
+    this.bokehPass.enabled = false
     this.composer.addPass(this.bokehPass);
 
     this.outputPass = new OutputPass();
@@ -46,16 +47,20 @@ class MyPostProcessing {
     }
 
     update() {
-        const u = this.bokehPass.uniforms;
-        u.focus.value = this.params.focus;
-        u.aperture.value = this.params.aperture;
-        u.maxblur.value = this.params.maxblur;
+        if (this.bokehPass.enabled) {
+            const u = this.bokehPass.uniforms;
+            u.focus.value = this.params.focus;
+            u.aperture.value = this.params.aperture;
+            u.maxblur.value = this.params.maxblur;
+        }
     }
 
     setCamera(camera) {
         this.camera = camera;
         this.renderPass.camera = camera;
         this.bokehPass.camera = camera;
+
+        this.bokehPass.enabled = !!camera.userData.useDOF;
     }
 
     resize(width, height) {
