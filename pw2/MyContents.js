@@ -358,19 +358,18 @@ class MyContents {
         this.rocksConstructors = [() => new MyRock(), () => new MyBasicRock()]
 
         // Boid related attributes
-        this.boid = new MyBoid([this.submarineController], this.staticBVH, () => {
-            const group = new THREE.Group();
-            group.update = () => {
-                group.children[0].children.forEach((fish) => {
-                    fish.update();
-                })
-            };
-            const lod = new THREE.LOD();
-            lod.addLevel(new MyFish(), 0);
-            lod.addLevel(new MyBasicFish(), 20);
-            group.add(lod);
-            return group;
-        }
+        this.boid = new MyBoid(
+            [this.submarineController], 
+            this.staticBVH, 
+            () => {
+                const lod = new THREE.LOD();
+                lod.addLevel(new MyFish(), 0);
+                lod.addLevel(new MyBasicFish(), 20);
+                return lod;
+            },
+            (entry, delta) => {
+                entry.children.forEach((fish) => fish.update(delta));
+            },
         );
         
         // Water surface related attributes
@@ -435,9 +434,9 @@ class MyContents {
         this.app.scene.add(this.submarineController, this.submarineController.warningLightHelper);
 
         // add corals
-        // this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 20], this.coralsGroup)
+        this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 60], this.coralsGroup)
         // this.enableShadows(this.coralsGroup, true, false);
-        // this.app.scene.add(this.coralsGroup);
+        this.app.scene.add(this.coralsGroup);
 
         // add seaweed
         // this.createLODs(this.seaweedConfig, this.seaweedConstructors, [0, 20], this.seaweedGroup)
@@ -627,13 +626,13 @@ class MyContents {
                 }
             }
         }
-        for (let child of this.seaweedGroup.children) {
-            if (child.type === "LOD") {
-                for (let grand of child.children) {
-                    grand.update(delta);
-                }
-            }
-        }
+        // for (let child of this.seaweedGroup.children) {
+        //     if (child.type === "LOD") {
+        //         for (let grand of child.children) {
+        //             grand.update(delta);
+        //         }
+        //     }
+        // }
 
         /**
          * Update all fish animations (positions + lookAt direction)
@@ -672,7 +671,7 @@ class MyContents {
         }
         
         // Water Surface
-        this.waterSurface.update();
+        this.waterSurface.update(delta);
     }
 }
 

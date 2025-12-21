@@ -7,6 +7,7 @@ class MyBoid extends THREE.Object3D {
         dangerous_entities,
         staticBVH,
         fish_constructor = () => new MyFish(),
+        fish_updater = (entry, delta) => {},
         cohesion = 0.5,
         separation = 0.5,
         alignment = 0.5,
@@ -21,6 +22,7 @@ class MyBoid extends THREE.Object3D {
         super();
         this.dangerous_entities = dangerous_entities;
         this.fish_constructor = fish_constructor;
+        this.fish_updater = fish_updater;
         this.cohesion = cohesion;
         this.separation = separation;
         this.alignment = alignment;
@@ -261,7 +263,9 @@ class MyBoid extends THREE.Object3D {
             fish.lookAt(fish.position.clone().add(fish.velocity));
             fish.rotateY(Math.PI / 2);
 
-            fish.position.clamp(this.lowerLimit, this.upperLimit);
+            fish.position.clamp(this.lowerLimit, this.upperLimit); 
+ 
+            this.fish_updater(fish, t);
         }
     }
 

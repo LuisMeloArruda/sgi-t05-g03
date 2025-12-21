@@ -53,6 +53,7 @@ class MyFish extends THREE.Object3D {
         this.upper_fin_end = 0.7;
         this.anim_duration = 0.5;
         this.anim_angle = Math.PI / 180 * 45;
+        this.timeElapsed = 0;
         this.build();
     }
 
@@ -269,8 +270,8 @@ class MyFish extends THREE.Object3D {
     // }
     
     update(delta) {
-        const timeElapsed = delta;
-        const t = - (Math.cos(Math.PI * timeElapsed / this.anim_duration) - 1) / 2;
+        this.timeElapsed += delta;
+        const t = - (Math.cos(Math.PI * this.timeElapsed / this.anim_duration) - 1) / 2;
         const rotation = t * this.anim_angle - (this.anim_angle / 2);
         this.bones[1].rotation.y = rotation;
         this.bones[2].rotation.y = -rotation;
