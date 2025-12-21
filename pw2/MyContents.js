@@ -358,19 +358,18 @@ class MyContents {
         this.rocksConstructors = [() => new MyRock(), () => new MyBasicRock()]
 
         // Boid related attributes
-        this.boid = new MyBoid([this.submarineController], this.staticBVH, () => {
-            const group = new THREE.Group();
-            group.update = () => {
-                group.children[0].children.forEach((fish) => {
-                    fish.update();
-                })
-            };
-            const lod = new THREE.LOD();
-            lod.addLevel(new MyFish(), 0);
-            lod.addLevel(new MyBasicFish(), 20);
-            group.add(lod);
-            return group;
-        }
+        this.boid = new MyBoid(
+            [this.submarineController], 
+            this.staticBVH, 
+            () => {
+                const lod = new THREE.LOD();
+                lod.addLevel(new MyFish(), 0);
+                lod.addLevel(new MyBasicFish(), 20);
+                return lod;
+            },
+            (entry, delta) => {
+                entry.children.forEach((fish) => fish.update(delta));
+            },
         );
         
         // Water surface related attributes
