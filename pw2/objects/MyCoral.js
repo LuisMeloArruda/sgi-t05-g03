@@ -28,10 +28,12 @@ const coralMat = {
 
 class MyCoral extends THREE.Object3D {
     constructor(
+        spawnCallBack ,
         material = coralMat.material,
-        max_dna_size = 5000 * (0.25 + Math.random() * 0.75),
+        max_dna_size = 1_000_000 * (0.25 + Math.random() * 0.75),
     ) {
         super();
+        this.spawnCallBack = spawnCallBack;
         if (material === null) {
             this.initSingletonMat();
             material = coralMat.material;
@@ -69,7 +71,7 @@ class MyCoral extends THREE.Object3D {
         this.growthFactor = 1;
         this.stack = [];
         this.max_dna_size = max_dna_size;
-        this.dna = 'ER';
+        this.dna = 'RR';
         this.genePtr = 0;
         this.placedCount = 0;
         this.group = new THREE.Group();
@@ -86,7 +88,10 @@ class MyCoral extends THREE.Object3D {
 
     initSingletonMat() {
         if (coralMat.material === null) {
-            coralMat.material = new THREE.MeshPhongMaterial({color: 0xea76cb, side: THREE.DoubleSide, });
+            coralMat.material = new THREE.MeshLambertMaterial({
+                color: 0xea76cb,
+                // side: THREE.DoubleSide,
+            });
             const loader = new THREE.TextureLoader();
             const texture = loader.load("objects/assets/coral_ground_02_rough_480p.jpg");
             const bump = loader.load("objects/assets/coral_fort_wall_01_ao_480p.jpg");
@@ -124,17 +129,21 @@ class MyCoral extends THREE.Object3D {
     }
 
     makeNewMesh(size) {
-        const branchGeo = new THREE.CylinderGeometry(0.05, 0.05, 1, 5, 1);
+        const branchGeo = new THREE.CylinderGeometry(0.075, 0.05, 1, 5, 1);
         branchGeo.translate(0, 0.5,0);
         const branchMat = this.material;
         const branchMesh = new THREE.InstancedMesh(branchGeo, branchMat, size);
+        branchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         branchMesh.name = "🪸";
         return branchMesh;
     }
     
     clearGenetics() {
+        delete this.dna;
         this.dna = null;
+        delete this.stack;
         this.stack = null;
+        console.log("Coral finished it's growth.");
     }
 
     build() {
@@ -159,7 +168,7 @@ class MyCoral extends THREE.Object3D {
 
     makeDna() {
         // Very simple initial DNA
-        for (let i = 0; i < 4; ++i) this.growDna();
+        for (let i = 0; i < 10; ++i) this.growDna();
     }
 
     update(t) {
@@ -189,8 +198,8 @@ class MyCoral extends THREE.Object3D {
         // LS    [ sav | ] lod
         const rules = {
             'R': [
-                {prob: 0.95, rule: 'EC'},
-                {prob: 0.05, rule: 'ER'},
+                {prob: 0.95, rule: 'RC'},
+                {prob: 0.05, rule: 'RR'},
             ],
             'C': [
                 {prob: 0.47, rule: 'EC'},
@@ -201,7 +210,12 @@ class MyCoral extends THREE.Object3D {
                 {prob: 0.01, rule: 'E'},
             ],
             'E': [
-                {prob: 1, rule: 'E'},
+                {prob: 0.75, rule: 'E'},
+                {prob: 0.25, rule: 'Z'},
+            ],
+            'Z': [
+                {prob: 0.99, rule: 'Z'},
+                {prob: 0.01, rule: 'ZR'},
             ]
         }
 
@@ -300,6 +314,21 @@ class MyCoral extends THREE.Object3D {
                 this.placedCount += 1;
 
                 break;   
+            }
+            case 'Z': {
+                this.stack.length = 0;
+                if (this.spawnCallBack) {
+                    console.log("Spawning with callback...");
+                    const worldpPos = this.localToWorld(this.turtle.position);
+                    const worldret = this.spawnCallBack(worldpPos.x, worldpPos.z);
+                    this.turtle.position = this.worldToLocal(worldret);
+                    this.turtle.quaternion = new THREE.Quaternion();
+                } else {
+                    console.log("Spawning without callback...");
+                    this.turtle.position = new THREE.Vector3(Math.random() * 5,0,Math.random() * 5);
+                    this.turtle.quaternion = new THREE.Quaternion();
+                }                
+                break;
             }
             case '+': {
                 this.turtle.quaternion.multiply(q.setFromAxisAngle(axisY, yaw));
