@@ -120,19 +120,18 @@ class MyApp  {
 
         // Create a 3 person submarine perspective camera
         let thirdPersonView = new THREE.PerspectiveCamera( 75, aspect, 0.1, 200 )
-        thirdPersonView.userData.useDOF = false
         thirdPersonView.position.set(0,5,10)
         this.cameras['3PersonSubmarine'] = thirdPersonView
 
         // Create a fixed perspective camera
         let fixedCamera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 200 )
-        fixedCamera.userData.useDOF = false
         fixedCamera.position.set(0,10,15)
         this.cameras['Fixed'] = fixedCamera
 
         // Create a 1 person submarine perspective camera
         let firstPersonView = new THREE.PerspectiveCamera( 75, aspect, 0.1, 200 )
         firstPersonView.userData.useDOF = true
+        firstPersonView.userData.useTint = true
         this.cameras['1PersonSubmarine'] = firstPersonView
     }
 

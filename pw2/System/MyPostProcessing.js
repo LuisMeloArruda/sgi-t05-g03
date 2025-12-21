@@ -1,7 +1,9 @@
+import * as THREE from 'three'
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { TintEffect } from './TintEffect.js';
 
 /**
  * @param {number} leafSize
@@ -33,6 +35,7 @@ class MyPostProcessing {
         maxblur: 0.01
     };
 
+    // DoF effect
     this.bokehPass = new BokehPass(scene, camera, {
         focus: this.params.focus,
         aperture: this.params.aperture,
@@ -44,6 +47,13 @@ class MyPostProcessing {
 
     this.outputPass = new OutputPass();
     this.composer.addPass(this.outputPass);
+
+    // Tint effect
+    this.tintEffect = new TintEffect({
+        tintColor: new THREE.Vector3(1.1, 1.2, 0.9),
+        strength: 0.8
+    })
+    this.composer.addPass(this.tintEffect.pass)
     }
 
     update() {
@@ -61,6 +71,7 @@ class MyPostProcessing {
         this.bokehPass.camera = camera;
 
         this.bokehPass.enabled = !!camera.userData.useDOF;
+        this.tintEffect.pass.enabled = !!camera.userData.useTint;
     }
 
     resize(width, height) {
