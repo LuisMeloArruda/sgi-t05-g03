@@ -53,6 +53,7 @@ class MyRock extends THREE.Object3D {
             });
             const loader = new THREE.TextureLoader();
             const texture = loader.load("objects/assets/aerial_rocks_02_diff_480p.jpg");
+            texture.anisotropy = 8;
             const bump = loader.load("objects/assets/aerial_rocks_02_nor_dx_480p.jpg");
             const disp = loader.load("objects/assets/aerial_rocks_02_disp_480p.jpg");
             texture.colorSpace = THREE.SRGBColorSpace;
