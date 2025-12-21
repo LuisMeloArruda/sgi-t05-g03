@@ -16,6 +16,7 @@ import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-
 import { staticBVH } from './System/StaticBVH.js'
 import { createGodray } from './System/FakeGodray.js';
 import { MyWaterSurface } from './objects/MyWaterSurface.js';
+import { MyShieldEffect } from './objects/MyShieldEffect.js';
 
 
 /**
@@ -203,6 +204,25 @@ class MyContents {
         this.submarineController.rotation.copy(submarineRotation)
         this.submarineController.scale.copy(submarineScale)
 
+        const geometry = new THREE.CapsuleGeometry(1.6, 1.5, 8, 16, );
+        geometry.rotateX(Math.PI/2)
+        this.shieldParams = {
+            color: '#00ffff',
+            c: 1,
+            p: 2,
+            visible: true
+        }
+
+        this.shield = new MyShieldEffect(geometry,
+            {
+                color: this.shieldParams.color,
+                scale: 1.0,
+                c: this.shieldParams.c,
+                p: this.shieldParams.p,
+            }
+        )
+        this.submarineController.add(this.shield)
+
         this.submarineLODConfigs = [
             {
                 position: new THREE.Vector3(0, 0, 0),
@@ -369,8 +389,8 @@ class MyContents {
 
         sun.castShadow = true;
 
-        sun.shadow.mapSize.width = 4096;
-        sun.shadow.mapSize.height = 4096;
+        sun.shadow.mapSize.width = 1024;
+        sun.shadow.mapSize.height = 1024;
         this.app.scene.add(sun);
 
         // add fog
@@ -397,7 +417,8 @@ class MyContents {
 
         // add submarine
         this.createLODs(this.submarineLODConfigs, this.submarineConstructors, [0, 20], this.submarineController);
-        this.enableShadows(this.submarineController, true, false);
+        this.enableShadows(this.submarineController, true, false)
+        this.enableShadows(this.shield, false, false)
         this.app.scene.add(this.submarineController, this.submarineController.warningLightHelper);
 
         // add corals
@@ -554,7 +575,7 @@ class MyContents {
         const submarine = this.submarineController
 
         // look foward
-        const forwardPoint = new THREE.Vector3(0, 0, -5);
+        const forwardPoint = new THREE.Vector3(0, 0, -100);
         const worldForward = forwardPoint.clone();
         submarine.localToWorld(worldForward);
         controls.target.copy(worldForward);
@@ -567,7 +588,7 @@ class MyContents {
         const center = new THREE.Vector3();
         box.getCenter(center);
 
-        const localFront = new THREE.Vector3(0, 0, -size.z / 2);
+        const localFront = new THREE.Vector3(0, 0, -size.z / 8);
 
         const worldFront = localFront.clone();
         submarine.localToWorld(worldFront);
@@ -579,7 +600,7 @@ class MyContents {
      * updates the contents
      * this method is called from the render method of the app
      */
-    update() {
+    update(delta) {
         this.fishesGroup.children.forEach((lod) => {
             lod.children.forEach((fish) => fish.update());
         });
@@ -631,13 +652,10 @@ class MyContents {
             this.submarineController.update()
         }
 
-
-
         // Fake Godrays tick
-        const dt = this.app.clock.getDelta();
         for (let i = 0; i < this.godray.children.length; i++) {
             const element = this.godray.children[i];
-            if (element.tick) element.tick(dt);
+            if (element.tick) element.tick(delta);
         }
         
         // Water Surface
