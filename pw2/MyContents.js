@@ -103,7 +103,7 @@ class MyContents {
             
             let try_y = this.terrain.getHeightAt(terrain_coords.x, terrain_coords.z);
             
-            return this.terrain.localToWorld(new THREE.Vector3(try_x, try_y, try_z));
+            return new THREE.Vector3(try_x, try_y, try_z);
         };
         this.coralsConstructors = [() => new MyCoral(spawnCallBack), () => new MyBasicCoral()]
 
