@@ -76,6 +76,7 @@ class MyApp  {
         this.renderer = new THREE.WebGLRenderer({antialias:true});
         this.renderer.setPixelRatio( 1 );
         this.renderer.setClearColor("#000000");
+        this.renderer.setAnimationLoop(() => this.render());
 
         // Configure renderer size
         this.renderer.setSize( window.innerWidth, window.innerHeight );
@@ -283,7 +284,7 @@ class MyApp  {
         this.postprocessing.render();
 
         // subsequent async calls to the render loop
-        requestAnimationFrame( this.render.bind(this) );
+        // requestAnimationFrame( this.render.bind(this) );
 
         this.lastCameraName = this.activeCameraName
         this.stats.end()

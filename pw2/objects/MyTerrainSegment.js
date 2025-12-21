@@ -48,26 +48,39 @@ class MyTerrainSegment extends THREE.Object3D {
     getHeightAt(x, z) {
         const pos = this.geometry.attributes.position;
         const arr = pos.array;
-        let nearestY = 0;
-        let minDist = Infinity;
-    
-        for (let i = 0; i < arr.length; i += 3) {
-            const vx = arr[i];
-            const vy = arr[i + 1];
-            const vz = arr[i + 2];
-    
-            const dx = vx - x;
-            const dz = vz - z;
-            const distSq = dx * dx + dz * dz;
-    
-            if (distSq < minDist) {
-                minDist = distSq;
-                nearestY = vy;
-            }
+
+        const index = this.geometry.getIndex().array;
+        
+        let prev = new THREE.Vector3(0,0,0);
+        let curr  = new THREE.Vector3(0,0,0);
+        let next  = new THREE.Vector3(0,0,0);
+
+        let target = new THREE.Vector3(0,0,0);
+        let ray =  new THREE.Ray(new THREE.Vector3(x,1_000,z), new THREE.Vector3(0,-1,0));
+            
+        for (let i = 0; i < index.length; i += 3) {
+            let prev_idx = index[i];
+            let curr_idx = index[i + 1];
+            let next_idx = index[i + 2];
+            
+            prev.setX(arr[prev_idx * 3]);
+            prev.setY(arr[prev_idx * 3 + 1]);
+            prev.setZ(arr[prev_idx * 3 + 2]);
+            curr.setX(arr[curr_idx * 3]);
+            curr.setY(arr[curr_idx * 3 + 1]);
+            curr.setZ(arr[curr_idx * 3 + 2]);
+            next.setX(arr[next_idx * 3]);
+            next.setY(arr[next_idx * 3 + 1]);
+            next.setZ(arr[next_idx * 3 + 2]);
+
+
+            if (ray.intersectTriangle(prev, curr, next, false, target) != null) {
+                break;
+            }            
         }
-    
-        return nearestY;
+
+        return target.y;
     }
 }
 
-export { MyTerrainSegment};
+export { MyTerrainSegment };
