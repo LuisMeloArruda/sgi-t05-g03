@@ -639,6 +639,9 @@ class MyContents {
             const element = this.godray.children[i];
             if (element.tick) element.tick(dt);
         }
+        
+        // Water Surface
+        this.waterSurface.update();
     }
 }
 
