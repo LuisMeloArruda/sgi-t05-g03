@@ -4,6 +4,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { TintEffect } from './TintEffect.js';
+import { ScratchesEffect } from './ScratchesEffect.js';
 
 /**
  * @param {number} leafSize
@@ -54,6 +55,13 @@ class MyPostProcessing {
         strength: 0.8
     })
     this.composer.addPass(this.tintEffect.pass)
+
+    // Scratches effect
+    const loader = new THREE.TextureLoader()
+    const scratchesTex = loader.load('objects/assets/periscope/scratches.jpeg')
+    this.scratchesEffect = new ScratchesEffect(scratchesTex, 0.2)
+    this.composer.addPass(this.scratchesEffect.pass)
+
     }
 
     update() {
@@ -72,6 +80,8 @@ class MyPostProcessing {
 
         this.bokehPass.enabled = !!camera.userData.useDOF;
         this.tintEffect.pass.enabled = !!camera.userData.useTint;
+        this.scratchesEffect.pass.enabled = !!camera.userData.useScratches;
+        
     }
 
     resize(width, height) {

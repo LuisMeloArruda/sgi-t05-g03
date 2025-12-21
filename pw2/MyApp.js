@@ -132,6 +132,7 @@ class MyApp  {
         let firstPersonView = new THREE.PerspectiveCamera( 75, aspect, 0.1, 200 )
         firstPersonView.userData.useDOF = true
         firstPersonView.userData.useTint = true
+        firstPersonView.userData.useScratches = true
         this.cameras['1PersonSubmarine'] = firstPersonView
     }
 
