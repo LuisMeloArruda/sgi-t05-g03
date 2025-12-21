@@ -133,6 +133,8 @@ class MyApp  {
         firstPersonView.userData.useDOF = true
         firstPersonView.userData.useTint = true
         firstPersonView.userData.useScratches = true
+        firstPersonView.userData.useHUD = true
+        firstPersonView.userData.useCircleClip = true
         this.cameras['1PersonSubmarine'] = firstPersonView
     }
 

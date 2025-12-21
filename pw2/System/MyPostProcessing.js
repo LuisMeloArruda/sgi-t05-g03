@@ -4,12 +4,13 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { TintEffect } from './TintEffect.js';
-import { ScratchesEffect } from './ScratchesEffect.js';
+import { CameraOverlay } from './CameraOverlay.js';
+import { CircleClip } from './CircleClip.js'
 
 /**
- * @param {number} leafSize
- * @param {number} leafSize
- * @param {number} leafSize
+ * MyPostProcessing
+ * Manages the render and post-processing effects.
+ * Controls which effects are applied based on the active camera.
  */
 class MyPostProcessing {
     constructor (
@@ -30,13 +31,13 @@ class MyPostProcessing {
     this.renderPass = new RenderPass(scene, camera);
     this.composer.addPass(this.renderPass);
 
+    // DoF effect
     this.params = {
         focus: 5,
         aperture: 0.00025,
         maxblur: 0.01
     };
 
-    // DoF effect
     this.bokehPass = new BokehPass(scene, camera, {
         focus: this.params.focus,
         aperture: this.params.aperture,
@@ -46,6 +47,7 @@ class MyPostProcessing {
     this.bokehPass.enabled = false
     this.composer.addPass(this.bokehPass);
 
+    // Output Pass for color
     this.outputPass = new OutputPass();
     this.composer.addPass(this.outputPass);
 
@@ -59,9 +61,17 @@ class MyPostProcessing {
     // Scratches effect
     const loader = new THREE.TextureLoader()
     const scratchesTex = loader.load('objects/assets/periscope/scratches.jpeg')
-    this.scratchesEffect = new ScratchesEffect(scratchesTex, 0.2)
+    this.scratchesEffect = new CameraOverlay(scratchesTex, 0.3, false)
     this.composer.addPass(this.scratchesEffect.pass)
 
+    // HUD effect
+    const hudTex = loader.load('objects/assets/periscope/HUD.png')
+    this.hudEffect = new CameraOverlay(hudTex, 0.7, true)
+    this.composer.addPass(this.hudEffect.pass)
+
+    // Clip effect
+    this.circleClipEffect = new CircleClip(0.55)
+    this.composer.addPass(this.circleClipEffect.pass)
     }
 
     update() {
@@ -81,11 +91,22 @@ class MyPostProcessing {
         this.bokehPass.enabled = !!camera.userData.useDOF;
         this.tintEffect.pass.enabled = !!camera.userData.useTint;
         this.scratchesEffect.pass.enabled = !!camera.userData.useScratches;
-        
+        this.hudEffect.pass.enabled = !!camera.userData.useHUD;
+        this.circleClipEffect.pass.enabled = !!camera.userData.useCircleClip
     }
 
     resize(width, height) {
         this.composer.setSize(width * this.resScale, height * this.resScale);
+
+        if (this.hudEffect.pass.enabled) {
+            this.hudEffect.resize(width, height)
+        }
+        if (this.scratchesEffect.pass.enabled) {
+            this.scratchesEffect.resize(width, height)
+        }
+        if (this.circleClipEffect.pass.enabled) {
+            this.circleClipEffect.resize(width, height)
+        }
     }
 
     render() {
