@@ -232,7 +232,7 @@ class MyContents {
 
         this.submarineConstructors = [
             () => new MyBasicSubmarine(this.submarineMaterial),
-            () => new MyMidSubmarine(this.submarineMaterialm),
+            () => new MyMidSubmarine(this.submarineMaterial),
         ];
 
         // Chest related attributes 
