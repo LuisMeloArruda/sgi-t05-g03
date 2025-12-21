@@ -74,7 +74,7 @@ class MyApp  {
 
         // Create a renderer with Antialiasing
         this.renderer = new THREE.WebGLRenderer({antialias:true});
-        this.renderer.setPixelRatio( 1 );
+        this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setClearColor("#000000");
         this.renderer.setAnimationLoop(() => this.render());
 
