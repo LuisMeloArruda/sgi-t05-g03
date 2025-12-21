@@ -49,7 +49,7 @@ class MyApp  {
         this.controls = null
         this.gui = null
         this.axis = null
-        this.contents == null
+        this.contents = null
 
         // Listener for mouse lock down
         this._onCanvasClick = () => {this.renderer.domElement.requestPointerLock()}
