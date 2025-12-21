@@ -191,8 +191,9 @@ class MyWaterSurface extends THREE.Object3D {
                 uniform float time;
                 varying float n;
                 void main() {
-                    float clearer = 5.0 * (0.5 + (0.5 * (-n))) * (1.0 + (0.5 * sin(time)));
-                    gl_FragColor = vec4((16.0 + clearer)/255.0, (33.0 + clearer)/255.0, (42.0 + clearer * 2.0)/255.0, 1.0);
+                    float attenuate = 7.0;
+                    float clearer = 10.0 * (0.5 + (0.5 * (-n))) * (1.0 + (0.5 * sin(time)));
+                    gl_FragColor = vec4((16.0 + clearer)/255.0/attenuate, (33.0 + clearer)/255.0/attenuate, (42.0 + clearer * 3.0)/255.0/attenuate, 1.0);
                 }
             `,
             uniforms: this.uniforms,
