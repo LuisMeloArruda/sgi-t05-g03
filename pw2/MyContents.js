@@ -99,9 +99,11 @@ class MyContents {
 
             this.space.occupy(try_x,try_z, 0.1, "coral");
 
-            let try_y = this.terrain.getHeightAt(try_x, try_z);
+            const terrain_coords = this.terrain.worldToLocal(new THREE.Vector3(try_x, 0, try_z));
             
-            return new THREE.Vector3(try_x, try_y, try_z);
+            let try_y = this.terrain.getHeightAt(terrain_coords.x, terrain_coords.z);
+            
+            return this.terrain.localToWorld(new THREE.Vector3(try_x, try_y, try_z));
         };
         this.coralsConstructors = [() => new MyCoral(spawnCallBack), () => new MyBasicCoral()]
 

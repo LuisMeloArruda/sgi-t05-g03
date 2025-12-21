@@ -321,9 +321,13 @@ class MyCoral extends THREE.Object3D {
             case 'Z': {
                 this.stack.length = 0;
                 if (this.spawnCallBack) {
-                    this.turtle.position = this.spawnCallBack(this.turtle.position.x, this.turtle.position.z);
+                    console.log("Spawning with callback...");
+                    const worldpPos = this.localToWorld(this.turtle.position);
+                    const worldret = this.spawnCallBack(worldpPos.x, worldpPos.z);
+                    this.turtle.position = this.worldToLocal(worldret);
                     this.turtle.quaternion = new THREE.Quaternion();
                 } else {
+                    console.log("Spawning without callback...");
                     this.turtle.position = new THREE.Vector3(Math.random() * 5,0,Math.random() * 5);
                     this.turtle.quaternion = new THREE.Quaternion();
                 }                
