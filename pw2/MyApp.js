@@ -270,14 +270,9 @@ class MyApp  {
         if (this.activeCamera !== undefined && this.activeCamera !== null) {
             this.contents.update(delta)
         }
-
+        
         // required if controls.enableDamping or controls.autoRotate are set to true 
-        if (this.activeCameraName === 'FreeFly') {
-            this.controls.update(delta);
-        }
-        else {
-            this.controls.update();
-        }
+        this.controls.update(delta);
 
         // render the scene
         this.postprocessing.render();
