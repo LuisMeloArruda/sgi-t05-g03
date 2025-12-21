@@ -9,8 +9,6 @@ class MyWaterSurface extends THREE.Object3D {
         this.segLength = segLength;
         this.uniforms = { time: { value: 2.0 } };
         this.material = this._initShader();
-        this.timer = new THREE.Timer();
-        this.timer.connect(document);
         this._build();
     }
 
@@ -201,9 +199,8 @@ class MyWaterSurface extends THREE.Object3D {
         });
     }
 
-    update() {
-        this.timer.update();
-        this.uniforms.time.value = this.timer.getElapsed();
+    update(t) {
+        this.uniforms.time.value += t;
     }
 }
 

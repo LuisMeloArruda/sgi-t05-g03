@@ -671,7 +671,7 @@ class MyContents {
         }
         
         // Water Surface
-        this.waterSurface.update();
+        this.waterSurface.update(delta);
     }
 }
 
