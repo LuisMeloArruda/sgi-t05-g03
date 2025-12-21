@@ -434,9 +434,9 @@ class MyContents {
         this.app.scene.add(this.submarineController, this.submarineController.warningLightHelper);
 
         // add corals
-        // this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 20], this.coralsGroup)
+        this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 60], this.coralsGroup)
         // this.enableShadows(this.coralsGroup, true, false);
-        // this.app.scene.add(this.coralsGroup);
+        this.app.scene.add(this.coralsGroup);
 
         // add seaweed
         // this.createLODs(this.seaweedConfig, this.seaweedConstructors, [0, 20], this.seaweedGroup)
@@ -626,13 +626,13 @@ class MyContents {
                 }
             }
         }
-        for (let child of this.seaweedGroup.children) {
-            if (child.type === "LOD") {
-                for (let grand of child.children) {
-                    grand.update(delta);
-                }
-            }
-        }
+        // for (let child of this.seaweedGroup.children) {
+        //     if (child.type === "LOD") {
+        //         for (let grand of child.children) {
+        //             grand.update(delta);
+        //         }
+        //     }
+        // }
 
         /**
          * Update all fish animations (positions + lookAt direction)
