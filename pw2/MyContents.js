@@ -53,15 +53,15 @@ class MyContents {
         // this.coralsGroup.translateZ(2);
 
         this.coralsConfig = [];
-        const coralQuantity = 300;
+        const coralQuantity = 1;
         for (let i = 0; i < coralQuantity; i++) {
             let x, z, y
             let valid = false
             let tries = 0
 
             while (!valid && tries < 50) {
-                x = (Math.random() - 0.5) * (this.terrain.width)
-                z = (Math.random() - 0.5) * (this.terrain.height)
+                x = (Math.random() - 0.5) * (this.terrain.width / 4)
+                z = (Math.random() - 0.5) * (this.terrain.height / 4)
                 y = this.terrain.getHeightAt(x, z)
                 tries++
 
@@ -71,11 +71,9 @@ class MyContents {
             if (!valid) continue;
 
             this.space.occupy(x, z, 0.1, "coral");
-            const scaleFact =
-                THREE.MathUtils.randFloat(0.1, 0.75);
 
             const scale = new THREE.Vector3(
-                scaleFact, scaleFact, scaleFact
+                1, 1, 1
             );
 
             const rotation = new THREE.Euler(
@@ -90,7 +88,22 @@ class MyContents {
                 rotation: rotation,
             });
         }
-        this.coralsConstructors = [() => new MyCoral(), () => new MyBasicCoral()]
+        const spawnCallBack = (x,z) => {
+            let try_x, try_z;
+            let valid = false;
+            while (!valid) {
+                try_x = (Math.random() - 0.5) * 10 + x;
+                try_z = (Math.random() - 0.5) * 10 + z;
+                valid = this.space.isFree(try_x,try_z, 0.1);
+            }
+
+            this.space.occupy(try_x,try_z, 0.1, "coral");
+
+            let try_y = this.terrain.getHeightAt(try_x, try_z);
+            
+            return new THREE.Vector3(try_x, try_y, try_z);
+        };
+        this.coralsConstructors = [() => new MyCoral(spawnCallBack), () => new MyBasicCoral()]
 
 
         // Seaweed related attributes
@@ -114,11 +127,9 @@ class MyContents {
             if (!valid) continue;
 
             this.space.occupy(x, z, 0.1, "seaweed");
-            const scaleFact =
-                THREE.MathUtils.randFloat(0.1, 0.75);
 
             const scale = new THREE.Vector3(
-                scaleFact, scaleFact, scaleFact
+                1,1,1
             );
 
             const rotation = new THREE.Euler(
@@ -212,7 +223,7 @@ class MyContents {
 
         this.submarineConstructors = [
             () => new MyBasicSubmarine(this.submarineMaterial),
-            () => new MyMidSubmarine(this.submarineMaterialm),
+            () => new MyMidSubmarine(this.submarineMaterial),
         ];
 
         // Chest related attributes 
@@ -284,7 +295,7 @@ class MyContents {
         this.space.occupy(-15, 0, 2, "rockCrab2")
 
         this.rocksConfig = []
-        const rocksQuantity = 100
+        const rocksQuantity = 60
         for (let i = 0; i < rocksQuantity; i++) {
             let x, z, y
             let valid = false
@@ -301,7 +312,7 @@ class MyContents {
 
             if (!valid) continue;
 
-            this.space.occupy(x, z, 2, "rock");
+            this.space.occupy(x, z, 3, "rock");
 
             const scale = new THREE.Vector3(
                 THREE.MathUtils.randFloat(0.5, 5),
@@ -396,8 +407,8 @@ class MyContents {
         this.app.scene.add(this.submarineController, this.submarineController.warningLightHelper);
 
         // add corals
-        // this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 20], this.coralsGroup)
-        // this.enableShadows(this.coralsGroup, true, false);
+        this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 20], this.coralsGroup)
+        this.enableShadows(this.coralsGroup, true, false);
         this.app.scene.add(this.coralsGroup);
 
         // add seaweed
