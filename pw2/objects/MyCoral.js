@@ -34,8 +34,6 @@ class MyCoral extends THREE.Object3D {
     ) {
         super();
         this.spawnCallBack = spawnCallBack;
-        this.clock = new THREE.Timer();
-        this.clock.connect(document);
         if (material === null) {
             this.initSingletonMat();
             material = coralMat.material;
@@ -173,9 +171,8 @@ class MyCoral extends THREE.Object3D {
         for (let i = 0; i < 10; ++i) this.growDna();
     }
 
-    update() {
-        this.clock.update();
-        this.material.userData.time.value = this.clock.getElapsed();
+    update(t) {
+        this.material.userData.time.value = t;
         if (this.dna === null) return;
         if (this.genePtr >= this.dna.length) {
             // console.log("Finished Growning: gf(", this.growthFactor, "), dna(",this.dna.length,")");

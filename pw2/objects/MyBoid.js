@@ -32,8 +32,6 @@ class MyBoid extends THREE.Object3D {
         this.dangerSize = dangerSize;
 
         this.fishes = [];
-        this.timer = new THREE.Timer();
-        this.timer.connect(document);
 
         // BVH attributes
         this.useBVH = useBVH;
@@ -245,10 +243,7 @@ class MyBoid extends THREE.Object3D {
         }
     }
 
-    update() {
-        this.timer.update();
-        const t = this.timer.getDelta();
-
+    update(t) {
         if (this.useBVH) {
             this.flockBVH();
         } else {
