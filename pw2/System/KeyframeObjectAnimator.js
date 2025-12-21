@@ -23,7 +23,6 @@ class KeyframeObjectAnimator {
     this.keyframes = Math.max(2, keyframes)
     this.duration = duration
     this.mixer = new THREE.AnimationMixer(this.object)
-    this.clock = new THREE.Clock()
     this.previousPosition = new THREE.Vector3()
     this.currentPosition = new THREE.Vector3()
 
@@ -81,8 +80,7 @@ class KeyframeObjectAnimator {
     )
   }
 
-  update() {
-    const delta = this.clock.getDelta()
+  update(delta) {
     this.mixer.update(delta)
 
     this.object.getWorldPosition(this.currentPosition)

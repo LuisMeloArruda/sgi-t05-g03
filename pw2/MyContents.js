@@ -172,10 +172,10 @@ class MyContents {
         // Fishes related attributes
         this.fishesGroup = new THREE.Group();
         this.fishesConfigs = []
-        this.fishQuantity = 500
+        this.fishQuantity = 100
 
         this.minX = -50, this.maxX = 50;
-        this.minY = 0, this.maxY = 50;
+        this.minY = 0, this.maxY = 30;
         this.minZ = -50, this.maxZ = 50;
         for (let n = 0; n < this.fishQuantity; n++) {
             this.fishesConfigs.push({
@@ -435,14 +435,14 @@ class MyContents {
         this.app.scene.add(this.submarineController, this.submarineController.warningLightHelper);
 
         // add corals
-        this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 20], this.coralsGroup)
-        this.enableShadows(this.coralsGroup, true, false);
-        this.app.scene.add(this.coralsGroup);
+        // this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 20], this.coralsGroup)
+        // this.enableShadows(this.coralsGroup, true, false);
+        // this.app.scene.add(this.coralsGroup);
 
         // add seaweed
         // this.createLODs(this.seaweedConfig, this.seaweedConstructors, [0, 20], this.seaweedGroup)
         // this.enableShadows(this.seaweedGroup, true, false);
-        this.app.scene.add(this.seaweedGroup);
+        // this.app.scene.add(this.seaweedGroup);
 
         // add bubble
         this.createLODs(this.bubblesConfigs, this.bubblesConstructors, [0], this.bubblesGroup)
@@ -568,7 +568,7 @@ class MyContents {
     /**
      * Updates the camera's position and target to follow the submarine while maintaining a constant offset
      */
-    update3PersonSubmarine() {
+    update3PersonSubmarine(delta) {
         const camera = this.app.activeCamera;
         const controls = this.app.controls;
 
@@ -576,7 +576,7 @@ class MyContents {
         controls.target.copy(this.submarineController.position);
         camera.position.copy(this.submarineController.position.clone().add(offset));
 
-        controls.update();
+        controls.update(delta);
     }
 
     /**
@@ -615,22 +615,22 @@ class MyContents {
      */
     update(delta) {
         this.fishesGroup.children.forEach((lod) => {
-            lod.children.forEach((fish) => fish.update());
+            lod.children.forEach((fish) => fish.update(delta));
         });
 
-        this.boid.update();
+        this.boid.update(delta);
 
         for (let child of this.coralsGroup.children) {
             if (child.type === "LOD") {
                 for (let grand of child.children) {
-                    grand.update();
+                    grand.update(delta);
                 }
             }
         }
         for (let child of this.seaweedGroup.children) {
             if (child.type === "LOD") {
                 for (let grand of child.children) {
-                    grand.update();
+                    grand.update(delta);
                 }
             }
         }
@@ -639,7 +639,7 @@ class MyContents {
          * Update all fish animations (positions + lookAt direction)
          */
         for (const animator of this.fishAnimators) {
-            animator.update();
+            animator.update(delta);
         }
 
         /**
@@ -647,7 +647,7 @@ class MyContents {
          * Sync camera position/orientation with submarine
          * Handle submarine input/movement
          */
-        if (this.app.activeCameraName === '3PersonSubmarine') this.update3PersonSubmarine();
+        if (this.app.activeCameraName === '3PersonSubmarine') this.update3PersonSubmarine(delta);
 
 
         /**

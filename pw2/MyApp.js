@@ -38,7 +38,6 @@ class MyApp  {
         this.lastCameraName = null
         this.cameras = []
         this.frustumSize = 20
-        this.clock = new THREE.Clock();
 
         // polygonal mode stuff
         this.polygonalMode = null
@@ -49,7 +48,7 @@ class MyApp  {
         this.controls = null
         this.gui = null
         this.axis = null
-        this.contents == null
+        this.contents = null
 
         // Listener for mouse lock down
         this._onCanvasClick = () => {this.renderer.domElement.requestPointerLock()}
@@ -74,7 +73,7 @@ class MyApp  {
 
         // Create a renderer with Antialiasing
         this.renderer = new THREE.WebGLRenderer({antialias:true});
-        this.renderer.setPixelRatio( 1 );
+        this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setClearColor("#000000");
         this.renderer.setAnimationLoop(() => this.render());
 
@@ -265,20 +264,16 @@ class MyApp  {
 
         this.updatePolygonalMode();
 
-        const delta = this.clock.getDelta()
+        this.timer.update();
+        const delta = this.timer.getDelta()
 
         // update the animation if contents were provided
         if (this.activeCamera !== undefined && this.activeCamera !== null) {
             this.contents.update(delta)
         }
-
+        
         // required if controls.enableDamping or controls.autoRotate are set to true 
-        if (this.activeCameraName === 'FreeFly') {
-            this.controls.update(delta);
-        }
-        else {
-            this.controls.update();
-        }
+        this.controls.update(delta);
 
         // render the scene
         this.postprocessing.render();
