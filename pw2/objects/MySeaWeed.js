@@ -29,8 +29,6 @@ class MySeaweed extends THREE.Object3D {
         max_dna_size = 20000 * (0.25 + Math.random() * 0.75),
     ) {
         super();
-        this.clock = new THREE.Timer();
-        this.clock.connect(document);
         this.material = material;
         const loader = new THREE.TextureLoader();
         const texture = loader.load("objects/assets/kelp_bump.png");
@@ -124,9 +122,8 @@ class MySeaweed extends THREE.Object3D {
         for (let i = 0; i < 4; ++i) this.growDna();
     }
 
-    update() {
-        this.clock.update();
-        this.material.userData.time.value = this.clock.getElapsed();
+    update(t) {
+        this.material.userData.time.value = t;
         if (this.dna === null) return;
         if (this.genePtr >= this.dna.length) {
             console.log("Finished Growning: gf(", this.growthFactor, "), dna(",this.dna.length,")");

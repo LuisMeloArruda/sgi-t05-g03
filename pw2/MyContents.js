@@ -549,7 +549,7 @@ class MyContents {
     /**
      * Updates the camera's position and target to follow the submarine while maintaining a constant offset
      */
-    update3PersonSubmarine() {
+    update3PersonSubmarine(delta) {
         const camera = this.app.activeCamera;
         const controls = this.app.controls;
 
@@ -557,7 +557,7 @@ class MyContents {
         controls.target.copy(this.submarineController.position);
         camera.position.copy(this.submarineController.position.clone().add(offset));
 
-        controls.update();
+        controls.update(delta);
     }
 
     /**
@@ -596,22 +596,22 @@ class MyContents {
      */
     update(delta) {
         this.fishesGroup.children.forEach((lod) => {
-            lod.children.forEach((fish) => fish.update());
+            lod.children.forEach((fish) => fish.update(delta));
         });
 
-        this.boid.update();
+        this.boid.update(delta);
 
         for (let child of this.coralsGroup.children) {
             if (child.type === "LOD") {
                 for (let grand of child.children) {
-                    grand.update();
+                    grand.update(delta);
                 }
             }
         }
         for (let child of this.seaweedGroup.children) {
             if (child.type === "LOD") {
                 for (let grand of child.children) {
-                    grand.update();
+                    grand.update(delta);
                 }
             }
         }
@@ -620,7 +620,7 @@ class MyContents {
          * Update all fish animations (positions + lookAt direction)
          */
         for (const animator of this.fishAnimators) {
-            animator.update();
+            animator.update(delta);
         }
 
         /**
@@ -628,7 +628,7 @@ class MyContents {
          * Sync camera position/orientation with submarine
          * Handle submarine input/movement
          */
-        if (this.app.activeCameraName === '3PersonSubmarine') this.update3PersonSubmarine();
+        if (this.app.activeCameraName === '3PersonSubmarine') this.update3PersonSubmarine(delta);
 
 
         /**

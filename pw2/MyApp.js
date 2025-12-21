@@ -38,7 +38,6 @@ class MyApp  {
         this.lastCameraName = null
         this.cameras = []
         this.frustumSize = 20
-        this.clock = new THREE.Clock();
 
         // polygonal mode stuff
         this.polygonalMode = null
@@ -264,7 +263,8 @@ class MyApp  {
 
         this.updatePolygonalMode();
 
-        const delta = this.clock.getDelta()
+        this.timer.update();
+        const delta = this.timer.getDelta()
 
         // update the animation if contents were provided
         if (this.activeCamera !== undefined && this.activeCamera !== null) {
