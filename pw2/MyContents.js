@@ -107,7 +107,7 @@ class MyContents {
             
             return new THREE.Vector3(try_x, try_y, try_z);
         };
-        this.coralsConstructors = [() => new MyCoral(spawnCallBack), () => new MyBasicCoral()]
+        this.coralsConstructors = [() => new MyCoral(spawnCallBack)]
 
 
         // Seaweed related attributes
@@ -434,12 +434,12 @@ class MyContents {
         this.app.scene.add(this.submarineController, this.submarineController.warningLightHelper);
 
         // add corals
-        this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 60], this.coralsGroup)
+        this.createLODs(this.coralsConfig, this.coralsConstructors, [0], this.coralsGroup)
         // this.enableShadows(this.coralsGroup, true, false);
         this.app.scene.add(this.coralsGroup);
 
         // add seaweed
-        // this.createLODs(this.seaweedConfig, this.seaweedConstructors, [0, 20], this.seaweedGroup)
+        // this.createLODs(this.seaweedConfig, this.seaweedConstructors, [0, 40], this.seaweedGroup)
         // this.enableShadows(this.seaweedGroup, true, false);
         // this.app.scene.add(this.seaweedGroup);
 
