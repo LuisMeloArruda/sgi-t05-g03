@@ -136,9 +136,6 @@ class MySubmarineController extends THREE.Object3D {
     const glassMat = new THREE.MeshPhongMaterial({
       color: 0xff0000,
       emissive: 0xaa0000,
-      roughness: 0.2,
-      transmission: 0.6,
-      thickness: 0.5,
       transparent: true
     });
 

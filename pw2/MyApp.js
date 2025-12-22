@@ -7,6 +7,7 @@ import { MyGuiInterface } from './MyGuiInterface.js';
 import { PickHelper } from './System/PickHelper.js';
 import Stats from 'three/addons/libs/stats.module.js'
 import { MyPostProcessing } from './System/MyPostProcessing.js';
+import { textOverlay } from './System/textOverlay.js';
 
 
 /**
@@ -100,10 +101,11 @@ class MyApp  {
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFShadowMap;
 
-        // Create DoF
-        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-
+        // Create PostProcessing
         this.postprocessing = new MyPostProcessing(this.renderer, this.scene, this.activeCamera);
+
+        // Initializes HUD scene, camera, and text overlay
+        this.initHUD()
     }
 
     /**
@@ -114,6 +116,7 @@ class MyApp  {
 
         // Create a free fly perspective camera Q and E roll. WASD for movement. Mouse to look around
         const freeFly = new THREE.PerspectiveCamera( 75, aspect, 0.1, 200 )
+        freeFly.userData.useDOF = true
         freeFly.position.set(0,5,10)
         this.cameras['FreeFly'] = freeFly
 
@@ -129,7 +132,47 @@ class MyApp  {
 
         // Create a 1 person submarine perspective camera
         let firstPersonView = new THREE.PerspectiveCamera( 75, aspect, 0.1, 200 )
+        firstPersonView.userData.useDOF = true
+        firstPersonView.userData.useTint = true
+        firstPersonView.userData.useScratches = true
+        firstPersonView.userData.useHUD = true
+        firstPersonView.userData.useCircleClip = true
         this.cameras['1PersonSubmarine'] = firstPersonView
+    }
+
+    /**
+     * Initializes HUD scene, camera, and text overlay
+     */
+    initHUD() {
+        this.hudScene = new THREE.Scene()
+
+        this.hudCamera = new THREE.OrthographicCamera(
+            -1, 1,
+            1, -1,
+            0, 10
+        )
+        this.hudCamera.position.z = 1
+
+        const loader = new THREE.TextureLoader()
+        const fontTex = loader.load('objects/assets/periscope/spritesheet.png')
+
+        const CHAR_MAP = {
+            '0': [0, 0], '1': [1, 0], '2': [2, 0], '3': [3, 0],
+            '4': [0, 1], '5': [1, 1], '6': [2, 1], '7': [3, 1],
+            '8': [0, 2], '9': [1, 2], '.': [2, 2], '-': [3, 2],
+            'X': [0, 3], 'Y': [1, 3], 'Z': [2, 3], ' ': [3, 3],
+        }
+
+        this.textOverlay = new textOverlay(
+            fontTex,
+            4,
+            4,
+            0.04,
+            CHAR_MAP
+        )
+
+        this.textOverlay.position.set(-0.4, -0.9, 0)
+        this.hudScene.add(this.textOverlay)
     }
 
     /**
@@ -233,13 +276,27 @@ class MyApp  {
      * the window resize handler
      */
     onResize() {
-        if (this.activeCamera !== undefined && this.activeCamera !== null) {
-            this.activeCamera.aspect = window.innerWidth / window.innerHeight;
-            this.activeCamera.updateProjectionMatrix();
-            this.renderer.setSize( window.innerWidth, window.innerHeight );
-            this.postprocessing.resize(window.innerWidth, window.innerHeight);
+        const width = window.innerWidth
+        const height = window.innerHeight
+        const aspect = width / height
+
+        if (this.activeCamera) {
+            this.activeCamera.aspect = aspect
+            this.activeCamera.updateProjectionMatrix()
+        }
+
+        this.renderer.setSize(width, height)
+        this.postprocessing.resize(width, height)
+
+        if (this.hudCamera) {
+            this.hudCamera.left = -aspect
+            this.hudCamera.right = aspect
+            this.hudCamera.top = 1
+            this.hudCamera.bottom = -1
+            this.hudCamera.updateProjectionMatrix()
         }
     }
+
     /**
      * 
      * @param {MyContents} contents the contents object 
@@ -277,6 +334,18 @@ class MyApp  {
 
         // render the scene
         this.postprocessing.render();
+
+        // HUD text
+        if (this.activeCamera.userData.useHUD) {
+            const p = this.contents.submarineController.position
+            this.textOverlay.setText(
+                `X ${p.x.toFixed(1)}  Y ${p.y.toFixed(1)}  Z ${p.z.toFixed(1)}`
+            )
+            this.renderer.autoClear = false
+            this.renderer.clearDepth()
+            this.renderer.render(this.hudScene, this.hudCamera)
+            this.renderer.autoClear = true
+        }
 
         // subsequent async calls to the render loop
         // requestAnimationFrame( this.render.bind(this) );
