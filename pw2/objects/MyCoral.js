@@ -284,6 +284,17 @@ class MyCoral extends THREE.Object3D {
         const command = this.dna[this.genePtr];
         this.genePtr += 1;
         switch (command) {
+            case 'Z': {
+                if (Math.random() <= this.chanceToSpawn) {
+                    if (this.spawnCallBack) {
+                      console.log("Spawning with callback...");
+                      const worldPos = this.localToWorld(new THREE.Vector3(0, 0, 0));
+                      this.spawnCallBack(worldPos.x, worldPos.z);
+                      this.chanceToSpawn *= 0.75
+                    }
+                }
+                // FALLTHROUGH
+              }
             case 'C':
             case 'E':
             case 'R': {
@@ -320,18 +331,7 @@ class MyCoral extends THREE.Object3D {
 
                 break;   
             }
-            case 'Z': {
-                if (Math.random() > this.chanceToSpawn) {
-                    break;
-                }
-                if (this.spawnCallBack) {
-                    console.log("Spawning with callback...");
-                    const worldPos = this.localToWorld(new THREE.Vector3(0,0,0));
-                    this.spawnCallBack(worldPos.x, worldPos.z);
-                    this.chanceToSpawn *= 0.75
-                }               
-                break;
-            }
+            
             case '+': {
                 this.turtle.quaternion.multiply(q.setFromAxisAngle(axisY, yaw));
                 break;
