@@ -24,7 +24,7 @@ class MyPostProcessing {
 
     this.composer = new EffectComposer(renderer);
 
-    this.resScale = 0.5;
+    this.resScale = 1;
     this.composer.setSize(window.innerWidth * this.resScale, window.innerHeight * this.resScale);
 
 
