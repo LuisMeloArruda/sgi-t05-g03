@@ -146,6 +146,16 @@ class MyGuiInterface {
         warnFolder.add(this.contents.submarineController, 'warningLightFrequency', 0.1, 5, 0.1)
             .name('Pulse Frequency');
 
+        // Particles
+        const particlesFolder = this.datgui.addFolder('Particles')
+
+        particlesFolder
+            .add(this.contents.marineSnow, 'lodOn')
+            .name('Marine Snow LOD (Visual Indicator)')
+            .listen()
+
+        particlesFolder.close()
+
     }
 }
 

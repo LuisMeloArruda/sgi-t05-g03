@@ -17,6 +17,7 @@ import { staticBVH } from './System/StaticBVH.js'
 import { createGodray } from './System/FakeGodray.js';
 import { MyWaterSurface } from './objects/MyWaterSurface.js';
 import { MyShieldEffect } from './objects/MyShieldEffect.js';
+import { MarineSnow } from './objects/MarineSnow.js';
 
 
 /**
@@ -375,6 +376,19 @@ class MyContents {
         // Water surface related attributes
         this.waterSurface = new MyWaterSurface();
         this.waterSurface.position.setY(70);
+
+        // Marine snow
+        this.marineSnow = new MarineSnow({
+            count: 2000,
+            areaX: 50,
+            areaZ: 50,
+            topY: 70,
+            bottomY: 0,
+            minSpeed: 0.05,
+            maxSpeed: 0.25,
+            lodDistance: 40,
+            lowcount: 300,
+        })
     }
 
     /**
@@ -383,11 +397,11 @@ class MyContents {
     init() {
 
         // create once 
-        if (this.axis === null) {
-            // create and attach the axis to the scene
-            this.axis = new MyAxis(this)
-            this.app.scene.add(this.axis)
-        }
+        // if (this.axis === null) {
+        //     // create and attach the axis to the scene
+        //     this.axis = new MyAxis(this)
+        //     this.app.scene.add(this.axis)
+        // }
 
         // add an ambient light
         const ambientLight = new THREE.AmbientLight(0x555555);
@@ -428,7 +442,7 @@ class MyContents {
         this.app.scene.add(this.chestsGroup)
 
         // add submarine
-        this.createLODs(this.submarineLODConfigs, this.submarineConstructors, [0, 20], this.submarineController);
+        this.createLODs(this.submarineLODConfigs, this.submarineConstructors, [0, 40], this.submarineController);
         this.enableShadows(this.submarineController, true, false)
         this.enableShadows(this.shield, false, false)
         this.app.scene.add(this.submarineController, this.submarineController.warningLightHelper);
@@ -481,6 +495,9 @@ class MyContents {
 
         // Water surface
         this.app.scene.add(this.waterSurface);
+
+        // Marine snow
+        this.app.scene.add(this.marineSnow.points)
     }
 
     initFakeGodrays({
@@ -672,6 +689,9 @@ class MyContents {
         
         // Water Surface
         this.waterSurface.update(delta);
+
+        // Marine snow
+        this.marineSnow.update(delta, this.app.activeCamera)
     }
 }
 
