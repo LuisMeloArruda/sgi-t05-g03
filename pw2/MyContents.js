@@ -17,6 +17,7 @@ import { staticBVH } from './System/StaticBVH.js'
 import { createGodray } from './System/FakeGodray.js';
 import { MyWaterSurface } from './objects/MyWaterSurface.js';
 import { MyShieldEffect } from './objects/MyShieldEffect.js';
+import { MarineSnow } from './objects/MarineSnow.js';
 
 
 /**
@@ -31,6 +32,7 @@ class MyContents {
     constructor(app) {
         this.app = app
         this.axis = null
+        this.elapsed = 0;
 
         // BVH related attributes
         THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
@@ -56,6 +58,7 @@ class MyContents {
 
         this.coralsConfig = [];
         const coralQuantity = 1;
+        this.coralBirthChance = 1.;
         for (let i = 0; i < coralQuantity; i++) {
             let x, z, y
             let valid = false
@@ -72,11 +75,11 @@ class MyContents {
 
             if (!valid) continue;
 
-            this.space.occupy(x, z, 0.1, "coral");
+            this.space.occupy(x, z, 0.2, "coral");
 
             const scale = new THREE.Vector3(
                 1, 1, 1
-            );
+            ).multiplyScalar(0.3);
 
             const rotation = new THREE.Euler(
                 0,
@@ -90,25 +93,40 @@ class MyContents {
                 rotation: rotation,
             });
         }
+        this.coralsConstructors = [];
         const spawnCallBack = (x,z) => {
             let try_x, try_z;
             let valid = false;
-            while (!valid) {
+            let tries = 0;
+            while (!valid && tries++ < 50) {
                 try_x = (Math.random() - 0.5) * 10 + x;
                 try_z = (Math.random() - 0.5) * 10 + z;
                 valid = this.space.isFree(try_x,try_z, 0.1);
             }
-
-            this.space.occupy(try_x,try_z, 0.1, "coral");
-
-            const terrain_coords = this.terrain.worldToLocal(new THREE.Vector3(try_x, 0, try_z));
             
-            let try_y = this.terrain.getHeightAt(terrain_coords.x, terrain_coords.z);
+            this.coralBirthChance *= 0.9;
+
+            if (!valid) {
+                console.log("Failed to spawn because it is too crowded.");
+                return
+            }
+
+            this.space.occupy(try_x,try_z, 0.2, "coral");
             
-            return new THREE.Vector3(try_x, try_y, try_z);
+            let try_y = this.terrain.getHeightAt(try_x, try_z);
+
+            const config = {
+                position: new THREE.Vector3(try_x, try_y, try_z),
+                scale: new THREE.Vector3(1,1,1).multiplyScalar(0.3),
+                rotation: new THREE.Euler(
+                    0,
+                    THREE.MathUtils.randFloat(0, Math.PI * 2),
+                    0
+                    ),
+            };
+            this.createLODs([config], this.coralsConstructors, [0,30], this.coralsGroup);
         };
-        this.coralsConstructors = [() => new MyCoral(spawnCallBack)]
-
+        this.coralsConstructors = [() => new MyCoral(this.coralBirthChance,spawnCallBack)]
 
         // Seaweed related attributes
         this.seaweedGroup = new THREE.Group();
@@ -318,7 +336,7 @@ class MyContents {
         this.space.occupy(-15, 0, 2, "rockCrab2")
 
         this.rocksConfig = []
-        const rocksQuantity = 60
+        const rocksQuantity = 100
         for (let i = 0; i < rocksQuantity; i++) {
             let x, z, y
             let valid = false
@@ -335,7 +353,7 @@ class MyContents {
 
             if (!valid) continue;
 
-            this.space.occupy(x, z, 3, "rock");
+            this.space.occupy(x, z, 2, "rock");
 
             const scale = new THREE.Vector3(
                 THREE.MathUtils.randFloat(0.5, 5),
@@ -375,6 +393,19 @@ class MyContents {
         // Water surface related attributes
         this.waterSurface = new MyWaterSurface();
         this.waterSurface.position.setY(70);
+
+        // Marine snow
+        this.marineSnow = new MarineSnow({
+            count: 2000,
+            areaX: 50,
+            areaZ: 50,
+            topY: 70,
+            bottomY: 0,
+            minSpeed: 0.05,
+            maxSpeed: 0.25,
+            lodDistance: 40,
+            lowcount: 300,
+        })
     }
 
     /**
@@ -383,11 +414,11 @@ class MyContents {
     init() {
 
         // create once 
-        if (this.axis === null) {
-            // create and attach the axis to the scene
-            this.axis = new MyAxis(this)
-            this.app.scene.add(this.axis)
-        }
+        // if (this.axis === null) {
+        //     // create and attach the axis to the scene
+        //     this.axis = new MyAxis(this)
+        //     this.app.scene.add(this.axis)
+        // }
 
         // add an ambient light
         const ambientLight = new THREE.AmbientLight(0x555555);
@@ -428,12 +459,13 @@ class MyContents {
         this.app.scene.add(this.chestsGroup)
 
         // add submarine
-        this.createLODs(this.submarineLODConfigs, this.submarineConstructors, [0, 20], this.submarineController);
+        this.createLODs(this.submarineLODConfigs, this.submarineConstructors, [0, 40], this.submarineController);
         this.enableShadows(this.submarineController, true, false)
         this.enableShadows(this.shield, false, false)
         this.app.scene.add(this.submarineController, this.submarineController.warningLightHelper);
 
         // add corals
+
         this.createLODs(this.coralsConfig, this.coralsConstructors, [0], this.coralsGroup)
         // this.enableShadows(this.coralsGroup, true, false);
         this.app.scene.add(this.coralsGroup);
@@ -481,6 +513,9 @@ class MyContents {
 
         // Water surface
         this.app.scene.add(this.waterSurface);
+
+        // Marine snow
+        this.app.scene.add(this.marineSnow.points)
     }
 
     initFakeGodrays({
@@ -613,16 +648,17 @@ class MyContents {
      * this method is called from the render method of the app
      */
     update(delta) {
+        this.elapsed += delta;
         this.fishesGroup.children.forEach((lod) => {
             lod.children.forEach((fish) => fish.update(delta));
         });
 
         this.boid.update(delta);
-
+        
         for (let child of this.coralsGroup.children) {
             if (child.type === "LOD") {
                 for (let grand of child.children) {
-                    grand.update(delta);
+                    grand.update(this.elapsed);
                 }
             }
         }
@@ -672,6 +708,9 @@ class MyContents {
         
         // Water Surface
         this.waterSurface.update(delta);
+
+        // Marine snow
+        this.marineSnow.update(delta, this.app.activeCamera)
     }
 }
 

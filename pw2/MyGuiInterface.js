@@ -156,6 +156,16 @@ class MyGuiInterface {
             .addColor(this.app.pickHelper, "color")
             .name("Picked Color");
         pickingFolder.close();
+
+        // Particles
+        const particlesFolder = this.datgui.addFolder('Particles')
+
+        particlesFolder
+            .add(this.contents.marineSnow, 'lodOn')
+            .name('Marine Snow LOD (Visual Indicator)')
+            .listen()
+
+        particlesFolder.close()
     }
 }
 
