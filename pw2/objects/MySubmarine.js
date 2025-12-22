@@ -478,8 +478,9 @@ class MyMidSubmarine extends THREE.Object3D {
   ) {
     super();
     this.material = material
-    const submarine = new THREE.BoxGeometry(1, 1, 1);
+    const submarine = new THREE.CapsuleGeometry(1 * 0.9, 1 * 2, 16, 16, 16);
     const submarineMesh = new THREE.Mesh(submarine, material);
+    submarineMesh.rotateX(Math.PI / 2)
 
     this.add(submarineMesh);
   }
