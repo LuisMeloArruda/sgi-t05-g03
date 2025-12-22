@@ -478,7 +478,7 @@ class MyMidSubmarine extends THREE.Object3D {
   ) {
     super();
     this.material = material
-    const submarine = new THREE.BoxGeometry(1, 1, 1);
+    const submarine = new THREE.BoxGeometry(0.9 * 2, 0.9 * 2, 2.0 * 2);
     const submarineMesh = new THREE.Mesh(submarine, material);
 
     this.add(submarineMesh);
