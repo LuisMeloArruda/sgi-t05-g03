@@ -28,11 +28,13 @@ const coralMat = {
 
 class MyCoral extends THREE.Object3D {
     constructor(
+        chanceToSpawn = 1.,
         spawnCallBack ,
         material = coralMat.material,
-        max_dna_size = 1_000_000 * (0.25 + Math.random() * 0.75),
+        max_dna_size = 2_500 * (0.25 + Math.random() * 0.75),
     ) {
         super();
+        this.chanceToSpawn = chanceToSpawn;
         this.spawnCallBack = spawnCallBack;
         if (material === null) {
             this.initSingletonMat();
@@ -134,7 +136,6 @@ class MyCoral extends THREE.Object3D {
         const branchMesh = new THREE.InstancedMesh(branchGeo, branchMat, size);
         branchMesh.count = 0;
         branchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        console.debug(size, branchMesh);
         branchMesh.name = "🪸";
         return branchMesh;
     }
@@ -144,7 +145,7 @@ class MyCoral extends THREE.Object3D {
         this.dna = null;
         delete this.stack;
         this.stack = null;
-        console.log("Coral finished it's growth.");
+        // console.log("Coral finished it's growth with", this.genePtr, "genes.");
     }
 
     build() {
@@ -166,24 +167,24 @@ class MyCoral extends THREE.Object3D {
 
     makeDna() {
         // Very simple initial DNA
-        for (let i = 0; i < 10; ++i) this.growDna();
+        for (let i = 0; i < 4; ++i) this.growDna();
     }
 
     update(t) {
-        this.material.userData.time.value += t;
+        this.material.userData.time.value = t;
         if (this.dna === null) return;
         if (this.genePtr >= this.dna.length) {
-            // console.log("Finished Growning: gf(", this.growthFactor, "), dna(",this.dna.length,")");
+            console.log("Finished Growning: gf(", this.growthFactor, "), dna(",this.dna.length,")");
             this.clearGenetics();
             return;
         }
-        if (this.dna.length < this.max_dna_size && this.genePtr < this.dna.length && this.growthFactor !== 0) this.growDna();
-        const chance_to_grow = 0.1;
-        if (Math.random() < chance_to_grow) {
+        if (this.dna.length < this.max_dna_size && this.genePtr < this.dna.length && this.growthFactor !== 0) {
             const prev_size = this.dna.length;
-            this.grow();
+            this.growDna();
             this.growthFactor = this.dna.length - prev_size;
-        }   
+        }
+        const chance_to_grow = 0.1;
+        if (Math.random() < chance_to_grow) this.grow();
     }
 
     growDna() {
@@ -320,18 +321,15 @@ class MyCoral extends THREE.Object3D {
                 break;   
             }
             case 'Z': {
-                this.stack.length = 0;
+                if (Math.random() > this.chanceToSpawn) {
+                    break;
+                }
                 if (this.spawnCallBack) {
                     console.log("Spawning with callback...");
-                    const worldpPos = this.localToWorld(this.turtle.position);
-                    const worldret = this.spawnCallBack(worldpPos.x, worldpPos.z);
-                    this.turtle.position = this.worldToLocal(worldret);
-                    this.turtle.quaternion = new THREE.Quaternion();
-                } else {
-                    console.log("Spawning without callback...");
-                    this.turtle.position = new THREE.Vector3(Math.random() * 5,0,Math.random() * 5);
-                    this.turtle.quaternion = new THREE.Quaternion();
-                }                
+                    const worldPos = this.localToWorld(new THREE.Vector3(0,0,0));
+                    this.spawnCallBack(worldPos.x, worldPos.z);
+                    this.chanceToSpawn *= 0.75
+                }               
                 break;
             }
             case '+': {
