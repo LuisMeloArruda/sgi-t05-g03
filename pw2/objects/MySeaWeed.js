@@ -15,7 +15,7 @@ class MyBasicSeaweed extends THREE.Object3D {
         const geometry = new THREE.CylinderGeometry();
         let mesh = new THREE.Mesh(geometry, this.material);
         mesh.position.y = 0.5;
-        mesh.scale.set(0.1, 1, 0.1)
+        mesh.scale.set(0.3, 1, 0.3)
         this.add(mesh);
     }
 
@@ -71,23 +71,24 @@ class MySeaweed extends THREE.Object3D {
         this.dna = 'ER';
         this.genePtr = 0;
         this.placedCount = 0;
-        this.group = new THREE.Group();
-        this.group.scale.setScalar(0.3);
-        this.branchMatrices = [];
         this.turtle = {
             position: new THREE.Vector3(0,0,0),
             quaternion: new THREE.Quaternion(),
         };
+        this.meshCap = 0;
         this.branchMesh = this.makeNewMesh(this.max_dna_size);
         this.branchLen = 0.3;
         this.build();
     }
 
     makeNewMesh(size) {
+        this.meshCap = size;
         const branchGeo = new THREE.PlaneGeometry(0.5,1,1,1);
         branchGeo.translate(0, 0.5,0);
         const branchMat = this.material;
         const branchMesh = new THREE.InstancedMesh(branchGeo, branchMat, size);
+        branchMesh.count = 0;
+        branchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         branchMesh.name = "🌿";
         return branchMesh;
     }
@@ -99,10 +100,7 @@ class MySeaweed extends THREE.Object3D {
 
     build() {
         this.makeDna();
-        
-        this.group.add(this.branchMesh);
-        this.add(this.group);
-
+        this.add(this.branchMesh);
     }
 
     chooseNextRule(options) {
@@ -123,7 +121,7 @@ class MySeaweed extends THREE.Object3D {
     }
 
     update(t) {
-        this.material.userData.time.value = t;
+        this.material.userData.time.value += t;
         if (this.dna === null) return;
         if (this.genePtr >= this.dna.length) {
             // console.log("Finished Growning: gf(", this.growthFactor, "), dna(",this.dna.length,")");
@@ -136,8 +134,6 @@ class MySeaweed extends THREE.Object3D {
         if (Math.random() < chance_to_grow) {
             const prev_size = this.dna.length;
             this.grow();
-            this.group.clear();
-            this.group.add(this.branchMesh);
             this.growthFactor = this.dna.length - prev_size;
         }   
     }
@@ -246,19 +242,27 @@ class MySeaweed extends THREE.Object3D {
                 const orientation = new THREE.Quaternion().setFromUnitVectors(axisY,forward.clone().normalize());
                 const scale = new THREE.Vector3(1, branchLen, 1);
                 instMatrix.compose(startPos, orientation, scale);
-                this.branchMatrices.push(instMatrix);
-                if (this.branchMatrices.length >= this.branchMesh.count) {
-                    // console.log("Making new mesh");
-                    this.branchMesh = this.makeNewMesh(this.branchMesh.count * 2);
-                    for (let i = 0; i < this.branchMatrices.length; i++) {
-                        this.branchMesh.setMatrixAt(i, this.branchMatrices[i]);
+                if (this.placedCount >= this.meshCap) {
+                    console.info("Making new mesh");
+                    const oldMesh = this.branchMesh;
+                    this.branchMesh = this.makeNewMesh(this.meshCap * 2);
+                    let tmpMatrix = new THREE.Matrix4();
+                    for (let i = 0; i < this.placedCount; i++) {
+                        oldMesh.getMatrixAt(i, tmpMatrix);
+                        this.branchMesh.setMatrixAt(i, tmpMatrix);
                     }
+                    // Remove old mesh and add new one
+                    this.remove(oldMesh);
+                    this.add(this.branchMesh);
+                    // Clean up old mesh geometry and dispose resources
+                    oldMesh.geometry.dispose();
                 }
 
                 // console.log("Adding matrix to place ", this.placedCount);
                 this.branchMesh.setMatrixAt(this.placedCount, instMatrix);
                 this.branchMesh.instanceMatrix.needsUpdate = true;
                 this.placedCount += 1;
+                this.branchMesh.count = this.placedCount;
 
                 break;   
             }

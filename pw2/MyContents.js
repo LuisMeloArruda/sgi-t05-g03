@@ -133,7 +133,7 @@ class MyContents {
             this.space.occupy(x, z, 0.1, "seaweed");
 
             const scale = new THREE.Vector3(
-                1,1,1
+                0.3,0.3,0.3
             );
 
             const rotation = new THREE.Euler(
@@ -439,9 +439,9 @@ class MyContents {
         this.app.scene.add(this.coralsGroup);
 
         // add seaweed
-        // this.createLODs(this.seaweedConfig, this.seaweedConstructors, [0, 40], this.seaweedGroup)
+        this.createLODs(this.seaweedConfig, this.seaweedConstructors, [0, 40], this.seaweedGroup)
         // this.enableShadows(this.seaweedGroup, true, false);
-        // this.app.scene.add(this.seaweedGroup);
+        this.app.scene.add(this.seaweedGroup);
 
         // add bubble
         this.createLODs(this.bubblesConfigs, this.bubblesConstructors, [0], this.bubblesGroup)
@@ -626,13 +626,13 @@ class MyContents {
                 }
             }
         }
-        // for (let child of this.seaweedGroup.children) {
-        //     if (child.type === "LOD") {
-        //         for (let grand of child.children) {
-        //             grand.update(delta);
-        //         }
-        //     }
-        // }
+        for (let child of this.seaweedGroup.children) {
+            if (child.type === "LOD") {
+                for (let grand of child.children) {
+                    grand.update(delta);
+                }
+            }
+        }
 
         /**
          * Update all fish animations (positions + lookAt direction)

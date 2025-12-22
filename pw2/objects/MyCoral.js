@@ -134,7 +134,6 @@ class MyCoral extends THREE.Object3D {
         const branchMesh = new THREE.InstancedMesh(branchGeo, branchMat, size);
         branchMesh.count = 0;
         branchMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        console.debug(size, branchMesh);
         branchMesh.name = "🪸";
         return branchMesh;
     }
