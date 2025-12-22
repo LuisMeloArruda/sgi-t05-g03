@@ -661,7 +661,7 @@ class MyContents {
         if (this.app.activeCameraName === 'Fixed' ||
             this.app.activeCameraName === '1PersonSubmarine' ||
             this.app.activeCameraName === '3PersonSubmarine') {
-            this.submarineController.update()
+            this.submarineController.update(delta)
         }
 
         // Fake Godrays tick

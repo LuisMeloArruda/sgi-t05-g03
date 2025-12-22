@@ -290,17 +290,18 @@ class MySubmarineController extends THREE.Object3D {
     this.warningLight.intensity = normalized * this.warningLightBaseIntensity;
   }
 
-  update() {
+  update(t) {
+    t *= 10;
     this.updateWarningLight()
 
     // horizontal
     if (this.pressedKeys.has('KeyW')) {
       if (this.speedHorizontal < this.speedMax)
-        this.speedHorizontal += this.accelerationHorizontal;
+        this.speedHorizontal += this.accelerationHorizontal * t;
     }
     else if (this.pressedKeys.has('KeyS')) {
       if (this.speedHorizontal > -this.speedMax / 2)
-        this.speedHorizontal -= this.accelerationHorizontal;
+        this.speedHorizontal -= this.accelerationHorizontal * t;
     }
     else {
       if (Math.abs(this.speedHorizontal) > 0.001)
@@ -331,11 +332,11 @@ class MySubmarineController extends THREE.Object3D {
     // vertical
     if (this.pressedKeys.has('KeyP')) {
       if (this.speedVertical < this.speedMax)
-        this.speedVertical += this.accelerationVertical;
+        this.speedVertical += this.accelerationVertical * t;
     }
     else if (this.pressedKeys.has('KeyL') && this.position.y > this.yLimit) {
       if (this.speedVertical > -this.speedMax)
-        this.speedVertical -= this.accelerationVertical;
+        this.speedVertical -= this.accelerationVertical * t;
     }
     else {
       if (Math.abs(this.speedVertical) > 0.001)
@@ -369,8 +370,8 @@ class MySubmarineController extends THREE.Object3D {
     }
 
     // Horizontal direction left or right 
-    if (this.pressedKeys.has('KeyA')) this.rotateY(this.rotationSpeed)
-    if (this.pressedKeys.has('KeyD')) this.rotateY(-this.rotationSpeed)
+    if (this.pressedKeys.has('KeyA')) this.rotateY(this.rotationSpeed * t)
+    if (this.pressedKeys.has('KeyD')) this.rotateY(-this.rotationSpeed * t)
   }
 }
 
