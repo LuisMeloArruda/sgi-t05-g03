@@ -34,6 +34,19 @@ Useful for testing the basics of ThreeJS.
 
 ---
 
-### [PW2 - ...](pw2)
+### [PW2 - Underwater ecosystem](pw2)
 
-- (items briefly describing main strong points)
+![scene](./pw2/screenshots/scene.png)
+
+A submarine in the deep sea with fish, corals, soil, rocks, crabs, and much more.
+
+- Controllable submarine with collision detection and light;
+- Fish with automatic movement based on predefined movement (key frame) and
+  signals like alignment and danger (boid);
+- Corals and seaweed that grow vertically and spread horizontally over time;
+- Rocks with crabs walking on top of them (with a video texture);
+- Sand-like terrain that is randomly generated;
+- Animated water surface with patterns generated from Perlin noise;
+- Various cameras, including the point of view of the submarine with
+  post-processing effects;
+- And much more...(shadows, picking, god rays, particles, chest, ...)
