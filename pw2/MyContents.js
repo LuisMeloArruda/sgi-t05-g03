@@ -126,8 +126,7 @@ class MyContents {
             };
             this.createLODs([config], this.coralsConstructors, [0,30], this.coralsGroup);
         };
-        this.coralsConstructors = [() => new MyCoral(this.coralBirthChance,spawnCallBack), () => new MyBasicCoral()]
-
+        this.coralsConstructors = [() => new MyCoral(this.coralBirthChance,spawnCallBack)]
 
         // Seaweed related attributes
         this.seaweedGroup = new THREE.Group();
@@ -152,7 +151,7 @@ class MyContents {
             this.space.occupy(x, z, 0.1, "seaweed");
 
             const scale = new THREE.Vector3(
-                1,1,1
+                0.3,0.3,0.3
             );
 
             const rotation = new THREE.Euler(
@@ -466,14 +465,15 @@ class MyContents {
         this.app.scene.add(this.submarineController, this.submarineController.warningLightHelper);
 
         // add corals
-        this.createLODs(this.coralsConfig, this.coralsConstructors, [0, 30], this.coralsGroup)
-        this.enableShadows(this.coralsGroup, true, false);
+
+        this.createLODs(this.coralsConfig, this.coralsConstructors, [0], this.coralsGroup)
+        // this.enableShadows(this.coralsGroup, true, false);
         this.app.scene.add(this.coralsGroup);
 
         // add seaweed
-        // this.createLODs(this.seaweedConfig, this.seaweedConstructors, [0, 20], this.seaweedGroup)
+        this.createLODs(this.seaweedConfig, this.seaweedConstructors, [0, 40], this.seaweedGroup)
         // this.enableShadows(this.seaweedGroup, true, false);
-        // this.app.scene.add(this.seaweedGroup);
+        this.app.scene.add(this.seaweedGroup);
 
         // add bubble
         this.createLODs(this.bubblesConfigs, this.bubblesConstructors, [0], this.bubblesGroup)
@@ -662,13 +662,13 @@ class MyContents {
                 }
             }
         }
-        // for (let child of this.seaweedGroup.children) {
-        //     if (child.type === "LOD") {
-        //         for (let grand of child.children) {
-        //             grand.update(delta);
-        //         }
-        //     }
-        // }
+        for (let child of this.seaweedGroup.children) {
+            if (child.type === "LOD") {
+                for (let grand of child.children) {
+                    grand.update(delta);
+                }
+            }
+        }
 
         /**
          * Update all fish animations (positions + lookAt direction)
@@ -697,7 +697,7 @@ class MyContents {
         if (this.app.activeCameraName === 'Fixed' ||
             this.app.activeCameraName === '1PersonSubmarine' ||
             this.app.activeCameraName === '3PersonSubmarine') {
-            this.submarineController.update()
+            this.submarineController.update(delta)
         }
 
         // Fake Godrays tick

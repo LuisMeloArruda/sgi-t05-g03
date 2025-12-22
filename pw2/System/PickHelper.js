@@ -3,55 +3,46 @@
 import * as THREE from "three";
 
 class PickHelper {
-    constructor() {
+    constructor(active = true, color = 0xFFFFFF) {
         this.raycaster = new THREE.Raycaster();
-        this.pickPosition = { x: NaN, y: NaN };
-        this.pickedObject = null;
-        this.pickedObjectSavedColor = 0;
+        this.object = undefined;
+        this.material = undefined;
+        this.active = active;
+        this.color = color;
     }
 
     pick(event, scene, camera) {
-        this.setPickPosition(event.clientX, event.clientY);
-        
-        // restore the color if there is a picked object
-        if (this.pickedObject) {
-            this.pickedObject.material.emissive.setHex(
-                this.pickedObjectSavedColor,
-            );
-            this.pickedObject = undefined;
-        }
-
-        // cast a ray through the frustum
-        this.raycaster.setFromCamera(this.pickPosition, camera);
-        // get the list of objects the ray intersected
+        if (!this.active) return;
+        this.restore();
+        const pickPosition = this._getPickPosition(event.clientX, event.clientY);
+        this.raycaster.setFromCamera(pickPosition, camera);
         const intersectedObjects = this.raycaster.intersectObjects(
             scene.children,
         );
                 
         if (intersectedObjects.length) {
-            // pick the first object. It's the closest one
-            this.pickedObject = intersectedObjects[0].object;
-            console.log("Picked object: ", this.pickedObject);
-            // save its color
-            this.pickedObjectSavedColor =
-                this.pickedObject.material.emissive.getHex();
-            // set its emissive color to white
-            this.pickedObject.material.emissive.setHex(0xffffff);
+            this.object = intersectedObjects[0].object;
+            this.material = this.object.material;
+            this.object.material = new THREE.MeshBasicMaterial({ color: this.color, side: THREE.DoubleSide });
         }
     }
 
-    setPickPosition(clientX, clientY) {
+    _getPickPosition(clientX, clientY) {
         const rect = canvas.getBoundingClientRect();
         const pos = {
             x: ((clientX - rect.left) * canvas.clientWidth) / rect.width,
             y: ((clientY - rect.top) * canvas.clientHeight) / rect.height,
         };
-        this.pickPosition.x = (pos.x / canvas.clientWidth) * 2 - 1;
-        this.pickPosition.y = (pos.y / canvas.clientHeight) * -2 + 1; // note we flip Y        
+        const x = (pos.x / canvas.clientWidth) * 2 - 1;
+        const y = (pos.y / canvas.clientHeight) * -2 + 1; // note we flip Y  
+        return { x, y };
     }
 
-    clearPickPosition() {
-        this.pickPosition = { x: NaN, y: NaN };
+    restore() {
+        if (this.object) {
+            this.object.material = this.material;
+            this.object = undefined;
+        }
     }
 }
 

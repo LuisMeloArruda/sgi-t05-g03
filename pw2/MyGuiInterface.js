@@ -145,6 +145,17 @@ class MyGuiInterface {
         // Warning pulso (freq)
         warnFolder.add(this.contents.submarineController, 'warningLightFrequency', 0.1, 5, 0.1)
             .name('Pulse Frequency');
+        
+        // Picking folder
+        const pickingFolder = this.datgui.addFolder("Picking");
+        pickingFolder
+            .add(this.app.pickHelper, "active")
+            .name("Activate")
+            .onChange((_) => this.app.pickHelper.restore());
+        pickingFolder
+            .addColor(this.app.pickHelper, "color")
+            .name("Picked Color");
+        pickingFolder.close();
 
         // Particles
         const particlesFolder = this.datgui.addFolder('Particles')
@@ -155,7 +166,6 @@ class MyGuiInterface {
             .listen()
 
         particlesFolder.close()
-
     }
 }
 
